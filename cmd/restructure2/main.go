@@ -1,8 +1,8 @@
 // restructure is a tool which recovers high-level control flow primitives from
 // control flow graphs (e.g. *.dot -> *.json). It takes an unstructured CFG (in
-// the Graphviz DOT file format) as input and produces a structured CFG (in JSON
-// format), which describes how the high-level control flow primitives relate to
-// the nodes of the CFG.
+// Graphviz DOT format) as input and produces a structured CFG (in JSON format),
+// which describes how the high-level control flow primitives relate to the
+// nodes of the CFG.
 //
 // Usage:
 //     restructure [OPTION]... [CFG.dot]
@@ -41,9 +41,12 @@ func main() {
 		indent bool
 		// Output path.
 		output string
+		// Specifies whether to output intermediate CFGs at each step.
+		steps bool
 	)
 	flag.BoolVar(&indent, "indent", false, "Indent JSON output.")
 	flag.StringVar(&output, "o", "", "Output path.")
+	flag.BoolVar(&steps, "steps", false, "Output intermediate CFGs at each step.")
 	flag.Usage = usage
 	flag.Parse()
 
@@ -66,7 +69,7 @@ func main() {
 	}
 
 	// Create a structured CFG from the unstructured CFG.
-	prims, err := restructure(g)
+	prims, err := restructure(g, steps)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -113,16 +116,6 @@ func parseGraph(dotPath string) (g *dot.Graph, err error) {
 	}
 
 	return g, nil
-}
-
-// restructure attempts to recover the control flow primitives of a given
-// control flow graph. It does so by repeatedly locating and merging structured
-// subgraphs (graph representations of control flow primitives) into single
-// nodes until the entire graph is reduced into a single node or no structured
-// subgraphs may be located. The list of primitives is ordered in the same
-// sequence as they were located.
-func restructure(g *dot.Graph) ([]*primitive.Primitive, error) {
-	panic("not yet implemented")
 }
 
 // writeJSON writes the primitives in JSON format to w.

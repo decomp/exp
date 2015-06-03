@@ -194,6 +194,11 @@ func findPrim(g *dot.Graph) (*primitive.Primitive, error) {
 		return prim.Prim(), nil
 	}
 
+	// Locate sequences of two statements.
+	if prim, ok := cfa.FindSeq(g); ok {
+		return prim.Prim(), nil
+	}
+
 	panic("not yet implemented")
 }
 

@@ -184,6 +184,11 @@ func restructure(g *dot.Graph, steps bool) (prims []*primitive.Primitive, err er
 // findPrim locates a control flow primitive in the provided control flow graph
 // and merges its nodes into a single node.
 func findPrim(g *dot.Graph) (*primitive.Primitive, error) {
+	// Locate pre-test loops.
+	if prim, ok := cfa.FindPreLoop(g); ok {
+		return prim.Prim(), nil
+	}
+
 	// Locate 1-way conditionals.
 	if prim, ok := cfa.FindIf(g); ok {
 		return prim.Prim(), nil
@@ -204,7 +209,7 @@ func findPrim(g *dot.Graph) (*primitive.Primitive, error) {
 		return prim.Prim(), nil
 	}
 
-	panic("not yet implemented")
+	return nil, errutil.New("unable to locate control flow primitive")
 }
 
 // dumpStep stores a DOT representation of g to path with the specified nodes

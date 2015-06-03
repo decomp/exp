@@ -189,6 +189,11 @@ func findPrim(g *dot.Graph) (*primitive.Primitive, error) {
 		return prim.Prim(), nil
 	}
 
+	// Locate 1-way conditionals with a body return statements.
+	if prim, ok := cfa.FindIfReturn(g); ok {
+		return prim.Prim(), nil
+	}
+
 	panic("not yet implemented")
 }
 

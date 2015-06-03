@@ -15,7 +15,6 @@ import (
 	"os/exec"
 
 	"github.com/mewkiz/pkg/errutil"
-	"github.com/mewkiz/pkg/osutil"
 	"github.com/mewkiz/pkg/pathutil"
 )
 
@@ -54,8 +53,21 @@ func convert(dotPath string, force bool) error {
 
 	// Skip existing files unless the "-f" flag is set.
 	if !force {
-		if ok, _ := osutil.Exists(pngPath); ok {
-			return nil
+		dotStat, err := os.Stat(dotPath)
+		if err != nil {
+			return errutil.Err(err)
+		}
+		pngStat, err := os.Stat(pngPath)
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return errutil.Err(err)
+			}
+		} else {
+			dotMod, pngMod := dotStat.ModTime(), pngStat.ModTime()
+			if dotMod.Before(pngMod) {
+				// PNG file is newer than DOT file, ignore.
+				return nil
+			}
 		}
 	}
 

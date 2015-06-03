@@ -58,12 +58,12 @@ func (prim IfReturn) Prim() *primitive.Primitive {
 //       cond -> exit
 //    }
 func (prim IfReturn) String() string {
+	cond, body, exit := prim.Cond, prim.Body, prim.Exit
 	const format = `
 digraph if_return {
 	%s -> %s
 	%s -> %s
 }`
-	cond, body, exit := prim.Cond, prim.Body, prim.Exit
 	return fmt.Sprintf(format[1:], cond, body, cond, exit)
 }
 

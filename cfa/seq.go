@@ -50,11 +50,11 @@ func (prim Seq) Prim() *primitive.Primitive {
 //       entry -> exit
 //    }
 func (prim Seq) String() string {
+	entry, exit := prim.Entry, prim.Exit
 	const format = `
 digraph seq {
 	%s -> %s
 }`
-	entry, exit := prim.Entry, prim.Exit
 	return fmt.Sprintf(format[1:], entry, exit)
 }
 

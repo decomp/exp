@@ -118,5 +118,25 @@ func (prim IfReturn) IsValid(g *dot.Graph) bool {
 	}
 
 	// Verify that exit has one predecessor (cond).
-	return len(exit.Preds) == 1
+	if len(exit.Preds) != 1 {
+		return false
+	}
+
+	// Verify that the entry node (cond) has no predecessors dominated by cond,
+	// as that would indicate a loop construct.
+	//
+	//       cond
+	//     ↗ ↓   ↘
+	//    ↑  ↓    body
+	//    ↑  ↓
+	//    ↑  exit
+	//     ↖ ↓
+	//       A
+	for _, pred := range cond.Preds {
+		if cond.Dominates(pred) {
+			return false
+		}
+	}
+
+	return true
 }

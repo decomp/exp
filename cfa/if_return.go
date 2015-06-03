@@ -7,18 +7,19 @@ import (
 	"github.com/mewfork/dot"
 )
 
-// If represents a 1-way conditional statement.
+// IfReturn represents a 1-way conditional with a body return statement.
 //
 // Pseudo-code:
 //
 //    if (A) {
 //       B
+//       return
 //    }
 //    C
-type If struct {
+type IfReturn struct {
 	// Condition node (A).
 	Cond *dot.Node
-	// Body node (B).
+	// Body node with return statement (B).
 	Body *dot.Node
 	// Exit node (C).
 	Exit *dot.Node
@@ -33,11 +34,11 @@ type If struct {
 //    "cond": "A"
 //    "body": "B"
 //    "exit": "C"
-func (prim If) Prim() *primitive.Primitive {
+func (prim IfReturn) Prim() *primitive.Primitive {
 	cond, body, exit := prim.Cond.Name, prim.Body.Name, prim.Exit.Name
 	return &primitive.Primitive{
-		Prim: "if",
-		Node: "if_" + cond,
+		Prim: "if_return",
+		Node: "if_return_" + cond,
 		Nodes: map[string]string{
 			"cond": cond,
 			"body": body,
@@ -52,25 +53,24 @@ func (prim If) Prim() *primitive.Primitive {
 //
 // Example output:
 //
-//    digraph if {
+//    digraph if_return {
 //       cond -> body
 //       cond -> exit
-//       body -> exit
 //    }
-func (prim If) String() string {
+func (prim IfReturn) String() string {
 	const format = `
-digraph if {
-	%s -> %s
+digraph if_return {
 	%s -> %s
 	%s -> %s
 }`
 	cond, body, exit := prim.Cond, prim.Body, prim.Exit
-	return fmt.Sprintf(format[1:], cond, body, cond, exit, body, exit)
+	return fmt.Sprintf(format[1:], cond, body, cond, exit)
 }
 
-// FindIf returns the first occurrence of a 1-way conditional statement in g,
-// and a boolean indicating if such a primitive was found.
-func FindIf(g *dot.Graph) (prim If, ok bool) {
+// FindIfReturn returns the first occurrence of a 1-way conditional with a body
+// return statement in g, and a boolean indicating if such a primitive was
+// found.
+func FindIfReturn(g *dot.Graph) (prim IfReturn, ok bool) {
 	// Range through cond node candidates.
 	for _, cond := range g.Nodes.Nodes {
 		// Verify that cond has two successors (body and exit).
@@ -91,20 +91,20 @@ func FindIf(g *dot.Graph) (prim If, ok bool) {
 			return prim, true
 		}
 	}
-	return If{}, false
+	return IfReturn{}, false
 }
 
 // IsValid reports whether the cond, body and exit node candidates of prim form
-// a valid 1-way conditional statement in g.
+// a valid 1-way conditional with a body return statement in g.
 //
 // Control flow graph:
 //
 //    cond
 //    ↓   ↘
 //    ↓    body
-//    ↓   ↙
+//    ↓
 //    exit
-func (prim If) IsValid(g *dot.Graph) bool {
+func (prim IfReturn) IsValid(g *dot.Graph) bool {
 	cond, body, exit := prim.Cond, prim.Body, prim.Exit
 
 	// Verify that cond has two successors (body and exit).
@@ -112,11 +112,11 @@ func (prim If) IsValid(g *dot.Graph) bool {
 		return false
 	}
 
-	// Verify that body has one predecessor (cond) and one successor (exit).
-	if len(body.Preds) != 1 || len(body.Succs) != 1 || !body.HasSucc(exit) {
+	// Verify that body has one predecessor (cond) and zero successors.
+	if len(body.Preds) != 1 || len(body.Succs) != 0 {
 		return false
 	}
 
-	// Verify that exit has two predecessors (cond and body).
-	return len(exit.Preds) == 2
+	// Verify that exit has one predecessor (cond).
+	return len(exit.Preds) == 1
 }

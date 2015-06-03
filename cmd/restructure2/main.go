@@ -6,6 +6,15 @@
 //
 // Usage:
 //     restructure [OPTION]... [CFG.dot]
+//
+//     Flags:
+//       -indent
+//             Indent JSON output.
+//       -o string
+//             Output path.
+//       -q    Suppress non-error messages.
+//       -steps
+//             Output intermediate CFGs at each step.
 package main
 
 import (
@@ -19,6 +28,7 @@ import (
 	"os"
 
 	"decomp.org/x/graphs/primitive"
+	"github.com/decomp/experimental/cfa"
 	"github.com/mewfork/dot"
 	"github.com/mewkiz/pkg/errutil"
 )
@@ -34,6 +44,12 @@ func usage() {
 	flag.PrintDefaults()
 }
 
+// Global command line flags.
+var (
+	// When flagQuiet is true, suppress non-error messages.
+	flagQuiet bool
+)
+
 func main() {
 	// Parse command line arguments.
 	var (
@@ -46,6 +62,7 @@ func main() {
 	)
 	flag.BoolVar(&indent, "indent", false, "Indent JSON output.")
 	flag.StringVar(&output, "o", "", "Output path.")
+	flag.BoolVar(&flagQuiet, "q", false, "Suppress non-error messages.")
 	flag.BoolVar(&steps, "steps", false, "Output intermediate CFGs at each step.")
 	flag.Usage = usage
 	flag.Parse()
@@ -116,6 +133,102 @@ func parseGraph(dotPath string) (g *dot.Graph, err error) {
 	}
 
 	return g, nil
+}
+
+// restructure attempts to recover the control flow primitives of a given
+// control flow graph. It does so by repeatedly locating and merging structured
+// subgraphs (graph representations of control flow primitives) into single
+// nodes until the entire graph is reduced into a single node or no structured
+// subgraphs may be located. The steps argument specifies whether to record the
+// intermediate CFGs at each step. The returned list of primitives is ordered in
+// the same sequence as they were located.
+func restructure(g *dot.Graph, steps bool) (prims []*primitive.Primitive, err error) {
+	// Locate control flow primitives.
+	for step := 1; len(g.Nodes.Nodes) > 1; step++ {
+		// Locate primitive.
+		prim, err := findPrim(g)
+		if err != nil {
+			return nil, errutil.Err(err)
+		}
+		prims = append(prims, prim)
+
+		// Output pre-merge intermediate CFG.
+		if steps {
+			path := fmt.Sprintf("%s_%da.dot", g.Name, step)
+			var highlight []string
+			for _, node := range prim.Nodes {
+				highlight = append(highlight, node)
+			}
+			if err := dumpStep(g, path, highlight); err != nil {
+				return nil, errutil.Err(err)
+			}
+		}
+
+		// TODO: Handle "entry" label when merging.
+
+		// Merge the nodes of the primitive into a single node.
+		panic("merge not yet implemented")
+
+		// Output post-merge intermediate CFG.
+		if steps {
+			path := fmt.Sprintf("%s_%db.dot", g.Name, step)
+			highlight := []string{prim.Node}
+			if err := dumpStep(g, path, highlight); err != nil {
+				return nil, errutil.Err(err)
+			}
+		}
+	}
+	return prims, nil
+}
+
+// findPrim locates a control flow primitive in the provided control flow graph
+// and merges its nodes into a single node.
+func findPrim(g *dot.Graph) (*primitive.Primitive, error) {
+	// Locate 1-way conditionals.
+	if prim, ok := cfa.FindIf(g); ok {
+		return prim.Prim(), nil
+	}
+
+	panic("not yet implemented")
+}
+
+// dumpStep stores a DOT representation of g to path with the specified nodes
+// highlighted in red.
+func dumpStep(g *dot.Graph, path string, highlight []string) error {
+	// Highlight the specified nodes in red.
+	for _, nodeName := range highlight {
+		node, ok := g.Nodes.Lookup[nodeName]
+		if !ok {
+			return errutil.Newf("unable to locate node %q", nodeName)
+		}
+		if node.Attrs == nil {
+			node.Attrs = dot.NewAttrs()
+		}
+		node.Attrs["fillcolor"] = "red"
+		node.Attrs["style"] = "filled"
+	}
+
+	// Store DOT graph.
+	if !flagQuiet {
+		log.Printf("Creating: %q", path)
+	}
+	buf := []byte(g.String())
+	if err := ioutil.WriteFile(path, buf, 0644); err != nil {
+		return errutil.Err(err)
+	}
+
+	// Restore node colour.
+	for _, nodeName := range highlight {
+		node, ok := g.Nodes.Lookup[nodeName]
+		if !ok {
+			return errutil.Newf("unable to locate node %q", nodeName)
+		}
+
+		delete(node.Attrs, "fillcolor")
+		delete(node.Attrs, "style")
+	}
+
+	return nil
 }
 
 // writeJSON writes the primitives in JSON format to w.

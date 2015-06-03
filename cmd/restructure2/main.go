@@ -28,7 +28,7 @@ import (
 	"os"
 
 	"decomp.org/x/graphs/primitive"
-	"github.com/decomp/experimental/cfa"
+	"github.com/decomp/exp/cfa"
 	"github.com/mewfork/dot"
 	"github.com/mewkiz/pkg/errutil"
 )
@@ -164,10 +164,10 @@ func restructure(g *dot.Graph, steps bool) (prims []*primitive.Primitive, err er
 			}
 		}
 
-		// TODO: Handle "entry" label when merging.
-
 		// Merge the nodes of the primitive into a single node.
-		panic("merge not yet implemented")
+		if err := merge(g, prim); err != nil {
+			return nil, errutil.Err(err)
+		}
 
 		// Output post-merge intermediate CFG.
 		if steps {
@@ -226,6 +226,56 @@ func dumpStep(g *dot.Graph, path string, highlight []string) error {
 
 		delete(node.Attrs, "fillcolor")
 		delete(node.Attrs, "style")
+	}
+
+	return nil
+}
+
+// merge merges the nodes of the primitive into a single node.
+func merge(g *dot.Graph, prim *primitive.Primitive) error {
+	// Check if a pre-merge node contains the "entry" label.
+	hasEntry := false
+	var nodes []*dot.Node
+	for _, nodeName := range prim.Nodes {
+		node, ok := g.Nodes.Lookup[nodeName]
+		if !ok {
+			return errutil.Newf("unable to locate pre-merge node %q", nodeName)
+		}
+		if node.Attrs != nil && node.Attrs["label"] == "entry" {
+			hasEntry = true
+		}
+		nodes = append(nodes, node)
+	}
+
+	// Locate entry node.
+	entry, ok := g.Nodes.Lookup[prim.Entry]
+	if !ok {
+		return errutil.Newf("unable to locate entry node %q", prim.Entry)
+	}
+
+	// TODO: Implement support for single-entry/no-exit primitives.
+
+	// Locate exit node.
+	exit, ok := g.Nodes.Lookup[prim.Exit]
+	if !ok {
+		return errutil.Newf("unable to locate exit node %q", prim.Exit)
+	}
+
+	// Merge nodes.
+	if err := g.Replace(nodes, prim.Node, entry, exit); err != nil {
+		return errutil.Err(err)
+	}
+
+	// Add "entry" label if present in pre-merge nodes.
+	if hasEntry {
+		node, ok := g.Nodes.Lookup[prim.Node]
+		if !ok {
+			return errutil.Newf("unable to locate post-merge node %q", prim.Node)
+		}
+		if node.Attrs == nil {
+			node.Attrs = dot.NewAttrs()
+		}
+		node.Attrs["label"] = "entry"
 	}
 
 	return nil

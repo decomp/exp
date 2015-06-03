@@ -20,6 +20,12 @@ type If struct {
 // Prim returns a representation of the high-level control flow primitive, as a
 // mapping from control flow primitive node names to control flow graph node
 // names.
+//
+// Example mapping:
+//
+//    "cond": "17"
+//    "body": "24"
+//    "exit": "32"
 func (prim If) Prim() *primitive.Primitive {
 	return &primitive.Primitive{
 		Prim: "if",
@@ -29,6 +35,8 @@ func (prim If) Prim() *primitive.Primitive {
 			"body": prim.Body.Name,
 			"exit": prim.Exit.Name,
 		},
+		Entry: prim.Cond.Name,
+		Exit:  prim.Exit.Name,
 	}
 }
 

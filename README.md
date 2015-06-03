@@ -12,6 +12,10 @@ This repository contains throw-away prototypes for experimental tools and librar
 
     go get github.com/decomp/exp/cmd/restructure2
 
+## dot2png
+
+    go get github.com/decomp/exp/cmd/dot2png
+
 ## Public domain
 
 The source code and any original content of this repository is hereby released into the [public domain].

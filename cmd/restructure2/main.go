@@ -189,6 +189,11 @@ func findPrim(g *dot.Graph) (*primitive.Primitive, error) {
 		return prim.Prim(), nil
 	}
 
+	// Locate post-test loops.
+	if prim, ok := cfa.FindPostLoop(g); ok {
+		return prim.Prim(), nil
+	}
+
 	// Locate 1-way conditionals.
 	if prim, ok := cfa.FindIf(g); ok {
 		return prim.Prim(), nil
@@ -253,16 +258,11 @@ func dumpStep(g *dot.Graph, path string, highlight []string) error {
 
 // merge merges the nodes of the primitive into a single node.
 func merge(g *dot.Graph, prim *primitive.Primitive) error {
-	// Check if a pre-merge node contains the "entry" label.
-	hasEntry := false
 	var nodes []*dot.Node
 	for _, nodeName := range prim.Nodes {
 		node, ok := g.Nodes.Lookup[nodeName]
 		if !ok {
 			return errutil.Newf("unable to locate pre-merge node %q", nodeName)
-		}
-		if node.Attrs != nil && node.Attrs["label"] == "entry" {
-			hasEntry = true
 		}
 		nodes = append(nodes, node)
 	}
@@ -284,18 +284,6 @@ func merge(g *dot.Graph, prim *primitive.Primitive) error {
 	// Merge nodes.
 	if err := g.Replace(nodes, prim.Node, entry, exit); err != nil {
 		return errutil.Err(err)
-	}
-
-	// Add "entry" label if present in pre-merge nodes.
-	if hasEntry {
-		node, ok := g.Nodes.Lookup[prim.Node]
-		if !ok {
-			return errutil.Newf("unable to locate post-merge node %q", prim.Node)
-		}
-		if node.Attrs == nil {
-			node.Attrs = dot.NewAttrs()
-		}
-		node.Attrs["label"] = "entry"
 	}
 
 	return nil

@@ -15,6 +15,7 @@
 //       -q    Suppress non-error messages.
 //       -steps
 //             Output intermediate CFGs at each step.
+//       -v    Verbose output.
 package main
 
 import (
@@ -26,6 +27,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sort"
+	"text/tabwriter"
 
 	"decomp.org/x/graphs/primitive"
 	"github.com/decomp/exp/cfa"
@@ -48,6 +51,8 @@ func usage() {
 var (
 	// When flagQuiet is true, suppress non-error messages.
 	flagQuiet bool
+	// When flagVerbose is true, enable verbose output.
+	flagVerbose bool
 )
 
 func main() {
@@ -64,6 +69,7 @@ func main() {
 	flag.StringVar(&output, "o", "", "Output path.")
 	flag.BoolVar(&flagQuiet, "q", false, "Suppress non-error messages.")
 	flag.BoolVar(&steps, "steps", false, "Output intermediate CFGs at each step.")
+	flag.BoolVar(&flagVerbose, "v", false, "Verbose output.")
 	flag.Usage = usage
 	flag.Parse()
 
@@ -152,6 +158,11 @@ func restructure(g *dot.Graph, steps bool) (prims []*primitive.Primitive, err er
 		}
 		prims = append(prims, prim)
 
+		// Pretty-print located primitive.
+		if flagVerbose && !flagQuiet {
+			printPrim(prim)
+		}
+
 		// Output pre-merge intermediate CFG.
 		if steps {
 			path := fmt.Sprintf("%s_%da.dot", g.Name, step)
@@ -215,6 +226,24 @@ func findPrim(g *dot.Graph) (*primitive.Primitive, error) {
 	}
 
 	return nil, errutil.New("unable to locate control flow primitive")
+}
+
+// printPrim pretty-prints the given primitive to stderr.
+func printPrim(prim *primitive.Primitive) {
+	// Sort primitive nodes.
+	var keys []string
+	for key := range prim.Nodes {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	// Print mapping between primitive nodes and graph nodes.
+	fmt.Fprintf(os.Stderr, "Located %q primitive at node %q:\n", prim.Prim, prim.Entry)
+	w := tabwriter.NewWriter(os.Stderr, 0, 1, 1, ' ', 0)
+	for _, primNode := range keys {
+		fmt.Fprintf(w, "  %q:\t%q\n", primNode, prim.Nodes[primNode])
+	}
+	w.Flush()
 }
 
 // dumpStep stores a DOT representation of g to path with the specified nodes

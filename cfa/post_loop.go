@@ -2,7 +2,6 @@ package cfa
 
 import (
 	"fmt"
-	"log"
 
 	"decomp.org/x/graphs/primitive"
 	"github.com/mewfork/dot"
@@ -102,8 +101,6 @@ func (prim PostLoop) IsValid(g *dot.Graph) bool {
 
 	// Dominator sanity check.
 	if !cond.Dominates(exit) {
-		// TODO: Remove debug output.
-		log.Printf("PostLoop: cond %q does not dominate exit %q", cond, exit)
 		return false
 	}
 

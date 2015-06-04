@@ -2,7 +2,6 @@ package cfa
 
 import (
 	"fmt"
-	"log"
 
 	"decomp.org/x/graphs/primitive"
 	"github.com/mewfork/dot"
@@ -119,19 +118,7 @@ func (prim IfElse) IsValid(g *dot.Graph) bool {
 	cond, bodyTrue, bodyFalse, exit := prim.Cond, prim.BodyTrue, prim.BodyFalse, prim.Exit
 
 	// Dominator sanity check.
-	if !cond.Dominates(bodyTrue) {
-		// TODO: Remove debug output.
-		log.Printf("IfElse: cond %q does not dominate body_true %q", cond, bodyTrue)
-		return false
-	}
-	if !cond.Dominates(bodyFalse) {
-		// TODO: Remove debug output.
-		log.Printf("IfElse: cond %q does not dominate body_false %q", cond, bodyFalse)
-		return false
-	}
-	if !cond.Dominates(exit) {
-		// TODO: Remove debug output.
-		log.Printf("IfElse: cond %q does not dominate exit %q", cond, exit)
+	if !cond.Dominates(bodyTrue) || !cond.Dominates(bodyFalse) || !cond.Dominates(exit) {
 		return false
 	}
 

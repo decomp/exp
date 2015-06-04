@@ -2,7 +2,6 @@ package cfa
 
 import (
 	"fmt"
-	"log"
 
 	"decomp.org/x/graphs/primitive"
 	"github.com/mewfork/dot"
@@ -92,8 +91,6 @@ func (prim Seq) IsValid(g *dot.Graph) bool {
 
 	// Dominator sanity check.
 	if !entry.Dominates(exit) {
-		// TODO: Remove debug output.
-		log.Printf("Seq: entry %q does not dominate exit %q", entry, exit)
 		return false
 	}
 

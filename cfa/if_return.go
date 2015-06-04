@@ -2,6 +2,7 @@ package cfa
 
 import (
 	"fmt"
+	"log"
 
 	"decomp.org/x/graphs/primitive"
 	"github.com/mewfork/dot"
@@ -106,6 +107,18 @@ func FindIfReturn(g *dot.Graph) (prim IfReturn, ok bool) {
 //    exit
 func (prim IfReturn) IsValid(g *dot.Graph) bool {
 	cond, body, exit := prim.Cond, prim.Body, prim.Exit
+
+	// Dominator sanity check.
+	if !cond.Dominates(body) {
+		// TODO: Remove debug output.
+		log.Printf("IfReturn: cond %q does not dominate body %q", cond, body)
+		return false
+	}
+	if !cond.Dominates(exit) {
+		// TODO: Remove debug output.
+		log.Printf("IfReturn: cond %q does not dominate exit %q", cond, exit)
+		return false
+	}
 
 	// Verify that cond has two successors (body and exit).
 	if len(cond.Succs) != 2 || !cond.HasSucc(body) || !cond.HasSucc(exit) {

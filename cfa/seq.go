@@ -2,6 +2,7 @@ package cfa
 
 import (
 	"fmt"
+	"log"
 
 	"decomp.org/x/graphs/primitive"
 	"github.com/mewfork/dot"
@@ -88,6 +89,13 @@ func FindSeq(g *dot.Graph) (prim Seq, ok bool) {
 //    exit
 func (prim Seq) IsValid(g *dot.Graph) bool {
 	entry, exit := prim.Entry, prim.Exit
+
+	// Dominator sanity check.
+	if !entry.Dominates(exit) {
+		// TODO: Remove debug output.
+		log.Printf("Seq: entry %q does not dominate exit %q", entry, exit)
+		return false
+	}
 
 	// Verify that entry has one successor (exit).
 	if len(entry.Succs) != 1 || !entry.HasSucc(exit) {

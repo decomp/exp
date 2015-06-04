@@ -2,6 +2,7 @@ package cfa
 
 import (
 	"fmt"
+	"log"
 
 	"decomp.org/x/graphs/primitive"
 	"github.com/mewfork/dot"
@@ -98,6 +99,13 @@ func FindPostLoop(g *dot.Graph) (prim PostLoop, ok bool) {
 //    exit
 func (prim PostLoop) IsValid(g *dot.Graph) bool {
 	cond, exit := prim.Cond, prim.Exit
+
+	// Dominator sanity check.
+	if !cond.Dominates(exit) {
+		// TODO: Remove debug output.
+		log.Printf("PostLoop: cond %q does not dominate exit %q", cond, exit)
+		return false
+	}
 
 	// Verify that cond has two successors (cond and exit).
 	if len(cond.Succs) != 2 || !cond.HasSucc(cond) || !cond.HasSucc(exit) {

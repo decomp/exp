@@ -6,6 +6,8 @@ import (
 	"debug/pe"
 	"flag"
 	"fmt"
+	"go/printer"
+	"go/token"
 	"log"
 	"os"
 	"strconv"
@@ -16,7 +18,7 @@ import (
 
 func usage() {
 	const use = `
-Usage: bin2c [OPTION]... FILE
+Usage: bin2c -addr ADDRESS [OPTION]... FILE
 Convert binary executables to equivalent C source code.
 
 Flags:
@@ -42,36 +44,36 @@ func main() {
 	)
 	flag.BoolVar(&flagVerbose, "v", false, "Enable verbose output.")
 	flag.Var(&addr, "addr", "Address of function to decompile.")
+	flag.Usage = usage
 	flag.Parse()
 	if flag.NArg() != 1 {
 		flag.Usage()
 		os.Exit(1)
 	}
 	path := flag.Arg(0)
+	if addr == 0 {
+		flag.Usage()
+		os.Exit(1)
+	}
 
 	// Parse ".text" section.
 	text, err := parseText(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	switch {
-	case addr > 0:
-		// Sanity check.
-		offset := int(addr - baseAddr)
-		if offset < 0 || offset >= len(text) {
-			log.Fatalf("invalid offset; expected >= 0 and < %d, got %d", len(text), offset)
-		}
 
-		// Convert the given function to C source code.
-		if err := convertFunc(text, offset); err != nil {
-			log.Fatal(err)
-		}
-	default:
-		// Convert each function in FILE to C source code.
-		if err := convert(text); err != nil {
-			log.Fatal(err)
-		}
+	// Sanity check.
+	offset := int(addr - baseAddr)
+	if offset < 0 || offset >= len(text) {
+		log.Fatalf("invalid address; expected >= 0x%X and < 0x%X, got 0x%X", baseAddr, baseAddr+len(text), addr)
 	}
+
+	// Convert the given function to C source code.
+	fn, err := parseFunc(text, offset)
+	if err != nil {
+		log.Fatal(err)
+	}
+	printer.Fprint(os.Stdout, token.NewFileSet(), fn)
 }
 
 // parseText parses and returns the ".text" section of the given binary

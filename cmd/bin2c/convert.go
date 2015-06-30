@@ -12,14 +12,8 @@ import (
 	"rsc.io/x86/x86asm"
 )
 
-// convert converts the given binary excutable to equivalent C source code.
-func convert(text []byte) error {
-	panic("not yet implemented")
-}
-
-// convertFunc converts the function at the given offset in text to C source
-// code.
-func convertFunc(text []byte, offset int) error {
+// parseFunc parses the given function and returns a corresponding Go function.
+func parseFunc(text []byte, offset int) (*ast.FuncDecl, error) {
 	fn := &ast.FuncDecl{
 		Name: getLabel("sub", offset),
 		Type: &ast.FuncType{},
@@ -30,7 +24,7 @@ func convertFunc(text []byte, offset int) error {
 		// Decode instruction.
 		inst, err := x86asm.Decode(text[offset:], 32)
 		if err != nil {
-			return errutil.Err(err)
+			return nil, errutil.Err(err)
 		}
 		log.Println("==================================")
 		log.Println("inst:", inst)
@@ -38,7 +32,7 @@ func convertFunc(text []byte, offset int) error {
 		// Parse instruction.
 		stmt, err := parseInst(inst, offset)
 		if err != nil {
-			return errutil.Err(err)
+			return nil, errutil.Err(err)
 		}
 		if stmt != nil {
 			// Access the underlying statement list of the block statement.
@@ -73,9 +67,7 @@ func convertFunc(text []byte, offset int) error {
 		}
 	}
 
-	printer.Fprint(os.Stdout, token.NewFileSet(), fn)
-
-	return nil
+	return fn, nil
 }
 
 // labels maps from offset to label identifiers.

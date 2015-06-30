@@ -19,7 +19,7 @@ func getArg(arg x86asm.Arg) ast.Expr {
 	case x86asm.Mem:
 		return getMem(arg)
 	case x86asm.Imm:
-		// TODO: Implement support for immediate values.
+		return getExpr(int64(arg))
 	case x86asm.Rel:
 		// TODO: Implement support for relative addresses.
 	}
@@ -34,6 +34,7 @@ func getReg(reg x86asm.Reg) ast.Expr {
 	var regNames = map[string]*ast.Ident{
 		"EAX": ast.NewIdent("eax"),
 		"EDI": ast.NewIdent("edi"),
+		"ESI": ast.NewIdent("esi"),
 	}
 	if expr, ok := regNames[reg.String()]; ok {
 		return expr

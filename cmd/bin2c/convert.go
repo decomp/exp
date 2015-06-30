@@ -25,6 +25,7 @@ func convertFunc(text []byte, offset int) error {
 		if err != nil {
 			return errutil.Err(err)
 		}
+		fmt.Println("==================================")
 		fmt.Println("inst:", inst)
 
 		// Parse instruction.
@@ -40,6 +41,7 @@ func convertFunc(text []byte, offset int) error {
 			printer.Fprint(os.Stdout, token.NewFileSet(), stmt)
 			fmt.Println()
 		}
+		fmt.Println()
 
 		// Next.
 		offset += inst.Len

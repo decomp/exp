@@ -33,6 +33,7 @@ func getReg(reg x86asm.Reg) ast.Expr {
 	// regNames maps from register names to their corresponding Go identifiers.
 	var regNames = map[string]*ast.Ident{
 		"EAX": ast.NewIdent("eax"),
+		"ECX": ast.NewIdent("ecx"),
 		"EDI": ast.NewIdent("edi"),
 		"ESI": ast.NewIdent("esi"),
 	}
@@ -118,12 +119,17 @@ func getMem(mem x86asm.Mem) ast.Expr {
 		log.Fatal(errutil.New("support for memory reference to address zero not yet implemented"))
 		panic("unreachable")
 	case expr.X == nil && expr.Y != nil:
-		return expr.Y
+		return getPtrDeref(expr.Y)
 	case expr.X != nil && expr.Y == nil:
-		return expr.X
+		return getPtrDeref(expr.X)
 	default:
-		return expr
+		return getPtrDeref(expr)
 	}
+}
+
+// getPtrDeref returns a pointer dereference expression of addr.
+func getPtrDeref(addr ast.Expr) ast.Expr {
+	return &ast.StarExpr{X: &ast.ParenExpr{X: addr}}
 }
 
 // getExpr converts x into a corresponding Go expression.

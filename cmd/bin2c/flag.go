@@ -12,6 +12,7 @@ type Flag uint8
 
 func (flag Flag) String() string {
 	m := map[Flag]string{
+		CF: "cf",
 		ZF: "zf",
 	}
 	if s, ok := m[flag]; ok {
@@ -21,16 +22,18 @@ func (flag Flag) String() string {
 }
 
 const (
-	ZF Flag = iota + 1
+	CF Flag = iota + 1
+	ZF
 )
 
 // getFlag converts flag into a corresponding Go expression.
 func getFlag(flag Flag) ast.Expr {
-	// flagNames maps flag names to their corresponding Go identifiers.
-	var flagNames = map[Flag]*ast.Ident{
+	// flags maps flag names to their corresponding Go identifiers.
+	flags := map[Flag]*ast.Ident{
+		CF: ast.NewIdent("cf"),
 		ZF: ast.NewIdent("zf"),
 	}
-	if expr, ok := flagNames[flag]; ok {
+	if expr, ok := flags[flag]; ok {
 		return expr
 	}
 	log.Fatal(errutil.Newf("unable to lookup identifer for flag %q", flag))

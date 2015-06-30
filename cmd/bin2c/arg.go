@@ -30,14 +30,14 @@ func getArg(arg x86asm.Arg) ast.Expr {
 
 // getReg converts reg into a corresponding Go expression.
 func getReg(reg x86asm.Reg) ast.Expr {
-	// regNames maps register names to their corresponding Go identifiers.
-	var regNames = map[string]*ast.Ident{
+	// regs maps register names to their corresponding Go identifiers.
+	var regs = map[string]*ast.Ident{
 		"EAX": ast.NewIdent("eax"),
 		"ECX": ast.NewIdent("ecx"),
 		"EDI": ast.NewIdent("edi"),
 		"ESI": ast.NewIdent("esi"),
 	}
-	if expr, ok := regNames[reg.String()]; ok {
+	if expr, ok := regs[reg.String()]; ok {
 		return expr
 	}
 	log.Fatal(errutil.Newf("unable to lookup identifer for register %q", reg))

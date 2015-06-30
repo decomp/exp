@@ -23,6 +23,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseDEC(inst)
 	case x86asm.INC:
 		return parseINC(inst)
+	case x86asm.JL:
+		return parseJL(inst, offset)
 	case x86asm.JNE:
 		return parseJNE(inst, offset)
 	case x86asm.LEA:
@@ -50,14 +52,30 @@ func parseCMP(inst x86asm.Inst) (ast.Stmt, error) {
 	y := getArg(inst.Args[1])
 
 	// Create statement.
-	//    zf = x == y
+	//    cf = x < y
 	lhs := getFlag(ZF)
 	rhs := &ast.BinaryExpr{
 		X:  x,
 		Op: token.EQL,
 		Y:  y,
 	}
-	return getAssign(lhs, rhs), nil
+	stmt1 := getAssign(lhs, rhs)
+
+	// Create statement.
+	//    cf = x < y
+	lhs = getFlag(CF)
+	rhs = &ast.BinaryExpr{
+		X:  x,
+		Op: token.LSS,
+		Y:  y,
+	}
+	stmt2 := getAssign(lhs, rhs)
+
+	// Create block statement.
+	stmt := &ast.BlockStmt{
+		List: []ast.Stmt{stmt1, stmt2},
+	}
+	return stmt, nil
 }
 
 // parseDEC parses the given DEC instruction and returns a corresponding Go
@@ -103,6 +121,35 @@ func parseINC(inst x86asm.Inst) (ast.Stmt, error) {
 	stmt := &ast.IncDecStmt{
 		X:   x,
 		Tok: token.INC,
+	}
+	return stmt, nil
+}
+
+// parseJL parses the given JL instruction and returns a corresponding Go
+// statement.
+func parseJL(inst x86asm.Inst, offset int) (ast.Stmt, error) {
+	// Parse arguments.
+	arg := inst.Args[0]
+	switch arg := arg.(type) {
+	case x86asm.Rel:
+		offset += inst.Len + int(arg)
+	default:
+		return nil, errutil.Newf("support for type %T not yet implemented", arg)
+	}
+
+	// Create statement.
+	//    if cf {
+	//       goto x
+	//    }
+	cond := getFlag(CF)
+	label := getLabel(offset)
+	body := &ast.BranchStmt{
+		Tok:   token.GOTO,
+		Label: label,
+	}
+	stmt := &ast.IfStmt{
+		Cond: cond,
+		Body: &ast.BlockStmt{List: []ast.Stmt{body}},
 	}
 	return stmt, nil
 }

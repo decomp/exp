@@ -135,11 +135,14 @@ func getPtrDeref(addr ast.Expr) ast.Expr {
 // getExpr converts x into a corresponding Go expression.
 func getExpr(x interface{}) ast.Expr {
 	switch x := x.(type) {
-	case uint8:
-		s := strconv.FormatUint(uint64(x), 10)
+	case int:
+		s := strconv.FormatInt(int64(x), 10)
 		return &ast.BasicLit{Kind: token.INT, Value: s}
 	case int64:
 		s := strconv.FormatInt(x, 10)
+		return &ast.BasicLit{Kind: token.INT, Value: s}
+	case uint8:
+		s := strconv.FormatUint(uint64(x), 10)
 		return &ast.BasicLit{Kind: token.INT, Value: s}
 	}
 	log.Fatal(errutil.Newf("support for type %T not yet implemented", x))

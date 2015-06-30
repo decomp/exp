@@ -19,6 +19,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseBinaryInst(inst, token.ADD)
 	case x86asm.CMP:
 		return parseCMP(inst)
+	case x86asm.DEC:
+		return parseDEC(inst)
 	case x86asm.JNE:
 		return parseJNE(inst, offset)
 	case x86asm.LEA:
@@ -56,6 +58,38 @@ func parseCMP(inst x86asm.Inst) (ast.Stmt, error) {
 	return getAssign(lhs, rhs), nil
 }
 
+// parseDEC parses the given DEC instruction and returns a corresponding Go
+// statement.
+func parseDEC(inst x86asm.Inst) (ast.Stmt, error) {
+	// Parse arguments.
+	x := getArg(inst.Args[0])
+
+	// Create statement.
+	//    x--
+	stmt1 := &ast.IncDecStmt{
+		X:   x,
+		Tok: token.DEC,
+	}
+
+	// Create statement.
+	//    zf = x == 0
+	lhs := getFlag(ZF)
+	rhs := &ast.BinaryExpr{
+		X:  x,
+		Op: token.EQL,
+		Y:  getExpr(0),
+	}
+	stmt2 := getAssign(lhs, rhs)
+
+	// TODO: Find a better solution for multiple statement than block statement.
+
+	// Create block statement.
+	stmt := &ast.BlockStmt{
+		List: []ast.Stmt{stmt1, stmt2},
+	}
+	return stmt, nil
+}
+
 // parseJNE parses the given JNE instruction and returns a corresponding Go
 // statement.
 func parseJNE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
@@ -69,11 +103,21 @@ func parseJNE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	}
 
 	// Create statement.
-	//    goto x
+	//    if !zf {
+	//       goto x
+	//    }
+	cond := &ast.UnaryExpr{
+		Op: token.NOT,
+		X:  getFlag(ZF),
+	}
 	label := getLabel(offset)
-	stmt := &ast.BranchStmt{
+	body := &ast.BranchStmt{
 		Tok:   token.GOTO,
 		Label: label,
+	}
+	stmt := &ast.IfStmt{
+		Cond: cond,
+		Body: &ast.BlockStmt{List: []ast.Stmt{body}},
 	}
 	return stmt, nil
 }

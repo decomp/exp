@@ -31,6 +31,9 @@ var (
 	flagVerbose bool
 )
 
+// Base address of the ".text" section.
+const base = 0x00401000
+
 func main() {
 	// Parse command line arguments.
 	var (
@@ -51,9 +54,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Base address of the ".text" section.
-	const base = 0x00401000
 
 	// Sanity check.
 	offset := int(addr - base)

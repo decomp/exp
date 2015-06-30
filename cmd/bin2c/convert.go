@@ -28,14 +28,16 @@ func convertFunc(text []byte, offset int) error {
 		fmt.Println("inst:", inst)
 
 		// Parse instruction.
-		node, err := parseInst(inst)
+		stmt, err := parseInst(inst)
 		if err != nil {
 			return errutil.Err(err)
 		}
-		if node != nil {
-			fmt.Println("node:", node)
-			//ast.Print(token.NewFileSet(), node)
-			printer.Fprint(os.Stdout, token.NewFileSet(), node)
+		if stmt != nil {
+			label := ast.NewIdent(fmt.Sprintf("loc_%X", base+offset))
+			stmt = &ast.LabeledStmt{Label: label, Stmt: stmt}
+			fmt.Println("stmt:", stmt)
+			//ast.Print(token.NewFileSet(), stmt)
+			printer.Fprint(os.Stdout, token.NewFileSet(), stmt)
 			fmt.Println()
 		}
 

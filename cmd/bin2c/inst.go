@@ -142,7 +142,7 @@ func parseJL(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	//       goto x
 	//    }
 	cond := getFlag(CF)
-	label := getLabel(offset)
+	label := getLabel("loc", offset)
 	body := &ast.BranchStmt{
 		Tok:   token.GOTO,
 		Label: label,
@@ -174,7 +174,7 @@ func parseJNE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		Op: token.NOT,
 		X:  getFlag(ZF),
 	}
-	label := getLabel(offset)
+	label := getLabel("loc", offset)
 	body := &ast.BranchStmt{
 		Tok:   token.GOTO,
 		Label: label,
@@ -203,7 +203,8 @@ func parseLEA(inst x86asm.Inst) (ast.Stmt, error) {
 	return getAssign(lhs, rhs), nil
 }
 
-// unstar unpacks expr from the surrounding pointer dereference.
+// unstar returns the underlying expression from the given parenthesised star
+// expression.
 func unstar(expr ast.Expr) (ast.Expr, error) {
 	star, ok := expr.(*ast.StarExpr)
 	if !ok {

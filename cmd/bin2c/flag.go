@@ -26,13 +26,14 @@ const (
 	ZF
 )
 
+// flags maps flag names to their corresponding Go identifiers.
+var flags = map[Flag]*ast.Ident{
+	CF: ast.NewIdent("cf"),
+	ZF: ast.NewIdent("zf"),
+}
+
 // getFlag converts flag into a corresponding Go expression.
 func getFlag(flag Flag) ast.Expr {
-	// flags maps flag names to their corresponding Go identifiers.
-	flags := map[Flag]*ast.Ident{
-		CF: ast.NewIdent("cf"),
-		ZF: ast.NewIdent("zf"),
-	}
 	if expr, ok := flags[flag]; ok {
 		return expr
 	}

@@ -192,20 +192,28 @@ func parseLEA(inst x86asm.Inst) (ast.Stmt, error) {
 	// Parse arguments.
 	x := getArg(inst.Args[0])
 	y := getArg(inst.Args[1])
-	star, ok := y.(*ast.StarExpr)
+
+	// Create statement.
+	//    x = &y
+	lhs := x
+	rhs, err := unstar(y)
+	if err != nil {
+		return nil, errutil.Err(err)
+	}
+	return getAssign(lhs, rhs), nil
+}
+
+// unstar unpacks expr from the surrounding pointer dereference.
+func unstar(expr ast.Expr) (ast.Expr, error) {
+	star, ok := expr.(*ast.StarExpr)
 	if !ok {
-		return nil, errutil.Newf("invalid argument type; expected *ast.StarExpr, got %T", y)
+		return nil, errutil.Newf("invalid argument type; expected *ast.StarExpr, got %T", expr)
 	}
 	paren, ok := star.X.(*ast.ParenExpr)
 	if !ok {
 		return nil, errutil.Newf("invalid argument type; expected *ast.ParenExpr, got %T", star.X)
 	}
-
-	// Create statement.
-	//    x = &y
-	lhs := x
-	rhs := paren.X
-	return getAssign(lhs, rhs), nil
+	return paren.X, nil
 }
 
 // parseMOV parses the given MOV instruction and returns a corresponding Go

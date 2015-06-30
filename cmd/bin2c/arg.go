@@ -30,7 +30,7 @@ func getArg(arg x86asm.Arg) ast.Expr {
 
 // getReg converts reg into a corresponding Go expression.
 func getReg(reg x86asm.Reg) ast.Expr {
-	// regNames maps from register names to their corresponding Go identifiers.
+	// regNames maps register names to their corresponding Go identifiers.
 	var regNames = map[string]*ast.Ident{
 		"EAX": ast.NewIdent("eax"),
 		"ECX": ast.NewIdent("ecx"),

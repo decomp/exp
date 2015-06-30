@@ -29,12 +29,12 @@ func convertFunc(text []byte, offset int) error {
 		fmt.Println("inst:", inst)
 
 		// Parse instruction.
-		stmt, err := parseInst(inst)
+		stmt, err := parseInst(inst, offset)
 		if err != nil {
 			return errutil.Err(err)
 		}
 		if stmt != nil {
-			label := ast.NewIdent(fmt.Sprintf("loc_%X", baseAddr+offset))
+			label := getLabel(offset)
 			stmt = &ast.LabeledStmt{Label: label, Stmt: stmt}
 			fmt.Println("stmt:", stmt)
 			//ast.Print(token.NewFileSet(), stmt)
@@ -50,4 +50,19 @@ func convertFunc(text []byte, offset int) error {
 		}
 	}
 	return nil
+}
+
+// labels maps from offset to label identifiers.
+var labels = map[int]*ast.Ident{}
+
+// getLabel returns the label at the given offset.
+func getLabel(offset int) *ast.Ident {
+	if label, ok := labels[offset]; ok {
+		return label
+	}
+	addr := baseAddr + offset
+	name := fmt.Sprintf("loc_%X", addr)
+	label := ast.NewIdent(name)
+	labels[offset] = label
+	return label
 }

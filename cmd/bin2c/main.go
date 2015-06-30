@@ -32,7 +32,7 @@ var (
 )
 
 // Base address of the ".text" section.
-const base = 0x00401000
+const baseAddr = 0x00401000
 
 func main() {
 	// Parse command line arguments.
@@ -54,15 +54,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Sanity check.
-	offset := int(addr - base)
-	if offset < 0 || offset >= len(text) {
-		log.Fatalf("invalid offset; expected >= 0 and < %d, got %d", len(text), offset)
-	}
-
 	switch {
 	case addr > 0:
+		// Sanity check.
+		offset := int(addr - baseAddr)
+		if offset < 0 || offset >= len(text) {
+			log.Fatalf("invalid offset; expected >= 0 and < %d, got %d", len(text), offset)
+		}
+
 		// Convert the given function to C source code.
 		if err := convertFunc(text, offset); err != nil {
 			log.Fatal(err)

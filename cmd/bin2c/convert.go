@@ -5,7 +5,9 @@ import (
 	"go/ast"
 	"go/printer"
 	"go/token"
+	"log"
 	"os"
+	"strconv"
 
 	"github.com/mewkiz/pkg/errutil"
 	"rsc.io/x86/x86asm"
@@ -33,7 +35,7 @@ func convertFunc(text []byte, offset int) error {
 			return errutil.Err(err)
 		}
 		if stmt != nil {
-			label := ast.NewIdent(fmt.Sprintf("loc_%X", base+offset))
+			label := ast.NewIdent(fmt.Sprintf("loc_%X", baseAddr+offset))
 			stmt = &ast.LabeledStmt{Label: label, Stmt: stmt}
 			fmt.Println("stmt:", stmt)
 			//ast.Print(token.NewFileSet(), stmt)
@@ -56,54 +58,161 @@ func parseInst(inst x86asm.Inst) (ast.Stmt, error) {
 	switch inst.Op {
 	case x86asm.RET:
 		return &ast.ReturnStmt{}, nil
+	case x86asm.LEA:
+		return parseLEA(inst)
 	case x86asm.XOR:
 		return parseBinaryInst(inst)
 	case x86asm.PUSH, x86asm.POP:
 		// ignore for now.
 	default:
+		fmt.Printf("%#v\n", inst)
 		return nil, errutil.Newf("support for opcode %v not yet implemented", inst.Op)
 	}
 	return nil, nil
 }
 
-// regNames maps from register names to their corresponding Go identifiers.
-var regNames = map[string]*ast.Ident{
-	"EAX": ast.NewIdent("eax"),
+// parseBinaryInst parses the given LEA instruction and returns a corresponding
+// Go statement.
+func parseLEA(inst x86asm.Inst) (ast.Stmt, error) {
+	x := getArg(inst.Args[0])
+	y := getArg(inst.Args[1])
+	lhs := x
+	rhs := y
+	assign := &ast.AssignStmt{
+		Lhs: []ast.Expr{lhs},
+		Tok: token.ASSIGN,
+		Rhs: []ast.Expr{rhs},
+	}
+	return assign, nil
 }
 
-// parseArg parses the given assembly instruction argument and returns a
-// corresponding Go expression.
-func parseArg(arg x86asm.Arg) (ast.Expr, error) {
+// getArg converts arg into a corresponding Go expression.
+func getArg(arg x86asm.Arg) ast.Expr {
 	switch arg := arg.(type) {
 	case x86asm.Reg:
-		reg, ok := regNames[arg.String()]
-		if !ok {
-			return nil, errutil.Newf("unable to lookup identifer for register %q", arg)
-		}
-		return reg, nil
-		return nil, errutil.Newf("support for type %T not yet implemented", arg)
+		return getReg(arg)
 	case x86asm.Mem:
-		return nil, errutil.Newf("support for type %T not yet implemented", arg)
+		// The general memory reference form is:
+		//    Segment:[Base+Scale*Index+Disp]
+
+		// ... + Disp
+		expr := &ast.BinaryExpr{}
+		if arg.Disp != 0 {
+			disp := getExpr(arg.Disp)
+			expr.Op = token.ADD
+			expr.Y = disp
+		}
+
+		// ... + (Scale*Index) + ...
+		if arg.Scale != 0 && arg.Index != 0 {
+			scale := getExpr(arg.Scale)
+			index := getReg(arg.Index)
+			product := &ast.BinaryExpr{
+				X:  scale,
+				Op: token.MUL,
+				Y:  index,
+			}
+			switch {
+			case expr.Y == nil:
+				// ... + (Scale*Index)
+				expr.Op = token.ADD
+				expr.Y = product
+			default:
+				// ... + (Scale*Index) + Disp
+				expr.X = product
+				expr.Op = token.ADD
+			}
+		}
+
+		// ... + Base + ...
+		if arg.Base != 0 {
+			base := getReg(arg.Base)
+			switch {
+			case expr.X == nil:
+				// Base + (Scale*Index)
+				// or
+				// Base + Disp
+				expr.X = base
+				expr.Op = token.ADD
+			case expr.Y == nil:
+				// ... + Base
+				expr.Op = token.ADD
+				expr.Y = base
+			default:
+				sum := &ast.BinaryExpr{
+					X:  expr.X,
+					Op: token.ADD,
+					Y:  expr.Y,
+				}
+				expr.X = base
+				expr.Op = token.ADD
+				expr.Y = sum
+			}
+		}
+
+		// TODO: Figure out how the calculation is affected by segment in:
+		//    Segment:[Base+Scale*Index+Disp]
+		if arg.Segment != 0 {
+			segment := getReg(arg.Segment)
+			_ = segment
+			fmt.Printf("%#v\n", arg)
+			log.Fatal(errutil.Newf("support for Mem.Segment not yet implemented"))
+		}
+
+		switch {
+		case expr.X == nil && expr.Y == nil:
+			fmt.Printf("%#v\n", arg)
+			log.Fatal(errutil.New("support for memory reference to address zero not yet implemented"))
+		case expr.X == nil && expr.Y != nil:
+			return expr.Y
+		case expr.X != nil && expr.Y == nil:
+			return expr.X
+		case expr.X != nil && expr.Y != nil:
+			return expr
+		}
 	case x86asm.Imm:
-		return nil, errutil.Newf("support for type %T not yet implemented", arg)
+		// TODO: Implement support for immediate values.
 	case x86asm.Rel:
-		return nil, errutil.Newf("support for type %T not yet implemented", arg)
-	default:
-		return nil, errutil.Newf("support for type %T not yet implemented", arg)
+		// TODO: Implement support for relative addresses.
 	}
+	fmt.Printf("%#v\n", arg)
+	log.Fatal(errutil.Newf("support for type %T not yet implemented", arg))
+	panic("unreachable")
+}
+
+// getExpr converts x into a corresponding Go expression.
+func getExpr(x interface{}) ast.Expr {
+	switch x := x.(type) {
+	case uint8:
+		s := strconv.FormatUint(uint64(x), 10)
+		return &ast.BasicLit{Kind: token.INT, Value: s}
+	case int64:
+		s := strconv.FormatInt(x, 10)
+		return &ast.BasicLit{Kind: token.INT, Value: s}
+	}
+	log.Fatal(errutil.Newf("support for type %T not yet implemented", x))
+	panic("unreachable")
+}
+
+// getReg converts reg into a corresponding Go expression.
+func getReg(reg x86asm.Reg) ast.Expr {
+	// regNames maps from register names to their corresponding Go identifiers.
+	var regNames = map[string]*ast.Ident{
+		"EAX": ast.NewIdent("eax"),
+		"EDI": ast.NewIdent("edi"),
+	}
+	if expr, ok := regNames[reg.String()]; ok {
+		return expr
+	}
+	log.Fatal(errutil.Newf("unable to lookup identifer for register %q", reg))
+	panic("unreachable")
 }
 
 // parseBinaryInst parses the given binary instruction and returns a
 // corresponding Go statement.
 func parseBinaryInst(inst x86asm.Inst) (ast.Stmt, error) {
-	x, err := parseArg(inst.Args[0])
-	if err != nil {
-		return nil, errutil.Err(err)
-	}
-	y, err := parseArg(inst.Args[1])
-	if err != nil {
-		return nil, errutil.Err(err)
-	}
+	x := getArg(inst.Args[0])
+	y := getArg(inst.Args[1])
 	var op token.Token
 	switch inst.Op {
 	case x86asm.XOR:
@@ -111,8 +220,8 @@ func parseBinaryInst(inst x86asm.Inst) (ast.Stmt, error) {
 	default:
 		return nil, errutil.Newf("support for opcode %v not yet implemented", inst.Op)
 	}
-	rhs := &ast.BinaryExpr{X: x, Op: op, Y: y}
 	lhs := x
+	rhs := &ast.BinaryExpr{X: x, Op: op, Y: y}
 	assign := &ast.AssignStmt{
 		Lhs: []ast.Expr{lhs},
 		Tok: token.ASSIGN,

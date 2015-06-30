@@ -21,6 +21,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseCMP(inst)
 	case x86asm.DEC:
 		return parseDEC(inst)
+	case x86asm.INC:
+		return parseINC(inst)
 	case x86asm.JNE:
 		return parseJNE(inst, offset)
 	case x86asm.LEA:
@@ -86,6 +88,21 @@ func parseDEC(inst x86asm.Inst) (ast.Stmt, error) {
 	// Create block statement.
 	stmt := &ast.BlockStmt{
 		List: []ast.Stmt{stmt1, stmt2},
+	}
+	return stmt, nil
+}
+
+// parseINC parses the given INC instruction and returns a corresponding Go
+// statement.
+func parseINC(inst x86asm.Inst) (ast.Stmt, error) {
+	// Parse arguments.
+	x := getArg(inst.Args[0])
+
+	// Create statement.
+	//    x++
+	stmt := &ast.IncDecStmt{
+		X:   x,
+		Tok: token.INC,
 	}
 	return stmt, nil
 }

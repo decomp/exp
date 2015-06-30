@@ -15,6 +15,8 @@ import (
 // Go statement.
 func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	switch inst.Op {
+	case x86asm.ADD:
+		return parseBinaryInst(inst, token.ADD)
 	case x86asm.CMP:
 		return parseCMP(inst)
 	case x86asm.JNE:
@@ -26,7 +28,7 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	case x86asm.RET:
 		return parseRET(inst)
 	case x86asm.XOR:
-		return parseBinaryInst(inst)
+		return parseBinaryInst(inst, token.XOR)
 	case x86asm.PUSH, x86asm.POP:
 		// ignore for now.
 		return nil, nil
@@ -125,19 +127,10 @@ func parseRET(inst x86asm.Inst) (ast.Stmt, error) {
 
 // parseBinaryInst parses the given binary instruction and returns a
 // corresponding Go statement.
-func parseBinaryInst(inst x86asm.Inst) (ast.Stmt, error) {
+func parseBinaryInst(inst x86asm.Inst, op token.Token) (ast.Stmt, error) {
 	// Parse arguments.
 	x := getArg(inst.Args[0])
 	y := getArg(inst.Args[1])
-
-	// Translate opcode to binary operation.
-	var op token.Token
-	switch inst.Op {
-	case x86asm.XOR:
-		op = token.XOR
-	default:
-		return nil, errutil.Newf("support for opcode %v not yet implemented", inst.Op)
-	}
 
 	// Create statement.
 	//    x = x OP y

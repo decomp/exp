@@ -19,7 +19,7 @@ func getArg(arg x86asm.Arg) ast.Expr {
 	case x86asm.Mem:
 		return getMem(arg)
 	case x86asm.Imm:
-		return getExpr(int64(arg))
+		return createExpr(int64(arg))
 	case x86asm.Rel:
 		// TODO: Implement support for relative addresses.
 	}
@@ -228,14 +228,14 @@ func getMem(mem x86asm.Mem) ast.Expr {
 	// ... + Disp
 	expr := &ast.BinaryExpr{}
 	if mem.Disp != 0 {
-		disp := getExpr(mem.Disp)
+		disp := createExpr(mem.Disp)
 		expr.Op = token.ADD
 		expr.Y = disp
 	}
 
 	// ... + (Scale*Index) + ...
 	if mem.Scale != 0 && mem.Index != 0 {
-		scale := getExpr(mem.Scale)
+		scale := createExpr(mem.Scale)
 		index := getReg(mem.Index)
 		product := &ast.BinaryExpr{
 			X:  scale,
@@ -295,21 +295,21 @@ func getMem(mem x86asm.Mem) ast.Expr {
 		log.Fatal(errutil.New("support for memory reference to address zero not yet implemented"))
 		panic("unreachable")
 	case expr.X == nil && expr.Y != nil:
-		return getPtrDeref(expr.Y)
+		return createPtrDeref(expr.Y)
 	case expr.X != nil && expr.Y == nil:
-		return getPtrDeref(expr.X)
+		return createPtrDeref(expr.X)
 	default:
-		return getPtrDeref(expr)
+		return createPtrDeref(expr)
 	}
 }
 
-// getPtrDeref returns a pointer dereference expression of addr.
-func getPtrDeref(addr ast.Expr) ast.Expr {
+// createPtrDeref returns a pointer dereference expression of addr.
+func createPtrDeref(addr ast.Expr) ast.Expr {
 	return &ast.StarExpr{X: &ast.ParenExpr{X: addr}}
 }
 
-// getExpr converts x into a corresponding Go expression.
-func getExpr(x interface{}) ast.Expr {
+// createExpr converts x into a corresponding Go expression.
+func createExpr(x interface{}) ast.Expr {
 	switch x := x.(type) {
 	case int:
 		s := strconv.FormatInt(int64(x), 10)

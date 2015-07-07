@@ -52,24 +52,16 @@ func parseCMP(inst x86asm.Inst) (ast.Stmt, error) {
 	y := getArg(inst.Args[1])
 
 	// Create statement.
-	//    cf = x < y
+	//    zf = x == y
 	lhs := getFlag(ZF)
-	rhs := &ast.BinaryExpr{
-		X:  x,
-		Op: token.EQL,
-		Y:  y,
-	}
-	stmt1 := getAssign(lhs, rhs)
+	rhs := createBinaryExpr(x, y, token.EQL)
+	stmt1 := createAssign(lhs, rhs)
 
 	// Create statement.
 	//    cf = x < y
 	lhs = getFlag(CF)
-	rhs = &ast.BinaryExpr{
-		X:  x,
-		Op: token.LSS,
-		Y:  y,
-	}
-	stmt2 := getAssign(lhs, rhs)
+	rhs = createBinaryExpr(x, y, token.LSS)
+	stmt2 := createAssign(lhs, rhs)
 
 	// Create block statement.
 	stmt := &ast.BlockStmt{
@@ -94,12 +86,8 @@ func parseDEC(inst x86asm.Inst) (ast.Stmt, error) {
 	// Create statement.
 	//    zf = x == 0
 	lhs := getFlag(ZF)
-	rhs := &ast.BinaryExpr{
-		X:  x,
-		Op: token.EQL,
-		Y:  getExpr(0),
-	}
-	stmt2 := getAssign(lhs, rhs)
+	rhs := createBinaryExpr(x, createExpr(0), token.EQL)
+	stmt2 := createAssign(lhs, rhs)
 
 	// TODO: Find a better solution for multiple statement than block statement.
 
@@ -200,7 +188,7 @@ func parseLEA(inst x86asm.Inst) (ast.Stmt, error) {
 	if err != nil {
 		return nil, errutil.Err(err)
 	}
-	return getAssign(lhs, rhs), nil
+	return createAssign(lhs, rhs), nil
 }
 
 // unstar returns the underlying expression from the given parenthesised star
@@ -228,7 +216,7 @@ func parseMOV(inst x86asm.Inst) (ast.Stmt, error) {
 	//    x = y
 	lhs := x
 	rhs := y
-	return getAssign(lhs, rhs), nil
+	return createAssign(lhs, rhs), nil
 }
 
 // parseRET parses the given RET instruction and returns a corresponding Go
@@ -249,20 +237,38 @@ func parseBinaryInst(inst x86asm.Inst, op token.Token) (ast.Stmt, error) {
 	x := getArg(inst.Args[0])
 	y := getArg(inst.Args[1])
 
+	// Simplify instructions when x == y.
+	if inst.Args[0] == inst.Args[1] {
+		switch op {
+		case token.SUB, token.XOR:
+			// Before:
+			//    x = x - x
+			//    x = x ^ x
+			// After:
+			//    x = 0
+			return createAssign(x, createExpr(0)), nil
+		}
+	}
+
 	// Create statement.
 	//    x = x OP y
 	lhs := x
-	rhs := &ast.BinaryExpr{
+	rhs := createBinaryExpr(x, y, op)
+	return createAssign(lhs, rhs), nil
+}
+
+func createBinaryExpr(x, y ast.Expr, op token.Token) ast.Expr {
+	// TODO: Handle sub-registers (al, ah, ax)
+	return &ast.BinaryExpr{
 		X:  x,
 		Op: op,
 		Y:  y,
 	}
-	return getAssign(lhs, rhs), nil
 }
 
-// getAssign returns an assignment statement with the given left- and right-hand
-// sides.
-func getAssign(lhs, rhs ast.Expr) ast.Stmt {
+// createAssign returns an assignment statement with the given left- and right-
+// hand sides.
+func createAssign(lhs, rhs ast.Expr) ast.Stmt {
 	return &ast.AssignStmt{
 		Lhs: []ast.Expr{lhs},
 		Tok: token.ASSIGN,

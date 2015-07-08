@@ -257,8 +257,14 @@ func parseBinaryInst(inst x86asm.Inst, op token.Token) (ast.Stmt, error) {
 	return createAssign(lhs, rhs), nil
 }
 
+// createBinaryExpr returns a binary expression with the given operands and
+// operation. Special consideration is taken with regards to sub-registers (e.g.
+// al, ah, ax).
 func createBinaryExpr(x, y ast.Expr, op token.Token) ast.Expr {
-	// TODO: Handle sub-registers (al, ah, ax)
+	// Handle sub-registers (e.g. al, ah, ax).
+	x = fromSubReg(x)
+	y = fromSubReg(y)
+
 	return &ast.BinaryExpr{
 		X:  x,
 		Op: op,
@@ -267,8 +273,11 @@ func createBinaryExpr(x, y ast.Expr, op token.Token) ast.Expr {
 }
 
 // createAssign returns an assignment statement with the given left- and right-
-// hand sides.
+// hand sides. Special consideration is taken with regards to sub-registers.
+// (e.g. al, ah, ax).
 func createAssign(lhs, rhs ast.Expr) ast.Stmt {
+	rhs = fromSubReg(rhs)
+	// TODO: Handle sub-registers (al, ah, ax)
 	return &ast.AssignStmt{
 		Lhs: []ast.Expr{lhs},
 		Tok: token.ASSIGN,

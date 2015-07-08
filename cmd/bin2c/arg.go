@@ -213,7 +213,12 @@ var regs = map[string]*ast.Ident{
 
 // getReg converts reg into a corresponding Go expression.
 func getReg(reg x86asm.Reg) ast.Expr {
-	if expr, ok := regs[reg.String()]; ok {
+	return getRegFromString(reg.String())
+}
+
+// getRegFromString converts reg into a corresponding Go expression.
+func getRegFromString(reg string) ast.Expr {
+	if expr, ok := regs[reg]; ok {
 		return expr
 	}
 	log.Fatal(errutil.Newf("unable to lookup identifer for register %q", reg))
@@ -323,4 +328,141 @@ func createExpr(x interface{}) ast.Expr {
 	}
 	log.Fatal(errutil.Newf("support for type %T not yet implemented", x))
 	panic("unreachable")
+}
+
+// fromSubReg returns an equivalent expression to x, where x may be a sub-
+// register.
+func fromSubReg(sub ast.Expr) ast.Expr {
+	// TODO: Handle sub-registers (al, ah, ax)
+
+	// Handle sub-registers (e.g. al, ah, ax).
+	if isSubLow8(sub) {
+		// Before:
+		//    al
+		// After:
+		//    eax&0x000000FF
+		return &ast.BinaryExpr{
+			X:  extendSubReg(sub),
+			Op: token.AND,
+			Y:  createExpr(0x000000FF),
+		}
+	}
+	if isSubHigh8(sub) {
+		// Before:
+		//    ah
+		// After:
+		//    (eax&0x0000FF00)>>8
+		paren := &ast.ParenExpr{
+			X: &ast.BinaryExpr{
+				X:  extendSubReg(sub),
+				Op: token.AND,
+				Y:  createExpr(0x0000FF00),
+			},
+		}
+		return &ast.BinaryExpr{
+			X:  paren,
+			Op: token.SHR,
+			Y:  createExpr(8),
+		}
+	}
+	if isSub16(sub) {
+		panic("not yet implemented.")
+	}
+	return sub
+}
+
+// subLow8 maps lower 8-bit sub-registers to their parent register.
+var subLow8 = map[string]string{
+	"al":   "EAX",
+	"cl":   "ECX",
+	"dl":   "EDX",
+	"bl":   "EBX",
+	"spb":  "ESP",
+	"bpb":  "EBP",
+	"sib":  "ESI",
+	"dib":  "EDI",
+	"r8b":  "R8L",
+	"r9b":  "R9L",
+	"r10b": "R10L",
+	"r11b": "R11L",
+	"r12b": "R12L",
+	"r13b": "R13L",
+	"r14b": "R14L",
+	"r15b": "R15L",
+}
+
+// isSubLow8 reports whether x is a lower 8-bit sub-register.
+func isSubLow8(x ast.Expr) bool {
+	if sub, ok := x.(*ast.Ident); ok {
+		_, ok = subLow8[sub.Name]
+		return ok
+	}
+	return false
+}
+
+// subHigh8 maps higher 8-bit sub-registers to their parent register.
+var subHigh8 = map[string]string{
+	"ah": "EAX",
+	"ch": "ECX",
+	"dh": "EDX",
+	"bh": "EBX",
+}
+
+// isSubHigh8 reports whether x is a higher 8-bit sub-register.
+func isSubHigh8(x ast.Expr) bool {
+	if sub, ok := x.(*ast.Ident); ok {
+		_, ok = subHigh8[sub.Name]
+		return ok
+	}
+	return false
+}
+
+// sub16 maps 16-bit sub-registers to their parent register.
+var sub16 = map[string]string{
+	"ax":   "EAX",
+	"cx":   "ECX",
+	"dx":   "EDX",
+	"bx":   "EBX",
+	"sp":   "ESP",
+	"bp":   "EBP",
+	"si":   "ESI",
+	"di":   "EDI",
+	"r8w":  "R8L",
+	"r9w":  "R9L",
+	"r10w": "R10L",
+	"r11w": "R11L",
+	"r12w": "R12L",
+	"r13w": "R13L",
+	"r14w": "R14L",
+	"r15w": "R15L",
+}
+
+// isSub16 reports whether x is a 16-bit sub-register.
+func isSub16(x ast.Expr) bool {
+	if sub, ok := x.(*ast.Ident); ok {
+		_, ok = sub16[sub.Name]
+		return ok
+	}
+	return false
+}
+
+// extendSubReg returns the parent register of x if x is a sub-register.
+func extendSubReg(x ast.Expr) ast.Expr {
+	sub, ok := x.(*ast.Ident)
+	if !ok {
+		return x
+	}
+	// Lower 8-bit sub-registers.
+	if reg, ok := subLow8[sub.Name]; ok {
+		return getRegFromString(reg)
+	}
+	// Higher 8-bit sub-registers.
+	if reg, ok := subHigh8[sub.Name]; ok {
+		return getRegFromString(reg)
+	}
+	// 16-bit sub-registers.
+	if reg, ok := sub16[sub.Name]; ok {
+		return getRegFromString(reg)
+	}
+	return x
 }

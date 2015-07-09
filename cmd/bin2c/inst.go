@@ -24,12 +24,16 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseCMP(inst)
 	case x86asm.DEC:
 		return parseDEC(inst)
+	case x86asm.IMUL:
+		return parseBinaryInst(inst, token.MUL)
 	case x86asm.INC:
 		return parseINC(inst)
 	case x86asm.JL:
 		return parseJL(inst, offset)
 	case x86asm.JLE:
 		return parseJLE(inst, offset)
+	case x86asm.JMP:
+		return parseJMP(inst, offset)
 	case x86asm.JNE:
 		return parseJNE(inst, offset)
 	case x86asm.LEA:
@@ -195,6 +199,28 @@ func parseJLE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	stmt := &ast.IfStmt{
 		Cond: cond,
 		Body: &ast.BlockStmt{List: []ast.Stmt{body}},
+	}
+	return stmt, nil
+}
+
+// parseJMP parses the given JMP instruction and returns a corresponding Go
+// statement.
+func parseJMP(inst x86asm.Inst, offset int) (ast.Stmt, error) {
+	// Parse arguments.
+	arg := inst.Args[0]
+	switch arg := arg.(type) {
+	case x86asm.Rel:
+		offset += inst.Len + int(arg)
+	default:
+		return nil, errutil.Newf("support for type %T not yet implemented", arg)
+	}
+
+	// Create statement.
+	//    goto x
+	label := getLabel("loc", offset)
+	stmt := &ast.BranchStmt{
+		Tok:   token.GOTO,
+		Label: label,
 	}
 	return stmt, nil
 }

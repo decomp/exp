@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
+	"log"
 
 	"github.com/mewkiz/pkg/errutil"
 	"rsc.io/x86/x86asm"
@@ -17,6 +18,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	switch inst.Op {
 	case x86asm.ADD:
 		return parseBinaryInst(inst, token.ADD)
+	case x86asm.CALL:
+		return parseCALL(inst, offset)
 	case x86asm.CMP:
 		return parseCMP(inst)
 	case x86asm.DEC:
@@ -25,6 +28,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseINC(inst)
 	case x86asm.JL:
 		return parseJL(inst, offset)
+	case x86asm.JLE:
+		return parseJLE(inst, offset)
 	case x86asm.JNE:
 		return parseJNE(inst, offset)
 	case x86asm.LEA:
@@ -33,6 +38,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseMOV(inst)
 	case x86asm.RET:
 		return parseRET(inst)
+	case x86asm.SUB:
+		return parseBinaryInst(inst, token.SUB)
 	case x86asm.XOR:
 		return parseBinaryInst(inst, token.XOR)
 	case x86asm.PUSH, x86asm.POP:
@@ -42,6 +49,23 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		fmt.Printf("%#v\n", inst)
 		return nil, errutil.Newf("support for opcode %v not yet implemented", inst.Op)
 	}
+}
+
+// parseCALL parses the given CALL instruction and returns a corresponding Go
+// statement.
+func parseCALL(inst x86asm.Inst, offset int) (ast.Stmt, error) {
+	// Parse arguments.
+	arg := inst.Args[0]
+	switch arg := arg.(type) {
+	case x86asm.Rel:
+		offset += inst.Len + int(arg)
+	default:
+		return nil, errutil.Newf("support for type %T not yet implemented", arg)
+	}
+	log.Println("target:", offset)
+
+	// TODO: Figure out how to identify the calling convention.
+	return nil, errutil.New("not yet implemented")
 }
 
 // parseCMP parses the given CMP instruction and returns a corresponding Go
@@ -130,6 +154,39 @@ func parseJL(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	//       goto x
 	//    }
 	cond := getFlag(CF)
+	label := getLabel("loc", offset)
+	body := &ast.BranchStmt{
+		Tok:   token.GOTO,
+		Label: label,
+	}
+	stmt := &ast.IfStmt{
+		Cond: cond,
+		Body: &ast.BlockStmt{List: []ast.Stmt{body}},
+	}
+	return stmt, nil
+}
+
+// parseJLE parses the given JLE instruction and returns a corresponding Go
+// statement.
+func parseJLE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
+	// Parse arguments.
+	arg := inst.Args[0]
+	switch arg := arg.(type) {
+	case x86asm.Rel:
+		offset += inst.Len + int(arg)
+	default:
+		return nil, errutil.Newf("support for type %T not yet implemented", arg)
+	}
+
+	// Create statement.
+	//    if cf || zf {
+	//       goto x
+	//    }
+	cond := &ast.BinaryExpr{
+		X:  getFlag(CF),
+		Op: token.LOR,
+		Y:  getFlag(ZF),
+	}
 	label := getLabel("loc", offset)
 	body := &ast.BranchStmt{
 		Tok:   token.GOTO,

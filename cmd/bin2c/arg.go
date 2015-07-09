@@ -335,6 +335,10 @@ func createExpr(x interface{}) ast.Expr {
 func fromSubReg(sub ast.Expr) ast.Expr {
 	// TODO: Handle sub-registers (al, ah, ax)
 
+	// TODO: Fix operator precedence for C.
+	//    warning: & has lower precedence than <; < will be evaluated first
+	//    cf = *((int8_t *)ebp + -1) < ebx&255;
+
 	// Handle sub-registers (e.g. al, ah, ax).
 	if isSubLow8(sub) {
 		// Before:

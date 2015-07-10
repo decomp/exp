@@ -25,7 +25,7 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	case x86asm.DEC:
 		return parseDEC(inst)
 	case x86asm.IMUL:
-		return parseBinaryInst(inst, token.MUL)
+		return parseIMUL(inst)
 	case x86asm.INC:
 		return parseINC(inst)
 	case x86asm.JL:
@@ -124,6 +124,21 @@ func parseDEC(inst x86asm.Inst) (ast.Stmt, error) {
 		List: []ast.Stmt{stmt1, stmt2},
 	}
 	return stmt, nil
+}
+
+// parseIMUL parses the given IMUL instruction and returns a corresponding Go
+// statement.
+func parseIMUL(inst x86asm.Inst) (ast.Stmt, error) {
+	// Parse arguments.
+	x := getArg(inst.Args[0])
+	y := getArg(inst.Args[1])
+	z := getArg(inst.Args[2])
+
+	// Create statement.
+	//    x = x OP y
+	lhs := x
+	rhs := createBinaryExpr(y, z, token.MUL)
+	return createAssign(lhs, rhs), nil
 }
 
 // parseINC parses the given INC instruction and returns a corresponding Go

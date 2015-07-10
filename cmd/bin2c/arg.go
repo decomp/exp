@@ -227,6 +227,8 @@ func getRegFromString(reg string) ast.Expr {
 
 // getMem converts mem into a corresponding Go expression.
 func getMem(mem x86asm.Mem) ast.Expr {
+	// TODO: Replace 1*x with x in Scale*Index.
+
 	// The general memory reference form is:
 	//    Segment:[Base+Scale*Index+Disp]
 

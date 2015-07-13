@@ -18,6 +18,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	switch inst.Op {
 	case x86asm.ADD:
 		return parseBinaryInst(inst, token.ADD)
+	case x86asm.AND:
+		return parseBinaryInst(inst, token.AND)
 	case x86asm.CALL:
 		return parseCALL(inst, offset)
 	case x86asm.CMP:

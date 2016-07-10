@@ -30,10 +30,10 @@ import (
 	"sort"
 	"text/tabwriter"
 
-	"decomp.org/x/graphs/primitive"
+	"decomp.org/decomp/graphs/primitive"
 	"github.com/decomp/exp/cfa"
-	"github.com/mewfork/dot"
 	"github.com/mewkiz/pkg/errutil"
+	"github.com/mewspring/dot"
 )
 
 const use = `

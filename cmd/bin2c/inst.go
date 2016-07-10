@@ -9,7 +9,7 @@ import (
 	"log"
 
 	"github.com/mewkiz/pkg/errutil"
-	"rsc.io/x86/x86asm"
+	"golang.org/x/arch/x86/x86asm"
 )
 
 // parseInst parses the given assembly instruction and returns a corresponding

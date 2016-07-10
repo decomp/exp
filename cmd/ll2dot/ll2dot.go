@@ -124,6 +124,10 @@ func ll2dot(llPath string, funcNames map[string]bool, force, genimg bool) error 
 	}
 
 	// Generate a control flow graph for each function.
+	dotDir, err := createDotDir(llPath, force)
+	if err != nil {
+		return errutil.Err(err)
+	}
 	for _, fn := range funcs {
 		// Skip function declarations.
 		if len(fn.Blocks()) == 0 {
@@ -139,10 +143,6 @@ func ll2dot(llPath string, funcNames map[string]bool, force, genimg bool) error 
 		}
 
 		// Store DOT graph.
-		dotDir, err := createDotDir(llPath, force)
-		if err != nil {
-			return errutil.Err(err)
-		}
 		if err := dumpCFG(dotDir, funcName, graph, genimg); err != nil {
 			return errutil.Err(err)
 		}
@@ -213,6 +213,11 @@ func createCFG(fn *ir.Function) (*dot.Graph, error) {
 			//    ret Type Value
 			//
 			// Exit node with no target basic blocks.
+		case *instruction.Unreachable:
+			// Unreachable instruction.
+			//    unreachable
+			//
+			// Exit node with no target basic blocks.
 		case *instruction.Jmp:
 			// Unconditional branch instruction.
 			//    br label TargetBranch
@@ -223,7 +228,7 @@ func createCFG(fn *ir.Function) (*dot.Graph, error) {
 			// Conditional branching instruction.
 			//    br i1 Cond, label TrueBranch, label FalseBranch
 			//
-			// Add true and false target branchs.
+			// Add true and false target branches.
 			attrs := map[string]string{"label": "true"}
 			graph.AddEdge(blockName, term.TrueBranch(), true, attrs)
 			attrs = map[string]string{"label": "false"}

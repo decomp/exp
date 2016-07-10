@@ -8,7 +8,7 @@ import (
 	"strconv"
 
 	"github.com/mewkiz/pkg/errutil"
-	"rsc.io/x86/x86asm"
+	"golang.org/x/arch/x86/x86asm"
 )
 
 // getArg converts arg into a corresponding Go expression.

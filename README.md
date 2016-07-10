@@ -6,7 +6,7 @@ This project is a *work in progress*. The implementation is *incomplete* and sub
 
 [![GoDoc](https://godoc.org/github.com/decomp/exp?status.svg)](https://godoc.org/github.com/decomp/exp)
 
-This repository contains throw-away prototypes for experimental tools and libraries related to decompilation. They are intended to evaluate concepts, validate ideas, and stress-test designs. Once this insight has been gained, they will be removed in favour of high-quality re-implementations.
+This repository contains throw-away prototypes for experimental tools and libraries related to decompilation. They are intended to facilitate understanding, evaluate concepts, validate ideas, and stress-test designs. Once this insight has been gained, they will be removed in favour of high-quality re-implementations.
 
 ## restructure2
 

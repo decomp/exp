@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"github.com/mewkiz/pkg/errutil"
-	"rsc.io/x86/x86asm"
+	"golang.org/x/arch/x86/x86asm"
 )
 
 // parseFunc parses the given function and returns a corresponding Go function.

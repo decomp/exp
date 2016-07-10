@@ -3,8 +3,8 @@ package cfa
 import (
 	"fmt"
 
-	"decomp.org/x/graphs/primitive"
-	"github.com/mewfork/dot"
+	"decomp.org/decomp/graphs/primitive"
+	"github.com/mewspring/dot"
 )
 
 // IfReturn represents a 1-way conditional with a body return statement.

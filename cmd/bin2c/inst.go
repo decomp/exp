@@ -169,6 +169,41 @@ func parseINC(inst x86asm.Inst) (ast.Stmt, error) {
 	return stmt, nil
 }
 
+// From http://faydoc.tripod.com/cpu/jge.htm
+//
+//    * [ ] JA       Jump if above (CF=0 and ZF=0)
+//    * [ ] JAE      Jump if above or equal (CF=0)
+//    * [ ] JB       Jump if below (CF=1)
+//    * [ ] JBE      Jump if below or equal (CF=1 or ZF=1)
+//    * [ ] JC       Jump if carry (CF=1)
+//    * [ ] JCXZ     Jump if CX register is 0
+//    * [x] JE       Jump if equal (ZF=1)
+//    * [ ] JECXZ    Jump if ECX register is 0
+//    * [ ] JG       Jump if greater (ZF=0 and SF=OF)
+//    * [x] JGE      Jump if greater or equal (SF=OF)
+//    * [x] JL       Jump if less (SF!=OF)
+//    * [x] JLE      Jump if less or equal (ZF=1 or SF!=OF)
+//    * [ ] JNA      Jump if not above (CF=1 or ZF=1)
+//    * [ ] JNAE     Jump if not above or equal (CF=1)
+//    * [ ] JNB      Jump if not below (CF=0)
+//    * [ ] JNBE     Jump if not below or equal (CF=0 and ZF=0)
+//    * [ ] JNC      Jump if not carry (CF=0)
+//    * [x] JNE      Jump if not equal (ZF=0)
+//    * [ ] JNG      Jump if not greater (ZF=1 or SF!=OF)
+//    * [ ] JNGE     Jump if not greater or equal (SF!=OF)
+//    * [ ] JNL      Jump if not less (SF=OF)
+//    * [ ] JNLE     Jump if not less or equal (ZF=0 and SF=OF)
+//    * [ ] JNO      Jump if not overflow (OF=0)
+//    * [ ] JNP      Jump if not parity (PF=0)
+//    * [ ] JNS      Jump if not sign (SF=0)
+//    * [ ] JNZ      Jump if not zero (ZF=0)
+//    * [ ] JO       Jump if overflow (OF=1)
+//    * [ ] JP       Jump if parity (PF=1)
+//    * [ ] JPE      Jump if parity even (PF=1)
+//    * [ ] JPO      Jump if parity odd (PF=0)
+//    * [ ] JS       Jump if sign (SF=1)
+//    * [ ] JZ       Jump if zero (ZF=1)
+
 // parseJE parses the given JE instruction and returns a corresponding Go
 // statement.
 func parseJE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
@@ -180,6 +215,8 @@ func parseJE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	default:
 		return nil, errutil.Newf("support for type %T not yet implemented", arg)
 	}
+
+	// JE       Jump if equal (ZF=1)
 
 	// Create statement.
 	//    if zf {
@@ -209,6 +246,8 @@ func parseJGE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	default:
 		return nil, errutil.Newf("support for type %T not yet implemented", arg)
 	}
+
+	// JGE      Jump if greater or equal (SF=OF)
 
 	// Create statement.
 	//    if sf == of {
@@ -243,6 +282,8 @@ func parseJL(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return nil, errutil.Newf("support for type %T not yet implemented", arg)
 	}
 
+	// JL       Jump if less (SF!=OF)
+
 	// Create statement.
 	//    if sf != of {
 	//       goto x
@@ -276,16 +317,16 @@ func parseJLE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return nil, errutil.Newf("support for type %T not yet implemented", arg)
 	}
 
+	// JLE      Jump if less or equal (ZF=1 or SF!=OF)
+
 	// Create statement.
 	//    if zf || sf != of
 	//       goto x
 	//    }
-	sf := getFlag(SF)
-	of := getFlag(OF)
 	expr := &ast.BinaryExpr{
-		X:  sf,
+		X:  getFlag(SF),
 		Op: token.NEQ,
-		Y:  of,
+		Y:  getFlag(OF),
 	}
 	cond := &ast.BinaryExpr{
 		X:  getFlag(ZF),
@@ -337,6 +378,8 @@ func parseJNE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	default:
 		return nil, errutil.Newf("support for type %T not yet implemented", arg)
 	}
+
+	// JNE      Jump if not equal (ZF=0)
 
 	// Create statement.
 	//    if !zf {

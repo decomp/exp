@@ -13,6 +13,8 @@ type Flag uint8
 func (flag Flag) String() string {
 	m := map[Flag]string{
 		CF: "cf",
+		OF: "of",
+		SF: "sf",
 		ZF: "zf",
 	}
 	if s, ok := m[flag]; ok {
@@ -23,12 +25,16 @@ func (flag Flag) String() string {
 
 const (
 	CF Flag = iota + 1
+	OF
+	SF
 	ZF
 )
 
 // flags maps flag names to their corresponding Go identifiers.
 var flags = map[Flag]*ast.Ident{
 	CF: ast.NewIdent("cf"),
+	OF: ast.NewIdent("of"),
+	SF: ast.NewIdent("sf"),
 	ZF: ast.NewIdent("zf"),
 }
 

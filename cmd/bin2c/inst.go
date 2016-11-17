@@ -397,11 +397,27 @@ func parseTEST(inst x86asm.Inst) (ast.Stmt, error) {
 	rhs := createBinaryExpr(expr, zero, token.EQL)
 	stmt1 := createAssign(lhs, rhs)
 
+	// Create statement.
+	//    sf = (x&y)>>31 == 1
+	lhs = getFlag(SF)
+	expr = createBinaryExpr(x, y, token.AND)
+	thirtyone := &ast.BasicLit{Kind: token.INT, Value: "31"}
+	expr = createBinaryExpr(expr, thirtyone, token.SHR)
+	one := &ast.BasicLit{Kind: token.INT, Value: "1"}
+	rhs = createBinaryExpr(expr, one, token.EQL)
+	stmt2 := createAssign(lhs, rhs)
+
+	// Create statement.
+	//    of = 0
+	lhs = getFlag(OF)
+	rhs = zero
+	stmt3 := createAssign(lhs, rhs)
+
 	// TODO: Set remaining flags.
 
 	// Create block statement.
 	stmt := &ast.BlockStmt{
-		List: []ast.Stmt{stmt1 /*, stmt2*/},
+		List: []ast.Stmt{stmt1, stmt2, stmt3},
 	}
 	return stmt, nil
 }

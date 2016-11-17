@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"go/ast"
 	"go/token"
-	"log"
 
 	"github.com/mewkiz/pkg/errutil"
 	"golang.org/x/arch/x86/x86asm"
@@ -46,6 +45,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseRET(inst)
 	case x86asm.SUB:
 		return parseBinaryInst(inst, token.SUB)
+	case x86asm.TEST:
+		return parseTEST(inst)
 	case x86asm.XOR:
 		return parseBinaryInst(inst, token.XOR)
 	case x86asm.PUSH, x86asm.POP:
@@ -68,10 +69,14 @@ func parseCALL(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	default:
 		return nil, errutil.Newf("support for type %T not yet implemented", arg)
 	}
-	log.Println("target:", offset)
-
+	target := baseAddr + offset
+	lhs := getReg(x86asm.EAX)
 	// TODO: Figure out how to identify the calling convention.
-	return nil, errutil.New("not yet implemented")
+	rhs := &ast.CallExpr{
+		Fun: ast.NewIdent(fmt.Sprintf("sub_%08X", target)),
+	}
+	stmt := createAssign(lhs, rhs)
+	return stmt, nil
 }
 
 // parseCMP parses the given CMP instruction and returns a corresponding Go
@@ -328,6 +333,30 @@ func parseRET(inst x86asm.Inst) (ast.Stmt, error) {
 	// Create statement.
 	//    return
 	return &ast.ReturnStmt{}, nil
+}
+
+// parseTEST parses the given TEST instruction and returns a corresponding Go
+// statement.
+func parseTEST(inst x86asm.Inst) (ast.Stmt, error) {
+	// Parse arguments.
+	x := getArg(inst.Args[0])
+	y := getArg(inst.Args[1])
+
+	// Create statement.
+	//    zf = (x&y) == 0
+	lhs := getFlag(ZF)
+	expr := createBinaryExpr(x, y, token.AND)
+	zero := &ast.BasicLit{Kind: token.INT, Value: "0"}
+	rhs := createBinaryExpr(expr, zero, token.EQL)
+	stmt1 := createAssign(lhs, rhs)
+
+	// TODO: Set remaining flags.
+
+	// Create block statement.
+	stmt := &ast.BlockStmt{
+		List: []ast.Stmt{stmt1 /*, stmt2*/},
+	}
+	return stmt, nil
 }
 
 // parseBinaryInst parses the given binary instruction and returns a

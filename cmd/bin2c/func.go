@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	dbg "fmt"
 	"go/ast"
 	"go/printer"
 	"go/token"
-	"log"
 	"os"
 
 	"github.com/mewkiz/pkg/errutil"
@@ -26,8 +26,8 @@ func parseFunc(text []byte, offset int) (*ast.FuncDecl, error) {
 		if err != nil {
 			return nil, errutil.Err(err)
 		}
-		log.Println("==================================")
-		log.Println("inst:", inst)
+		dbg.Println("==================================")
+		dbg.Println("inst:", inst)
 
 		// Parse instruction.
 		stmt, err := parseInst(inst, offset)
@@ -43,22 +43,22 @@ func parseFunc(text []byte, offset int) (*ast.FuncDecl, error) {
 				block.List[0] = stmt
 				fn.Body.List = append(fn.Body.List, block.List...)
 				for _, stmt := range block.List {
-					log.Println("stmt:", stmt)
+					dbg.Println("stmt:", stmt)
 					//ast.Print(token.NewFileSet(), stmt)
 					printer.Fprint(os.Stderr, token.NewFileSet(), stmt)
-					log.Println()
+					dbg.Println()
 				}
 			} else {
 				label := getLabel("loc", offset)
 				stmt = &ast.LabeledStmt{Label: label, Stmt: stmt}
 				fn.Body.List = append(fn.Body.List, stmt)
-				log.Println("stmt:", stmt)
+				dbg.Println("stmt:", stmt)
 				//ast.Print(token.NewFileSet(), stmt)
 				printer.Fprint(os.Stderr, token.NewFileSet(), stmt)
-				log.Println()
+				dbg.Println()
 			}
 		}
-		log.Println()
+		dbg.Println()
 
 		// Next.
 		offset += inst.Len

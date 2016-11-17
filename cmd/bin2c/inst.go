@@ -413,11 +413,17 @@ func parseTEST(inst x86asm.Inst) (ast.Stmt, error) {
 	rhs = zero
 	stmt3 := createAssign(lhs, rhs)
 
+	// Create statement.
+	//    cf = 0
+	lhs = getFlag(CF)
+	rhs = zero
+	stmt4 := createAssign(lhs, rhs)
+
 	// TODO: Set remaining flags.
 
 	// Create block statement.
 	stmt := &ast.BlockStmt{
-		List: []ast.Stmt{stmt1, stmt2, stmt3},
+		List: []ast.Stmt{stmt1, stmt2, stmt3, stmt4},
 	}
 	return stmt, nil
 }

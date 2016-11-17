@@ -29,6 +29,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseIMUL(inst)
 	case x86asm.INC:
 		return parseINC(inst)
+	case x86asm.JE:
+		return parseJE(inst, offset)
 	case x86asm.JL:
 		return parseJL(inst, offset)
 	case x86asm.JLE:
@@ -161,6 +163,35 @@ func parseINC(inst x86asm.Inst) (ast.Stmt, error) {
 	stmt := &ast.IncDecStmt{
 		X:   x,
 		Tok: token.INC,
+	}
+	return stmt, nil
+}
+
+// parseJE parses the given JE instruction and returns a corresponding Go
+// statement.
+func parseJE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
+	// Parse arguments.
+	arg := inst.Args[0]
+	switch arg := arg.(type) {
+	case x86asm.Rel:
+		offset += inst.Len + int(arg)
+	default:
+		return nil, errutil.Newf("support for type %T not yet implemented", arg)
+	}
+
+	// Create statement.
+	//    if zf {
+	//       goto x
+	//    }
+	cond := getFlag(ZF)
+	label := getLabel("loc", offset)
+	body := &ast.BranchStmt{
+		Tok:   token.GOTO,
+		Label: label,
+	}
+	stmt := &ast.IfStmt{
+		Cond: cond,
+		Body: &ast.BlockStmt{List: []ast.Stmt{body}},
 	}
 	return stmt, nil
 }

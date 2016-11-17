@@ -31,6 +31,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseINC(inst)
 	case x86asm.JE:
 		return parseJE(inst, offset)
+	case x86asm.JGE:
+		return parseJGE(inst, offset)
 	case x86asm.JL:
 		return parseJL(inst, offset)
 	case x86asm.JLE:
@@ -196,6 +198,39 @@ func parseJE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	return stmt, nil
 }
 
+// parseJGE parses the given JGE instruction and returns a corresponding Go
+// statement.
+func parseJGE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
+	// Parse arguments.
+	arg := inst.Args[0]
+	switch arg := arg.(type) {
+	case x86asm.Rel:
+		offset += inst.Len + int(arg)
+	default:
+		return nil, errutil.Newf("support for type %T not yet implemented", arg)
+	}
+
+	// Create statement.
+	//    if sf == of {
+	//       goto x
+	//    }
+	cond := &ast.BinaryExpr{
+		X:  getFlag(SF),
+		Op: token.EQL,
+		Y:  getFlag(OF),
+	}
+	label := getLabel("loc", offset)
+	body := &ast.BranchStmt{
+		Tok:   token.GOTO,
+		Label: label,
+	}
+	stmt := &ast.IfStmt{
+		Cond: cond,
+		Body: &ast.BlockStmt{List: []ast.Stmt{body}},
+	}
+	return stmt, nil
+}
+
 // parseJL parses the given JL instruction and returns a corresponding Go
 // statement.
 func parseJL(inst x86asm.Inst, offset int) (ast.Stmt, error) {
@@ -238,13 +273,20 @@ func parseJLE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	}
 
 	// Create statement.
-	//    if cf || zf {
+	//    if zf || sf != of
 	//       goto x
 	//    }
+	sf := getFlag(SF)
+	of := getFlag(OF)
+	expr := &ast.BinaryExpr{
+		X:  sf,
+		Op: token.NEQ,
+		Y:  of,
+	}
 	cond := &ast.BinaryExpr{
-		X:  getFlag(CF),
+		X:  getFlag(ZF),
 		Op: token.LOR,
-		Y:  getFlag(ZF),
+		Y:  expr,
 	}
 	label := getLabel("loc", offset)
 	body := &ast.BranchStmt{

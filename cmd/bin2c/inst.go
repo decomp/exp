@@ -41,6 +41,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseLEA(inst)
 	case x86asm.MOV:
 		return parseMOV(inst)
+	case x86asm.MOVZX:
+		return parseMOVZX(inst)
 	case x86asm.RET:
 		return parseRET(inst)
 	case x86asm.SUB:
@@ -313,6 +315,20 @@ func unstar(expr ast.Expr) (ast.Expr, error) {
 // parseMOV parses the given MOV instruction and returns a corresponding Go
 // statement.
 func parseMOV(inst x86asm.Inst) (ast.Stmt, error) {
+	// Parse arguments.
+	x := getArg(inst.Args[0])
+	y := getArg(inst.Args[1])
+
+	// Create statement.
+	//    x = y
+	lhs := x
+	rhs := y
+	return createAssign(lhs, rhs), nil
+}
+
+// parseMOVZX parses the given MOVZX instruction and returns a corresponding Go
+// statement.
+func parseMOVZX(inst x86asm.Inst) (ast.Stmt, error) {
 	// Parse arguments.
 	x := getArg(inst.Args[0])
 	y := getArg(inst.Args[1])

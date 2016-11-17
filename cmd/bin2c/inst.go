@@ -244,10 +244,14 @@ func parseJL(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	}
 
 	// Create statement.
-	//    if cf {
+	//    if sf != of {
 	//       goto x
 	//    }
-	cond := getFlag(CF)
+	cond := &ast.BinaryExpr{
+		X:  getFlag(SF),
+		Op: token.NEQ,
+		Y:  getFlag(OF),
+	}
 	label := getLabel("loc", offset)
 	body := &ast.BranchStmt{
 		Tok:   token.GOTO,

@@ -35,21 +35,17 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/graphism/dot/ast"
+	"github.com/llir/llvm/asm"
 	"github.com/llir/llvm/ir"
-	"github.com/llir/llvm/ir/instruction"
-	"github.com/llir/spec/gocc/errors"
-	"github.com/llir/spec/gocc/lexer"
-	"github.com/llir/spec/gocc/parser"
-	"github.com/mewkiz/pkg/errutil"
-	"github.com/mewkiz/pkg/ioutilx"
 	"github.com/mewkiz/pkg/pathutil"
 	"github.com/mewkiz/pkg/term"
-	"github.com/mewspring/dot"
+	"github.com/pkg/errors"
 )
 
 // dbg represents a logger with the "ll2dot:" prefix, which logs debug messages
 // to standard error.
-var dbg = log.New(os.Stderr, term.Blue("ll2dot:"), 0)
+var dbg = log.New(os.Stderr, term.Blue("ll2dot:")+" ", 0)
 
 // usage prints a usage message to standard error.
 func usage() {
@@ -110,41 +106,40 @@ func main() {
 // graph for each of its defined functions using one node per basic block.
 func ll2dot(llPath string, funcNames map[string]bool, force, genimg bool) error {
 	// Parse LLVM IR assembly file.
-	module, err := parseFile(llPath)
+	module, err := asm.ParseFile(llPath)
 	if err != nil {
-		return errutil.Err(err)
+		return errors.WithStack(err)
 	}
 
 	// Get functions set by `-funcs` or all functions if `-funcs` not used.
 	var funcs []*ir.Function
-	for _, fn := range module.Funcs {
-		if len(funcNames) == 0 || funcNames[fn.Name()] {
-			funcs = append(funcs, fn)
+	for _, f := range module.Funcs {
+		if len(funcNames) == 0 || funcNames[f.Name] {
+			funcs = append(funcs, f)
 		}
 	}
 
 	// Generate a control flow graph for each function.
 	dotDir, err := createDotDir(llPath, force)
 	if err != nil {
-		return errutil.Err(err)
+		return errors.WithStack(err)
 	}
-	for _, fn := range funcs {
+	for _, f := range funcs {
 		// Skip function declarations.
-		if len(fn.Blocks()) == 0 {
+		if len(f.Blocks) == 0 {
 			continue
 		}
 
 		// Generate control flow graph.
-		funcName := fn.Name()
-		dbg.Printf("Parsing function %q.", funcName)
-		graph, err := createCFG(fn)
+		dbg.Printf("Parsing function %q.", f.Name)
+		graph, err := createCFG(f)
 		if err != nil {
-			return errutil.Err(err)
+			return errors.WithStack(err)
 		}
 
 		// Store DOT graph.
-		if err := dumpCFG(dotDir, funcName, graph, genimg); err != nil {
-			return errutil.Err(err)
+		if err := dumpCFG(dotDir, f.Name, graph, genimg); err != nil {
+			return errors.WithStack(err)
 		}
 	}
 
@@ -159,25 +154,25 @@ func ll2dot(llPath string, funcNames map[string]bool, force, genimg bool) error 
 //
 //    foo_graphs/bar.dot
 //    foo_graphs/baz.dot
-func dumpCFG(dotDir, funcName string, graph *dot.Graph, genimg bool) error {
+func dumpCFG(dotDir, funcName string, graph *ast.Graph, genimg bool) error {
 	dotName := funcName + ".dot"
 	dotPath := filepath.Join(dotDir, dotName)
 	dbg.Printf("Creating: %q.", dotPath)
 	buf := []byte(graph.String())
 	if err := ioutil.WriteFile(dotPath, buf, 0644); err != nil {
-		return errutil.Err(err)
+		return errors.WithStack(err)
 	}
 
 	// Store an image representation of the CFG if `-img` is set.
 	if genimg {
 		pngName := funcName + ".png"
 		pngPath := filepath.Join(dotDir, pngName)
-		dbg.Printf("Creating: %q,", pngPath)
+		dbg.Printf("Creating: %q.", pngPath)
 		cmd := exec.Command("dot", "-Tpng", "-o", pngPath, dotPath)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		if err := cmd.Run(); err != nil {
-			return errutil.Err(err)
+			return errors.WithStack(err)
 		}
 	}
 
@@ -186,53 +181,94 @@ func dumpCFG(dotDir, funcName string, graph *dot.Graph, genimg bool) error {
 
 // createCFG generates a control flow graph for the given function using one
 // node per basic block.
-func createCFG(fn *ir.Function) (*dot.Graph, error) {
+func createCFG(f *ir.Function) (*ast.Graph, error) {
 	// Create a new directed graph.
-	funcName := fn.Name()
-	graph := dot.NewGraph()
-	graph.SetDir(true)
-	graph.SetName(funcName)
+	funcName := f.Name
+	graph := &ast.Graph{
+		ID:       funcName,
+		Directed: true,
+	}
 
 	// Populate the graph with one node per basic block.
-	for i, block := range fn.Blocks() {
+	for i, block := range f.Blocks {
 		// Add a node for the given basic block to the graph.
-		blockName := block.Name()
+		blockName := block.Name
+		var attrs []*ast.Attr
 		if i == 0 {
-			attrs := map[string]string{"label": "entry"}
-			graph.AddNode(funcName, blockName, attrs)
-		} else {
-			graph.AddNode(funcName, blockName, nil)
+			attrs = []*ast.Attr{
+				{Key: "label", Val: "entry"},
+			}
 		}
+		node := &ast.Node{
+			ID: blockName,
+		}
+		nodeStmt := &ast.NodeStmt{
+			Node:  node,
+			Attrs: attrs,
+		}
+		graph.Stmts = append(graph.Stmts, nodeStmt)
 
 		// Add edges from the node to the target basic blocks.
-		term := block.Term()
+		term := block.Term
 		switch term := term.(type) {
-		case *instruction.Ret:
+		case *ir.TermRet:
 			// Return instruction.
 			//    ret
 			//    ret Type Value
 			//
 			// Exit node with no target basic blocks.
-		case *instruction.Unreachable:
+		case *ir.TermUnreachable:
 			// Unreachable instruction.
 			//    unreachable
 			//
 			// Exit node with no target basic blocks.
-		case *instruction.Jmp:
+		case *ir.TermBr:
 			// Unconditional branch instruction.
 			//    br label TargetBranch
 			//
 			// Add target branch.
-			graph.AddEdge(blockName, term.Target(), true, nil)
-		case *instruction.Br:
+			from := &ast.Node{ID: blockName}
+			to := &ast.Edge{
+				Directed: true,
+				Vertex:   &ast.Node{ID: term.Target.Name},
+			}
+			edge := &ast.EdgeStmt{
+				From: from,
+				To:   to,
+			}
+			graph.Stmts = append(graph.Stmts, edge)
+		case *ir.TermCondBr:
 			// Conditional branching instruction.
 			//    br i1 Cond, label TrueBranch, label FalseBranch
 			//
-			// Add true and false target branches.
-			attrs := map[string]string{"label": "true"}
-			graph.AddEdge(blockName, term.TrueBranch(), true, attrs)
-			attrs = map[string]string{"label": "false"}
-			graph.AddEdge(blockName, term.FalseBranch(), true, attrs)
+			// Add true target branch.
+			from := &ast.Node{ID: blockName}
+			to := &ast.Edge{
+				Directed: true,
+				Vertex:   &ast.Node{ID: term.TargetTrue.Name},
+			}
+			edge := &ast.EdgeStmt{
+				From: from,
+				To:   to,
+				Attrs: []*ast.Attr{
+					{Key: "label", Val: "true"},
+				},
+			}
+			graph.Stmts = append(graph.Stmts, edge)
+			// Add false target branch.
+			from = &ast.Node{ID: blockName}
+			to = &ast.Edge{
+				Directed: true,
+				Vertex:   &ast.Node{ID: term.TargetFalse.Name},
+			}
+			edge = &ast.EdgeStmt{
+				From: from,
+				To:   to,
+				Attrs: []*ast.Attr{
+					{Key: "label", Val: "false"},
+				},
+			}
+			graph.Stmts = append(graph.Stmts, edge)
 		default:
 			panic(fmt.Sprintf("support for terminator %T not yet implemented", term))
 		}
@@ -252,43 +288,12 @@ func createDotDir(llPath string, force bool) (string, error) {
 	// Force overwrite existing graph directories.
 	if force {
 		if err := os.RemoveAll(dotDir); err != nil {
-			return "", errutil.Err(err)
+			return "", errors.WithStack(err)
 		}
 	}
 
 	if err := os.Mkdir(dotDir, 0755); err != nil {
-		return "", errutil.Err(err)
+		return "", errors.WithStack(err)
 	}
 	return dotDir, nil
-}
-
-// parseFile parses the given LLVM IR file and returns an in-memory
-// representation of the module.
-func parseFile(llPath string) (*ir.Module, error) {
-	// Create lexer for the input.
-	if llPath == "-" {
-		dbg.Print("Parsing from standard input.")
-	} else {
-		dbg.Printf("Parsing %q.", llPath)
-	}
-	buf, err := ioutilx.ReadFile(llPath)
-	if err != nil {
-		return nil, errutil.Err(err)
-	}
-	s := lexer.NewLexer(buf)
-
-	// Parse input.
-	p := parser.NewParser()
-	m, err := p.Parse(s)
-	if err != nil {
-		if err, ok := err.(*errors.Error); ok {
-			return nil, parser.NewError(err)
-		}
-		return nil, errutil.Err(err)
-	}
-	module, ok := m.(*ir.Module)
-	if !ok {
-		return nil, errutil.Newf("invalid module type; expected *ir.Module, got %T", m)
-	}
-	return module, nil
 }

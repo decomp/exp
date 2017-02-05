@@ -3,7 +3,7 @@ package cfa
 import (
 	"fmt"
 
-	"decomp.org/decomp/graphs/primitive"
+	"github.com/decomp/decomp/graphs/primitive"
 	"github.com/mewspring/dot"
 )
 

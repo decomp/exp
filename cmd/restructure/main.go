@@ -30,7 +30,7 @@ import (
 	"sort"
 	"text/tabwriter"
 
-	"decomp.org/decomp/graphs/primitive"
+	"github.com/decomp/decomp/graphs/primitive"
 	"github.com/decomp/exp/cfa"
 	"github.com/mewkiz/pkg/errutil"
 	"github.com/mewspring/dot"

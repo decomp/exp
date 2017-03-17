@@ -217,11 +217,6 @@ func createCFG(f *ir.Function) (*ast.Graph, error) {
 			//    ret Type Value
 			//
 			// Exit node with no target basic blocks.
-		case *ir.TermUnreachable:
-			// Unreachable instruction.
-			//    unreachable
-			//
-			// Exit node with no target basic blocks.
 		case *ir.TermBr:
 			// Unconditional branch instruction.
 			//    br label TargetBranch
@@ -269,6 +264,50 @@ func createCFG(f *ir.Function) (*ast.Graph, error) {
 				},
 			}
 			graph.Stmts = append(graph.Stmts, edge)
+		case *ir.TermSwitch:
+			// Conditional branching instruction.
+			//    switch i32 Control, label DefaultBranch [
+			//       i32 Comparand1, label TargetBranch1
+			//       i32 Comparand2, label TargetBranch2
+			//       i32 Comparand3, label TargetBranch3
+			//    ]
+			//
+			// Add default target branch.
+			from := &ast.Node{ID: blockName}
+			to := &ast.Edge{
+				Directed: true,
+				Vertex:   &ast.Node{ID: term.TargetDefault.Name},
+			}
+			edge := &ast.EdgeStmt{
+				From: from,
+				To:   to,
+				Attrs: []*ast.Attr{
+					{Key: "label", Val: `"default case"`},
+				},
+			}
+			graph.Stmts = append(graph.Stmts, edge)
+			// Add case target branches.
+			for _, c := range term.Cases {
+				from = &ast.Node{ID: blockName}
+				to = &ast.Edge{
+					Directed: true,
+					Vertex:   &ast.Node{ID: c.Target.Name},
+				}
+				val := fmt.Sprintf(`"case for x=%v"`, c.X.Ident())
+				edge = &ast.EdgeStmt{
+					From: from,
+					To:   to,
+					Attrs: []*ast.Attr{
+						{Key: "label", Val: val},
+					},
+				}
+				graph.Stmts = append(graph.Stmts, edge)
+			}
+		case *ir.TermUnreachable:
+			// Unreachable instruction.
+			//    unreachable
+			//
+			// Exit node with no target basic blocks.
 		default:
 			panic(fmt.Sprintf("support for terminator %T not yet implemented", term))
 		}

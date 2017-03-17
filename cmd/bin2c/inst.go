@@ -148,7 +148,7 @@ func parseIMUL(inst x86asm.Inst) (ast.Stmt, error) {
 	z := getArg(inst.Args[2])
 
 	// Create statement.
-	//    x = x OP y
+	//    x = y * z
 	lhs := x
 	rhs := createBinaryExpr(y, z, token.MUL)
 	return createAssign(lhs, rhs), nil

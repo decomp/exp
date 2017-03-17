@@ -68,6 +68,12 @@ func main() {
 		log.Fatalf("invalid address; expected >= 0x%X and < 0x%X, got 0x%X", baseAddr, baseAddr+len(text), addr)
 	}
 
+	// Parse basic blocks.
+	//blocks, err := parseBlocks(text, offset)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+
 	// Convert the given function to C source code.
 	fn, err := parseFunc(text, offset)
 	if err != nil {

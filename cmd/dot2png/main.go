@@ -1,10 +1,12 @@
-// dot2png is a tool which converts DOT files to PNG images.
+// The dot2png tool converts DOT files to PNG images.
 //
 // Usage:
+//
 //    dot2png FILE.dot...
 //
-//    Flags:
-//      -f    Force overwrite existing images.
+// Flags:
+//
+//    -f    force overwrite existing images
 package main
 
 import (
@@ -35,7 +37,7 @@ func main() {
 		// force specifies whether to force overwrite existing images.
 		force bool
 	)
-	flag.BoolVar(&force, "f", false, "Force overwrite existing images.")
+	flag.BoolVar(&force, "f", false, "force overwrite existing images")
 	flag.Usage = usage
 	flag.Parse()
 

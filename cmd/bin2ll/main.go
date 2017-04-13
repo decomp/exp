@@ -15,6 +15,8 @@ import (
 
 	"github.com/decomp/exp/bin"
 	"github.com/kr/pretty"
+	"github.com/llir/llvm/asm"
+	"github.com/llir/llvm/ir/metadata"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
 )
@@ -65,6 +67,7 @@ func main() {
 		log.Fatalf("%+v", err)
 	}
 	defer d.file.Close()
+	pretty.Println("d:", d)
 
 	// Translate functions from x86 machine code to LLVM IR assembly.
 	funcAddrs := d.funcAddrs
@@ -90,18 +93,20 @@ type disassembler struct {
 	blockAddrs []bin.Address
 	// Chunks of bytes.
 	chunks []Chunk
+	// Functions.
+	funcs map[bin.Address]*function
 }
 
 // parseFile parses the given PE file and associated JSON files, containing
 // information required to disassemble the x86 executables.
 func parseFile(binPath string) (*disassembler, error) {
 	// Parse PE executable.
-	f, err := pe.Open(binPath)
+	file, err := pe.Open(binPath)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	d := &disassembler{
-		file: f,
+		file: file,
 	}
 
 	// Parse function addresses.
@@ -148,6 +153,28 @@ func parseFile(binPath string) (*disassembler, error) {
 		return d.chunks[i].addr < d.chunks[j].addr
 	}
 	sort.Slice(d.chunks, less)
+
+	// Functions.
+	d.funcs = make(map[bin.Address]*function)
+	module, err := asm.ParseFile("funcs.ll")
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	for _, f := range module.Funcs {
+		node, ok := f.Metadata["addr"]
+		if !ok {
+			return nil, errors.Errorf(`unable to locate "addr" metadata for function %q`, f.Name)
+		}
+		var entry bin.Address
+		if err := metadata.Unmarshal(node, &entry); err != nil {
+			return nil, errors.WithStack(err)
+		}
+		fn := &function{
+			Function: f,
+			entry:    entry,
+		}
+		d.funcs[entry] = fn
+	}
 
 	return d, nil
 }

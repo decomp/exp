@@ -9,7 +9,7 @@ import (
 type function struct {
 	*ir.Function
 	entry  bin.Address
-	blocks []*basicBlock
+	blocks map[bin.Address]*basicBlock
 }
 
 type basicBlock struct {

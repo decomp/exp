@@ -41,12 +41,15 @@ Flags:
 func main() {
 	// Parse command line arguments.
 	var (
+		// blockAddr specifies a basic block address to decompile.
+		blockAddr bin.Address
 		// funcAddr specifies a function address to decompile.
 		funcAddr bin.Address
 		// quiet specifies whether to suppress non-error messages.
 		quiet bool
 	)
 	flag.Usage = usage
+	flag.Var(&blockAddr, "block", "basic block address to decompile")
 	flag.Var(&funcAddr, "func", "function address to decompile")
 	flag.BoolVar(&quiet, "q", false, "suppress non-error messages")
 	flag.Parse()
@@ -66,6 +69,21 @@ func main() {
 		log.Fatalf("%+v", err)
 	}
 	defer d.file.Close()
+
+	// TODO: Remove -block. Used for debugging.
+	if blockAddr != 0 {
+		block, err := d.decodeBlock(blockAddr)
+		if err != nil {
+			log.Fatalf("%+v", err)
+		}
+		printBlock(block)
+		fmt.Println("targets from basic block address:", block.addr)
+		targets := d.targets(block.term)
+		for _, target := range targets {
+			fmt.Println(target)
+		}
+		return
+	}
 
 	// Translate functions from x86 machine code to LLVM IR assembly.
 	funcAddrs := d.funcAddrs
@@ -124,7 +142,7 @@ func parseFile(binPath string) (*disassembler, error) {
 	default:
 		panic(fmt.Errorf("support for optional header type %T not yet implemented", opt))
 	}
-	fmt.Println("executable entry address:", d.entry)
+	dbg.Println("executable entry address:", d.entry)
 
 	// Parse function addresses.
 	funcAddrs, err := parseAddrs("funcs.json")

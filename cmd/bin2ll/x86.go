@@ -64,6 +64,7 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*function, error) {
 // decodeBlock decodes the x86 machine code of the basic block at the given
 // address.
 func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
+	dbg.Printf("decoding basic block at %v", addr)
 	// Access the data of the executable at the given address.
 	src, err := d.data(addr)
 	if err != nil {
@@ -86,6 +87,9 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
 	for j := int64(0); j < maxLen; {
 		inst, err := x86asm.Decode(src, d.mode)
 		if err != nil {
+			// TODO: Remove debug info when the disassembler matures.
+			printBlock(block)
+			fmt.Println("addr:", addr)
 			return nil, errors.WithStack(err)
 		}
 		i := &instruction{
@@ -96,6 +100,12 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
 		j += int64(inst.Len)
 		src = src[inst.Len:]
 		addr += bin.Address(inst.Len)
+		if i.isTerm() {
+			if j != maxLen {
+				panic(fmt.Errorf("basic block length mismatch; expected %d, got %d", maxLen, j))
+			}
+			break
+		}
 	}
 	lastInst := block.insts[len(block.insts)-1]
 	if lastInst.isTerm() {
@@ -149,7 +159,8 @@ func (d *disassembler) targets(term *instruction) []bin.Address {
 		return []bin.Address{targetFalse, targetTrue}
 	case x86asm.JMP:
 		// target branch of JMP instruction.
-		target := d.getAddr(term.addr, term.Args[0])
+		base := term.addr + bin.Address(term.Len)
+		target := d.getAddr(base, term.Args[0])
 		return []bin.Address{target}
 	case x86asm.RET:
 		// no target branches.
@@ -224,7 +235,9 @@ func printBlock(block *basicBlock) {
 	for _, inst := range block.insts {
 		fmt.Println(inst)
 	}
-	if block.term.isDummyTerm() {
+	if block.term == nil {
+		fmt.Println("; ### terminator missing in basic block")
+	} else if block.term.isDummyTerm() {
 		fmt.Println("; dummy terminator")
 	} else {
 		fmt.Println(block.term)

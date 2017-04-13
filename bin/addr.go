@@ -42,10 +42,9 @@ func (v *Address) UnmarshalJSON(data []byte) error {
 	return v.Set(s)
 }
 
-// MarshalJSON returns the JSON encoding of v.
-func (v Address) MarshalJSON() ([]byte, error) {
-	s := strconv.Quote(v.String())
-	return []byte(s), nil
+// MarshalText returns the textual representation of v.
+func (v Address) MarshalText() ([]byte, error) {
+	return []byte(v.String()), nil
 }
 
 // UnmarshalMetadata unmarshals the metadata node into v.

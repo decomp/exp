@@ -102,12 +102,15 @@ func extract(lstPath string) error {
 	sort.Sort(bin.Addresses(blockAddrs))
 
 	// Locate data addresses.
-	//
-	// Reset m.
-	m = make(map[bin.Address]bool)
-	if err := locateAddrs(input, m, regJumpTable); err != nil {
+	tableAddrs := make(map[bin.Address]bool)
+	if err := locateAddrs(input, tableAddrs, regJumpTable); err != nil {
 		return errors.WithStack(err)
 	}
+	for dataAddr := range tableAddrs {
+		dataAddrs = append(dataAddrs, dataAddr)
+	}
+	// Reset m.
+	m = make(map[bin.Address]bool)
 	if err := locateAddrs(input, m, regIndirectTable); err != nil {
 		return errors.WithStack(err)
 	}
@@ -122,24 +125,74 @@ func extract(lstPath string) error {
 	}
 	sort.Sort(bin.Addresses(dataAddrs))
 
+	// Locate targets of jump tables.
+	tables, err := locateTargets(input, tableAddrs)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	// Store JSON files.
 	if err := storeJSON("funcs.json", funcAddrs); err != nil {
-		log.Fatalf("%+v", err)
+		return errors.WithStack(err)
 	}
 	if err := storeJSON("blocks.json", blockAddrs); err != nil {
-		log.Fatalf("%+v", err)
+		return errors.WithStack(err)
 	}
 	if err := storeJSON("data.json", dataAddrs); err != nil {
-		log.Fatalf("%+v", err)
+		return errors.WithStack(err)
+	}
+	if err := storeJSON("tables.json", tables); err != nil {
+		return errors.WithStack(err)
 	}
 
 	return nil
 }
 
+// locateTargets locates the targets of jump tables within the IDA assembly
+// listing.
+func locateTargets(input []byte, tableAddrs map[bin.Address]bool) (map[bin.Address][]bin.Address, error) {
+	tables := make(map[bin.Address][]bin.Address)
+	for tableAddr := range tableAddrs {
+		present := make(map[bin.Address]bool)
+		s := fmt.Sprintf("%06X", uint64(tableAddr))
+		regTargets := `[.]text[:]00` + s + `[^\n]*? dd (([^\n]*?offset[ \t]loc_([0-9a-fA-F]+))+)`
+		re, err := regexp.Compile(regTargets)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		subs := re.FindAllSubmatch(input, -1)
+		for _, sub := range subs {
+			line := sub[1]
+			// line contains data formatted as follows.
+			//
+			//    offset loc_422F0B, offset loc_422F0B, offset loc_422F1B
+			re, err := regexp.Compile("loc_([0-9a-fA-F]+)")
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			subs := re.FindAllSubmatch(line, -1)
+			for _, sub := range subs {
+				var target bin.Address
+				s := "0x" + string(sub[1])
+				if err := target.Set(s); err != nil {
+					return nil, errors.WithStack(err)
+				}
+				if present[target] {
+					// skip if target already present.
+					continue
+				}
+				tables[tableAddr] = append(tables[tableAddr], target)
+				present[target] = true
+			}
+		}
+	}
+	return tables, nil
+}
+
 // storeJSON stores a JSON encoded representation of the addresses to the given
 // file.
-func storeJSON(path string, addrs []bin.Address) error {
-	buf, err := json.MarshalIndent(addrs, "", "\t")
+func storeJSON(path string, v interface{}) error {
+	buf, err := json.MarshalIndent(v, "", "\t")
 	if err != nil {
 		return errors.WithStack(err)
 	}

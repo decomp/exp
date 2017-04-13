@@ -113,6 +113,8 @@ type disassembler struct {
 	funcAddrs []bin.Address
 	// Basic block addresses.
 	blockAddrs []bin.Address
+	// Map from jump table address to target addresses.
+	tables map[bin.Address][]bin.Address
 	// Chunks of bytes.
 	chunks []Chunk
 	// Functions.
@@ -128,7 +130,8 @@ func parseFile(binPath string) (*disassembler, error) {
 		return nil, errors.WithStack(err)
 	}
 	d := &disassembler{
-		file: file,
+		file:   file,
+		tables: make(map[bin.Address][]bin.Address),
 	}
 	switch opt := file.OptionalHeader.(type) {
 	case *pe.OptionalHeader32:
@@ -166,6 +169,11 @@ func parseFile(binPath string) (*disassembler, error) {
 		return nil, errors.WithStack(err)
 	}
 	sort.Sort(bin.Addresses(dataAddrs))
+
+	// Parse jump table targets.
+	if err := parseJSON("tables.json", &d.tables); err != nil {
+		return nil, errors.WithStack(err)
+	}
 
 	// Append basic blocks as code chunks.
 	for _, blockAddr := range blockAddrs {

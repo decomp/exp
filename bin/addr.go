@@ -33,13 +33,9 @@ func (v *Address) Set(s string) error {
 	return nil
 }
 
-// UnmarshalJSON unmarshals the data into v.
-func (v *Address) UnmarshalJSON(data []byte) error {
-	s, err := strconv.Unquote(string(data))
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	return v.Set(s)
+// UnmarshalText unmarshals the text into v.
+func (v *Address) UnmarshalText(text []byte) error {
+	return v.Set(string(text))
 }
 
 // MarshalText returns the textual representation of v.

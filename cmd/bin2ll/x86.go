@@ -152,16 +152,16 @@ func (d *disassembler) targets(term *instruction) []bin.Address {
 	switch term.Op {
 	case x86asm.JA, x86asm.JAE, x86asm.JB, x86asm.JBE, x86asm.JCXZ, x86asm.JE, x86asm.JECXZ, x86asm.JG, x86asm.JGE, x86asm.JL, x86asm.JLE, x86asm.JNE, x86asm.JNO, x86asm.JNP, x86asm.JNS, x86asm.JO, x86asm.JP, x86asm.JRCXZ, x86asm.JS:
 		// target branch of conditional branching instruction.
-		base := term.addr + bin.Address(term.Len)
-		targetTrue := d.getAddr(base, term.Args[0])
+		next := term.addr + bin.Address(term.Len)
+		targetsTrue := d.getAddrs(next, term.Args[0])
 		// fallthrough branch of conditional branching instruction.
-		targetFalse := base
-		return []bin.Address{targetFalse, targetTrue}
+		targetFalse := next
+		return append(targetsTrue, targetFalse)
 	case x86asm.JMP:
 		// target branch of JMP instruction.
-		base := term.addr + bin.Address(term.Len)
-		target := d.getAddr(base, term.Args[0])
-		return []bin.Address{target}
+		next := term.addr + bin.Address(term.Len)
+		targets := d.getAddrs(next, term.Args[0])
+		return targets
 	case x86asm.RET:
 		// no target branches.
 		return nil
@@ -170,12 +170,21 @@ func (d *disassembler) targets(term *instruction) []bin.Address {
 	}
 }
 
-// getAddr returns the address specified by the original address and given
-// argument.
-func (d *disassembler) getAddr(base bin.Address, arg x86asm.Arg) bin.Address {
+// getAddrs returns the addresses specified given argument.
+func (d *disassembler) getAddrs(next bin.Address, arg x86asm.Arg) []bin.Address {
 	switch arg := arg.(type) {
+	//case x86asm.Reg:
+	case x86asm.Mem:
+		disp := bin.Address(arg.Disp)
+		if targets, ok := d.tables[disp]; ok {
+			return targets
+		}
+		fmt.Println("arg:", arg)
+		pretty.Println(arg)
+		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
+	//case x86asm.Imm:
 	case x86asm.Rel:
-		return base + bin.Address(arg)
+		return []bin.Address{next + bin.Address(arg)}
 	default:
 		fmt.Println("arg:", arg)
 		pretty.Println(arg)

@@ -67,7 +67,6 @@ func main() {
 		log.Fatalf("%+v", err)
 	}
 	defer d.file.Close()
-	pretty.Println("d:", d)
 
 	// Translate functions from x86 machine code to LLVM IR assembly.
 	funcAddrs := d.funcAddrs
@@ -87,6 +86,12 @@ func main() {
 type disassembler struct {
 	// PE file.
 	file *pe.File
+	// Processor mode (16, 32 or 64).
+	mode int
+	// Image base address.
+	imageBase uint64
+	// Entry address.
+	entry bin.Address
 	// Function addresses.
 	funcAddrs []bin.Address
 	// Basic block addresses.
@@ -108,6 +113,19 @@ func parseFile(binPath string) (*disassembler, error) {
 	d := &disassembler{
 		file: file,
 	}
+	switch opt := file.OptionalHeader.(type) {
+	case *pe.OptionalHeader32:
+		d.mode = 32
+		d.imageBase = uint64(opt.ImageBase)
+		d.entry = bin.Address(opt.AddressOfEntryPoint)
+	case *pe.OptionalHeader64:
+		d.mode = 64
+		d.imageBase = opt.ImageBase
+		d.entry = bin.Address(opt.AddressOfEntryPoint)
+	default:
+		panic(fmt.Errorf("support for optional header type %T not yet implemented", opt))
+	}
+	fmt.Println("executable entry address:", d.entry)
 
 	// Parse function addresses.
 	funcAddrs, err := parseAddrs("funcs.json")
@@ -172,11 +190,36 @@ func parseFile(binPath string) (*disassembler, error) {
 		fn := &function{
 			Function: f,
 			entry:    entry,
+			blocks:   make(map[bin.Address]*basicBlock),
 		}
 		d.funcs[entry] = fn
 	}
 
 	return d, nil
+}
+
+// vaddr returns the virtual address for the specified offset from the image
+// base.
+func (d *disassembler) vaddr(offset uint64) bin.Address {
+	return bin.Address(d.imageBase + offset)
+}
+
+// data returns access to the data of the executable starting at the given
+// address.
+func (d *disassembler) data(addr bin.Address) ([]byte, error) {
+	for _, section := range d.file.Sections {
+		start := d.vaddr(uint64(section.VirtualAddress))
+		end := start + bin.Address(section.Size)
+		if start <= addr && addr < end {
+			offset := uint64(addr - start)
+			data, err := section.Data()
+			if err != nil {
+				return nil, errors.Errorf("unable to access data of section %q; %v", section.Name, err)
+			}
+			return data[offset:], nil
+		}
+	}
+	return nil, errors.Errorf("unable to locate section for address %v", addr)
 }
 
 // Chunk represents a chunk of bytes.

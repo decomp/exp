@@ -14,7 +14,6 @@ import (
 	"sort"
 
 	"github.com/decomp/exp/bin"
-	"github.com/kr/pretty"
 	"github.com/llir/llvm/asm"
 	"github.com/llir/llvm/ir/metadata"
 	"github.com/mewkiz/pkg/term"
@@ -78,7 +77,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("%+v", err)
 		}
-		pretty.Println("f:", f)
+		printFunc(f)
 	}
 }
 

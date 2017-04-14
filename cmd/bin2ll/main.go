@@ -77,11 +77,11 @@ func main() {
 			log.Fatalf("%+v", err)
 		}
 		printBlock(block)
-		fmt.Println("targets from basic block address:", block.addr)
-		targets := d.targets(block.term)
-		for _, target := range targets {
-			fmt.Println(target)
-		}
+		//fmt.Println("targets from basic block address:", block.addr)
+		//targets := d.targets(block.term)
+		//for _, target := range targets {
+		//	fmt.Println(target)
+		//}
 		return
 	}
 
@@ -107,6 +107,10 @@ type disassembler struct {
 	mode int
 	// Image base address.
 	imageBase uint64
+	// Code section base address.
+	codeBase uint64
+	// Code section size.
+	codeSize uint64
 	// Entry address.
 	entry bin.Address
 	// Function addresses.
@@ -119,6 +123,8 @@ type disassembler struct {
 	chunks []Chunk
 	// Functions.
 	funcs map[bin.Address]*function
+	// TODO: Remove.
+	decodedBlock map[bin.Address]bool
 }
 
 // parseFile parses the given PE file and associated JSON files, containing
@@ -130,17 +136,22 @@ func parseFile(binPath string) (*disassembler, error) {
 		return nil, errors.WithStack(err)
 	}
 	d := &disassembler{
-		file:   file,
-		tables: make(map[bin.Address][]bin.Address),
+		file:         file,
+		tables:       make(map[bin.Address][]bin.Address),
+		decodedBlock: make(map[bin.Address]bool),
 	}
 	switch opt := file.OptionalHeader.(type) {
 	case *pe.OptionalHeader32:
 		d.mode = 32
 		d.imageBase = uint64(opt.ImageBase)
+		d.codeBase = uint64(opt.BaseOfCode)
+		d.codeSize = uint64(opt.SizeOfCode)
 		d.entry = bin.Address(opt.AddressOfEntryPoint)
 	case *pe.OptionalHeader64:
 		d.mode = 64
 		d.imageBase = opt.ImageBase
+		d.codeBase = uint64(opt.BaseOfCode)
+		d.codeSize = uint64(opt.SizeOfCode)
 		d.entry = bin.Address(opt.AddressOfEntryPoint)
 	default:
 		panic(fmt.Errorf("support for optional header type %T not yet implemented", opt))

@@ -31,6 +31,7 @@ type instruction struct {
 
 // decodeFunc decodes the x86 machine code of the function at the given address.
 func (d *disassembler) decodeFunc(entry bin.Address) (*function, error) {
+	dbg.Printf("decoding function at %v", entry)
 	f, ok := d.funcs[entry]
 	if !ok {
 		f = &function{
@@ -47,7 +48,7 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*function, error) {
 		}
 		f.blocks[addr] = block
 		// Add terminators to queue, if not already decoded.
-		targets := d.targets(block.term)
+		targets := d.targets(entry, block.term)
 		for _, target := range targets {
 			if _, ok := f.blocks[target]; ok {
 				// ignore block if already decoded.
@@ -64,6 +65,10 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*function, error) {
 // decodeBlock decodes the x86 machine code of the basic block at the given
 // address.
 func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
+	if d.decodedBlock[addr] {
+		panic(fmt.Errorf("decoded basic block at %v twice", addr))
+	}
+	d.decodedBlock[addr] = true
 	dbg.Printf("decoding basic block at %v", addr)
 	// Access the data of the executable at the given address.
 	src, err := d.data(addr)
@@ -73,12 +78,7 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
 
 	// Calculate maximum basic block length, based on the address of the
 	// succeeding chunk.
-	less := func(i int) bool {
-		return d.chunks[i].addr > addr
-	}
-	index := sort.Search(len(d.chunks), less)
-	end := d.chunks[index].addr
-	maxLen := int64(end - addr)
+	maxLen := d.getMaxBlockLen(addr)
 
 	// Decode instructions.
 	block := &basicBlock{
@@ -143,8 +143,9 @@ func (inst *instruction) isDummyTerm() bool {
 	return inst.Inst == zero
 }
 
-// targets returns the target addresses of the given terminator.
-func (d *disassembler) targets(term *instruction) []bin.Address {
+// targets returns the target addresses of the given terminator. Entry specifies
+// the entry address of the function to which the terminator belongs.
+func (d *disassembler) targets(entry bin.Address, term *instruction) []bin.Address {
 	// dummy terminator denoted with x86asm.Inst zero value.
 	if term.isDummyTerm() {
 		return []bin.Address{term.addr}
@@ -158,6 +159,10 @@ func (d *disassembler) targets(term *instruction) []bin.Address {
 		targetFalse := next
 		return append(targetsTrue, targetFalse)
 	case x86asm.JMP:
+		if d.isTailCall(entry, term) {
+			// no target branches for tail calls.
+			return nil
+		}
 		// target branch of JMP instruction.
 		next := term.addr + bin.Address(term.Len)
 		targets := d.getAddrs(next, term.Args[0])
@@ -167,6 +172,38 @@ func (d *disassembler) targets(term *instruction) []bin.Address {
 		return nil
 	default:
 		panic(fmt.Errorf("support for terminator opcode %v not yet implemented", term.Op))
+	}
+}
+
+// isTailCall reports whether the given instruction is a tail call instruction.
+func (d *disassembler) isTailCall(entry bin.Address, inst *instruction) bool {
+	end := d.getFuncEndAddr(entry)
+	next := inst.addr + bin.Address(inst.Len)
+	fmt.Println("start:", entry)
+	fmt.Println("end:", end)
+	switch arg := inst.Args[0].(type) {
+	//case x86asm.Reg:
+	case x86asm.Mem:
+		target := bin.Address(arg.Disp)
+		fmt.Println("target:", target)
+		// The jump is a tail call if target is outside of function entry and end
+		// address.
+		if target < entry || target >= end {
+			return true
+		}
+		return false
+	//case x86asm.Imm:
+	case x86asm.Rel:
+		target := next + bin.Address(arg)
+		fmt.Println("target:", target)
+		if target < entry || target >= end {
+			return true
+		}
+		return false
+	default:
+		fmt.Println("arg:", arg)
+		pretty.Println(arg)
+		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
 	}
 }
 
@@ -190,6 +227,35 @@ func (d *disassembler) getAddrs(next bin.Address, arg x86asm.Arg) []bin.Address 
 		pretty.Println(arg)
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
 	}
+}
+
+// getMaxBlockLen returns the maximum length of the given basic block.
+func (d *disassembler) getMaxBlockLen(blockAddr bin.Address) int64 {
+	less := func(i int) bool {
+		return blockAddr < d.chunks[i].addr
+	}
+	index := sort.Search(len(d.chunks), less)
+	if index < len(d.chunks) {
+		return int64(d.chunks[index].addr - blockAddr)
+	}
+	return int64(d.getCodeEnd() - blockAddr)
+}
+
+// getFuncEndAddr returns the end address of the given function.
+func (d *disassembler) getFuncEndAddr(entry bin.Address) bin.Address {
+	less := func(i int) bool {
+		return entry < d.funcAddrs[i]
+	}
+	index := sort.Search(len(d.funcAddrs), less)
+	if index < len(d.funcAddrs) {
+		return d.funcAddrs[index]
+	}
+	return d.getCodeEnd()
+}
+
+// getCodeEnd returns the end address of the code section.
+func (d *disassembler) getCodeEnd() bin.Address {
+	return bin.Address(d.imageBase + d.codeBase + d.codeSize)
 }
 
 // ### [ Helper functions ] ####################################################

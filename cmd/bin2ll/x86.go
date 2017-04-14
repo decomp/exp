@@ -207,10 +207,10 @@ func (d *disassembler) isTailCall(funcEntry bin.Address, inst *instruction) bool
 			// available.
 			return true
 		}
-
-		fmt.Println("target:", target)
-		// The jump is a tail call if target is outside of function entry and end
-		// address.
+		if d.isImport(target) {
+			// Call to imported function.
+			return true
+		}
 		if !d.isFunc(target) {
 			fmt.Println("arg:", arg)
 			pretty.Println(arg)
@@ -228,7 +228,10 @@ func (d *disassembler) isTailCall(funcEntry bin.Address, inst *instruction) bool
 			// Target inside function chunk.
 			return false
 		}
-		fmt.Println("target:", target)
+		if d.isImport(target) {
+			// Call to imported function.
+			return true
+		}
 		if !d.isFunc(target) {
 			fmt.Println("arg:", arg)
 			pretty.Println(arg)
@@ -240,6 +243,17 @@ func (d *disassembler) isTailCall(funcEntry bin.Address, inst *instruction) bool
 		pretty.Println(arg)
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
 	}
+}
+
+// isImport reports whether the given address is part of the `.idata` section.
+func (d *disassembler) isImport(addr bin.Address) bool {
+	sect := d.file.Section(".idata")
+	if sect == nil {
+		return false
+	}
+	start := bin.Address(sect.VirtualAddress)
+	end := start + bin.Address(sect.VirtualSize)
+	return start <= addr && addr < end
 }
 
 // isFunc reports whether the given address is the entry address of a function.

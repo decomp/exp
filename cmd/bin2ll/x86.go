@@ -247,12 +247,8 @@ func (d *disassembler) isTailCall(funcEntry bin.Address, inst *instruction) bool
 
 // isImport reports whether the given address is part of the `.idata` section.
 func (d *disassembler) isImport(addr bin.Address) bool {
-	sect := d.file.Section(".idata")
-	if sect == nil {
-		return false
-	}
-	start := bin.Address(sect.VirtualAddress)
-	end := start + bin.Address(sect.VirtualSize)
+	start := bin.Address(d.imageBase + d.idataBase)
+	end := start + bin.Address(d.idataSize)
 	return start <= addr && addr < end
 }
 

@@ -115,10 +115,14 @@ type disassembler struct {
 	mode int
 	// Image base address.
 	imageBase uint64
-	// Code section base address.
+	// .text section base address.
 	codeBase uint64
-	// Code section size.
+	// .text section size.
 	codeSize uint64
+	// .idata section base address.
+	idataBase uint64
+	// .idata section size.
+	idataSize uint64
 	// Entry address.
 	entry bin.Address
 	// Function addresses.
@@ -158,12 +162,16 @@ func parseFile(binPath string) (*disassembler, error) {
 		d.imageBase = uint64(opt.ImageBase)
 		d.codeBase = uint64(opt.BaseOfCode)
 		d.codeSize = uint64(opt.SizeOfCode)
+		d.idataBase = uint64(opt.DataDirectory[12].VirtualAddress)
+		d.idataSize = uint64(opt.DataDirectory[12].Size)
 		d.entry = bin.Address(opt.AddressOfEntryPoint)
 	case *pe.OptionalHeader64:
 		d.mode = 64
 		d.imageBase = opt.ImageBase
 		d.codeBase = uint64(opt.BaseOfCode)
 		d.codeSize = uint64(opt.SizeOfCode)
+		d.idataBase = uint64(opt.DataDirectory[12].VirtualAddress)
+		d.idataSize = uint64(opt.DataDirectory[12].Size)
 		d.entry = bin.Address(opt.AddressOfEntryPoint)
 	default:
 		panic(fmt.Errorf("support for optional header type %T not yet implemented", opt))

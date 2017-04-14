@@ -1,3 +1,11 @@
+// TODO: Add support for extracting information from function chunks.
+//
+// Example.
+//
+//    .text:00416481 ; START OF FUNCTION CHUNK FOR engine_4163AC
+//
+//    .text:004163AC ; FUNCTION CHUNK	AT .text:00416481 SIZE 00000007	BYTES
+
 // The lst2json tool extracts basic block addresses from IDA assembly listings
 // (*.lst -> *.json).
 package main

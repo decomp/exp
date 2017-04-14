@@ -187,35 +187,51 @@ func (d *disassembler) isTailCall(funcEntry bin.Address, inst *instruction) bool
 	case x86asm.Mem:
 		target := bin.Address(arg.Disp)
 		if _, ok := d.tables[target]; ok {
+			// Target read from jump table (e.g. switch statement).
 			return false
 		}
 		if funcEntry <= target && target < funcEnd {
+			// Target inside function.
 			return false
 		}
 		if funcAddr, ok := d.chunkFunc[target]; ok && funcAddr == funcEntry {
+			// Target inside function chunk.
 			return false
 		}
+		if target < d.getCodeStart() && arg.Base != 0 {
+			// Target function pointer; read from memory [base reg + disp imm].
+			//
+			// Note, this may be a false assumption.
+			//
+			// TODO: Validate this assumption once type analysis information is
+			// available.
+			return true
+		}
+
 		fmt.Println("target:", target)
 		// The jump is a tail call if target is outside of function entry and end
 		// address.
 		if !d.isFunc(target) {
+			fmt.Println("arg:", arg)
+			pretty.Println(arg)
 			panic(fmt.Errorf("tail call to non-function address %v", target))
 		}
 		return true
 	//case x86asm.Imm:
 	case x86asm.Rel:
 		target := next + bin.Address(arg)
-		if _, ok := d.tables[target]; ok {
-			return false
-		}
 		if funcEntry <= target && target < funcEnd {
+			// Target inside function.
 			return false
 		}
 		if funcAddr, ok := d.chunkFunc[target]; ok && funcAddr == funcEntry {
+			// Target inside function chunk.
 			return false
 		}
 		fmt.Println("target:", target)
 		if !d.isFunc(target) {
+			fmt.Println("arg:", arg)
+			pretty.Println(arg)
 			panic(fmt.Errorf("tail call to non-function address %v", target))
 		}
 		return true

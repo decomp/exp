@@ -160,6 +160,7 @@ func (d *disassembler) targets(entry bin.Address, term *instruction) []bin.Addre
 		return append(targetsTrue, targetFalse)
 	case x86asm.JMP:
 		if d.isTailCall(entry, term) {
+			dbg.Printf("tail call at %v", term.addr)
 			// no target branches for tail calls.
 			return nil
 		}
@@ -176,35 +177,65 @@ func (d *disassembler) targets(entry bin.Address, term *instruction) []bin.Addre
 }
 
 // isTailCall reports whether the given instruction is a tail call instruction.
-func (d *disassembler) isTailCall(entry bin.Address, inst *instruction) bool {
-	end := d.getFuncEndAddr(entry)
+func (d *disassembler) isTailCall(funcEntry bin.Address, inst *instruction) bool {
+	funcEnd := d.getFuncEndAddr(funcEntry)
 	next := inst.addr + bin.Address(inst.Len)
-	fmt.Println("start:", entry)
-	fmt.Println("end:", end)
+	fmt.Println("start:", funcEntry)
+	fmt.Println("funcEnd:", funcEnd)
 	switch arg := inst.Args[0].(type) {
 	//case x86asm.Reg:
 	case x86asm.Mem:
 		target := bin.Address(arg.Disp)
+		if _, ok := d.tables[target]; ok {
+			return false
+		}
+		if funcEntry <= target && target < funcEnd {
+			return false
+		}
+		if funcAddr, ok := d.chunkFunc[target]; ok && funcAddr == funcEntry {
+			return false
+		}
 		fmt.Println("target:", target)
 		// The jump is a tail call if target is outside of function entry and end
 		// address.
-		if target < entry || target >= end {
-			return true
+		if !d.isFunc(target) {
+			panic(fmt.Errorf("tail call to non-function address %v", target))
 		}
-		return false
+		return true
 	//case x86asm.Imm:
 	case x86asm.Rel:
 		target := next + bin.Address(arg)
-		fmt.Println("target:", target)
-		if target < entry || target >= end {
-			return true
+		if _, ok := d.tables[target]; ok {
+			return false
 		}
-		return false
+		if funcEntry <= target && target < funcEnd {
+			return false
+		}
+		if funcAddr, ok := d.chunkFunc[target]; ok && funcAddr == funcEntry {
+			return false
+		}
+		fmt.Println("target:", target)
+		if !d.isFunc(target) {
+			panic(fmt.Errorf("tail call to non-function address %v", target))
+		}
+		return true
 	default:
 		fmt.Println("arg:", arg)
 		pretty.Println(arg)
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
 	}
+}
+
+// isFunc reports whether the given address is the entry address of a function.
+func (d *disassembler) isFunc(addr bin.Address) bool {
+	less := func(i int) bool {
+		return addr <= d.funcAddrs[i]
+	}
+	index := sort.Search(len(d.funcAddrs), less)
+	if index < len(d.funcAddrs) {
+		return d.funcAddrs[index] == addr
+	}
+	return false
 }
 
 // getAddrs returns the addresses specified given argument.
@@ -253,9 +284,14 @@ func (d *disassembler) getFuncEndAddr(entry bin.Address) bin.Address {
 	return d.getCodeEnd()
 }
 
+// getCodeStart returns the start address of the code section.
+func (d *disassembler) getCodeStart() bin.Address {
+	return bin.Address(d.imageBase + d.codeBase)
+}
+
 // getCodeEnd returns the end address of the code section.
 func (d *disassembler) getCodeEnd() bin.Address {
-	return bin.Address(d.imageBase + d.codeBase + d.codeSize)
+	return d.getCodeStart() + bin.Address(d.codeSize)
 }
 
 // ### [ Helper functions ] ####################################################

@@ -43,6 +43,9 @@ func main() {
 	var (
 		// blockAddr specifies a basic block address to decompile.
 		blockAddr bin.Address
+		// TODO: Remove -first flag and firstAddr.
+		// firstAddr specifies the first function address to decompile.
+		firstAddr bin.Address
 		// funcAddr specifies a function address to decompile.
 		funcAddr bin.Address
 		// quiet specifies whether to suppress non-error messages.
@@ -50,6 +53,7 @@ func main() {
 	)
 	flag.Usage = usage
 	flag.Var(&blockAddr, "block", "basic block address to decompile")
+	flag.Var(&firstAddr, "first", "first function address to decompile")
 	flag.Var(&funcAddr, "func", "function address to decompile")
 	flag.BoolVar(&quiet, "q", false, "suppress non-error messages")
 	flag.Parse()
@@ -91,6 +95,10 @@ func main() {
 		funcAddrs = []bin.Address{funcAddr}
 	}
 	for _, funcAddr := range funcAddrs {
+		if firstAddr != 0 && funcAddr < firstAddr {
+			// skip functions with lower address than the first function.
+			continue
+		}
 		f, err := d.decodeFunc(funcAddr)
 		if err != nil {
 			log.Fatalf("%+v", err)
@@ -123,6 +131,9 @@ type disassembler struct {
 	chunks []Chunk
 	// Functions.
 	funcs map[bin.Address]*function
+	// Map from basic block address (function chunk) to function address, to
+	// which the basic block belongs.
+	chunkFunc map[bin.Address]bin.Address
 	// TODO: Remove.
 	decodedBlock map[bin.Address]bool
 }
@@ -138,6 +149,7 @@ func parseFile(binPath string) (*disassembler, error) {
 	d := &disassembler{
 		file:         file,
 		tables:       make(map[bin.Address][]bin.Address),
+		chunkFunc:    make(map[bin.Address]bin.Address),
 		decodedBlock: make(map[bin.Address]bool),
 	}
 	switch opt := file.OptionalHeader.(type) {
@@ -183,6 +195,11 @@ func parseFile(binPath string) (*disassembler, error) {
 
 	// Parse jump table targets.
 	if err := parseJSON("tables.json", &d.tables); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	// Parse function chunks.
+	if err := parseJSON("chunks.json", &d.chunkFunc); err != nil {
 		return nil, errors.WithStack(err)
 	}
 

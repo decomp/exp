@@ -9,6 +9,7 @@ import (
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/metadata"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	"github.com/mewbak/x86/x86asm"
@@ -19,7 +20,21 @@ import (
 // assembly.
 func (d *disassembler) translateFunc(f *function) error {
 	if f.Function == nil {
-		f.Function = &ir.Function{}
+		// TODO: Add proper support for type signatures once type analysis has
+		// been conducted.
+		name := fmt.Sprintf("f_%06X", uint64(f.entry))
+		sig := types.NewFunc(types.Void)
+		typ := types.NewPointer(sig)
+		f.Function = &ir.Function{
+			Name: name,
+			Typ:  typ,
+			Sig:  sig,
+			Metadata: map[string]*metadata.Metadata{
+				"addr": &metadata.Metadata{
+					Nodes: []metadata.Node{&metadata.String{Val: f.entry.String()}},
+				},
+			},
+		}
 	}
 	var blocks []*basicBlock
 	for _, block := range f.blocks {
@@ -92,8 +107,17 @@ func (d *disassembler) translateInst(f *function, block *basicBlock, inst *instr
 	switch inst.Op {
 	case x86asm.AND:
 		return d.instAND(f, block, inst)
+	case x86asm.CALL:
+		return d.instCALL(f, block, inst)
+	case x86asm.IMUL:
+		return d.instIMUL(f, block, inst)
+	case x86asm.INC:
+		return d.instINC(f, block, inst)
 	case x86asm.MOV:
 		return d.instMOV(f, block, inst)
+	case x86asm.PUSH, x86asm.POP:
+		// TODO: Figure out how to handle push and pop.
+		return nil
 	default:
 		panic(fmt.Errorf("support for instruction opcode %v not yet implemented", inst.Op))
 	}
@@ -102,18 +126,52 @@ func (d *disassembler) translateInst(f *function, block *basicBlock, inst *instr
 // instAND translates the given AND instruction from x86 machine code to LLVM IR
 // assembly.
 func (d *disassembler) instAND(f *function, block *basicBlock, inst *instruction) error {
-	x := d.useArg(f, block, inst.Args[0])
-	y := d.useArg(f, block, inst.Args[1])
+	x := d.useArg(f, block, inst, inst.Args[0])
+	y := d.useArg(f, block, inst, inst.Args[1])
 	result := block.NewAnd(x, y)
-	d.defArg(f, block, inst.Args[0], result)
+	d.defArg(f, block, inst, inst.Args[0], result)
+	return nil
+}
+
+// instCALL translates the given CALL instruction from x86 machine code to LLVM
+// IR assembly.
+func (d *disassembler) instCALL(f *function, block *basicBlock, inst *instruction) error {
+	v := d.useArg(f, block, inst, inst.Args[0])
+	callee, ok := v.(value.Named)
+	if !ok {
+		return errors.Errorf("invalid callee type; expected value.Named, got %T", v)
+	}
+	// TODO: Handle call arguments.
+	block.NewCall(callee)
+	// TODO: Handle return values; set EAX?
+	return nil
+}
+
+// instIMUL translates the given IMUL instruction from x86 machine code to LLVM
+// IR assembly.
+func (d *disassembler) instIMUL(f *function, block *basicBlock, inst *instruction) error {
+	x := d.useArg(f, block, inst, inst.Args[1])
+	y := d.useArg(f, block, inst, inst.Args[2])
+	result := block.NewMul(x, y)
+	d.defArg(f, block, inst, inst.Args[0], result)
+	return nil
+}
+
+// instINC translates the given INC instruction from x86 machine code to LLVM IR
+// assembly.
+func (d *disassembler) instINC(f *function, block *basicBlock, inst *instruction) error {
+	x := d.useArg(f, block, inst, inst.Args[0])
+	one := constant.NewInt(1, types.I32)
+	result := block.NewAdd(x, one)
+	d.defArg(f, block, inst, inst.Args[0], result)
 	return nil
 }
 
 // instMOV translates the given MOV instruction from x86 machine code to LLVM IR
 // assembly.
 func (d *disassembler) instMOV(f *function, block *basicBlock, inst *instruction) error {
-	y := d.useArg(f, block, inst.Args[1])
-	d.defArg(f, block, inst.Args[0], y)
+	y := d.useArg(f, block, inst, inst.Args[1])
+	d.defArg(f, block, inst, inst.Args[0], y)
 	return nil
 }
 
@@ -131,11 +189,12 @@ func (d *disassembler) translateTerm(f *function, block *basicBlock, term *instr
 	}
 }
 
-func (d *disassembler) useArg(f *function, block *basicBlock, arg x86asm.Arg) value.Value {
+func (d *disassembler) useArg(f *function, block *basicBlock, inst *instruction, arg x86asm.Arg) value.Value {
 	fmt.Println("useArg:", arg)
 	switch arg := arg.(type) {
 	case x86asm.Reg:
-		return d.reg(f, arg)
+		src := d.reg(f, arg)
+		return block.NewLoad(src)
 	case x86asm.Mem:
 		// Segment:[Base+Scale*Index+Disp].
 
@@ -152,17 +211,27 @@ func (d *disassembler) useArg(f *function, block *basicBlock, arg x86asm.Arg) va
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
 	case x86asm.Imm:
 		return constant.NewInt(int64(arg), types.I32)
-	//case x86asm.Rel:
+	case x86asm.Rel:
+		addr := inst.addr + bin.Address(inst.Len) + bin.Address(arg)
+		if v, ok := d.funcs[addr]; ok {
+			return v
+		}
+		if v, ok := d.globals[addr]; ok {
+			return v
+		}
+		panic(fmt.Errorf("unable to locate value at address %v", addr))
 	default:
 		pretty.Println(arg)
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
 	}
 }
 
-func (d *disassembler) defArg(f *function, block *basicBlock, arg x86asm.Arg, v value.Value) {
+func (d *disassembler) defArg(f *function, block *basicBlock, inst *instruction, arg x86asm.Arg, v value.Value) {
 	fmt.Println("defArg:", arg)
 	switch arg := arg.(type) {
-	//case x86asm.Reg:
+	case x86asm.Reg:
+		dst := d.reg(f, arg)
+		block.NewStore(v, dst)
 	case x86asm.Mem:
 		// Segment:[Base+Scale*Index+Disp].
 

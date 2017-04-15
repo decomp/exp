@@ -7,7 +7,6 @@ import (
 	"github.com/decomp/exp/bin"
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
-	"github.com/llir/llvm/ir/value"
 	"github.com/mewbak/x86/x86asm"
 	"github.com/pkg/errors"
 )
@@ -16,7 +15,10 @@ type function struct {
 	*ir.Function
 	entry  bin.Address
 	blocks map[bin.Address]*basicBlock
-	regs   map[x86asm.Reg]value.Value
+	regs   map[x86asm.Reg]*ir.InstAlloca
+	// Calling convention; or empty string if default calling convention.
+	// TODO: Specify the default calling convention.
+	callconv string
 }
 
 type basicBlock struct {
@@ -39,7 +41,7 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*function, error) {
 		f = &function{
 			entry:  entry,
 			blocks: make(map[bin.Address]*basicBlock),
-			regs:   make(map[x86asm.Reg]value.Value),
+			regs:   make(map[x86asm.Reg]*ir.InstAlloca),
 		}
 	}
 	queue := newQueue()

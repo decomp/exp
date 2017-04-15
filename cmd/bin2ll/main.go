@@ -17,7 +17,6 @@ import (
 	"github.com/llir/llvm/asm"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/metadata"
-	"github.com/llir/llvm/ir/value"
 	"github.com/mewbak/x86/x86asm"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
@@ -249,6 +248,7 @@ func parseFile(binPath string) (*disassembler, error) {
 		return nil, errors.WithStack(err)
 	}
 	for _, f := range module.Funcs {
+		// Parse function address metadata.
 		node, ok := f.Metadata["addr"]
 		if !ok {
 			return nil, errors.Errorf(`unable to locate "addr" metadata for function %q`, f.Name)
@@ -261,7 +261,15 @@ func parseFile(binPath string) (*disassembler, error) {
 			Function: f,
 			entry:    entry,
 			blocks:   make(map[bin.Address]*basicBlock),
-			regs:     make(map[x86asm.Reg]value.Value),
+			regs:     make(map[x86asm.Reg]*ir.InstAlloca),
+		}
+		// Parse calling convention metadata.
+		if node, ok := f.Metadata["callconv"]; ok {
+			var callconv string
+			if err := metadata.Unmarshal(node, &callconv); err != nil {
+				return nil, errors.WithStack(err)
+			}
+			fn.callconv = callconv
 		}
 		d.funcs[entry] = fn
 	}

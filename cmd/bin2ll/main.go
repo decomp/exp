@@ -103,7 +103,11 @@ func main() {
 		if err != nil {
 			log.Fatalf("%+v", err)
 		}
+		if err := d.translateFunc(f); err != nil {
+			log.Fatalf("%+v", err)
+		}
 		printFunc(f)
+		fmt.Println(f.Function)
 	}
 }
 

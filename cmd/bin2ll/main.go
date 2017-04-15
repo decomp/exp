@@ -15,7 +15,10 @@ import (
 
 	"github.com/decomp/exp/bin"
 	"github.com/llir/llvm/asm"
+	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/metadata"
+	"github.com/llir/llvm/ir/value"
+	"github.com/mewbak/x86/x86asm"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
 )
@@ -139,6 +142,8 @@ type disassembler struct {
 	chunks []Chunk
 	// Functions.
 	funcs map[bin.Address]*function
+	// Global variables.
+	globals map[bin.Address]*ir.Global
 	// Map from basic block address (function chunk) to function address, to
 	// which the basic block belongs.
 	chunkFunc map[bin.Address]bin.Address
@@ -256,8 +261,27 @@ func parseFile(binPath string) (*disassembler, error) {
 			Function: f,
 			entry:    entry,
 			blocks:   make(map[bin.Address]*basicBlock),
+			regs:     make(map[x86asm.Reg]value.Value),
 		}
 		d.funcs[entry] = fn
+	}
+
+	// Global variables.
+	d.globals = make(map[bin.Address]*ir.Global)
+	module, err = asm.ParseFile("globals.ll")
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	for _, g := range module.Globals {
+		node, ok := g.Metadata["addr"]
+		if !ok {
+			return nil, errors.Errorf(`unable to locate "addr" metadata for global variable %q`, g.Name)
+		}
+		var addr bin.Address
+		if err := metadata.Unmarshal(node, &addr); err != nil {
+			return nil, errors.WithStack(err)
+		}
+		d.globals[addr] = g
 	}
 
 	return d, nil

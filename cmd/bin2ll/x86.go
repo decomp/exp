@@ -7,6 +7,7 @@ import (
 	"github.com/decomp/exp/bin"
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
+	"github.com/llir/llvm/ir/value"
 	"github.com/mewbak/x86/x86asm"
 	"github.com/pkg/errors"
 )
@@ -15,6 +16,7 @@ type function struct {
 	*ir.Function
 	entry  bin.Address
 	blocks map[bin.Address]*basicBlock
+	regs   map[x86asm.Reg]value.Value
 }
 
 type basicBlock struct {
@@ -37,6 +39,7 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*function, error) {
 		f = &function{
 			entry:  entry,
 			blocks: make(map[bin.Address]*basicBlock),
+			regs:   make(map[x86asm.Reg]value.Value),
 		}
 	}
 	queue := newQueue()

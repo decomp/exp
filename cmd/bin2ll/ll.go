@@ -136,14 +136,18 @@ func (d *disassembler) instAND(f *function, block *basicBlock, inst *instruction
 // instCALL translates the given CALL instruction from x86 machine code to LLVM
 // IR assembly.
 func (d *disassembler) instCALL(f *function, block *basicBlock, inst *instruction) error {
-	v := d.useArg(f, block, inst, inst.Args[0])
-	callee, ok := v.(value.Named)
+	c := d.useArg(f, block, inst, inst.Args[0])
+	callee, ok := c.(value.Named)
 	if !ok {
-		return errors.Errorf("invalid callee type; expected value.Named, got %T", v)
+		return errors.Errorf("invalid callee type; expected value.Named, got %T", c)
 	}
 	// TODO: Handle call arguments.
-	block.NewCall(callee)
-	// TODO: Handle return values; set EAX?
+	result := block.NewCall(callee)
+	// Handle return values of non-void callees (passed through EAX).
+	fmt.Println("call result type:", result.Type())
+	if !types.Equal(result.Type(), types.Void) {
+		d.defArg(f, block, nil, x86asm.EAX, result)
+	}
 	return nil
 }
 
@@ -181,7 +185,12 @@ func (d *disassembler) translateTerm(f *function, block *basicBlock, term *instr
 	fmt.Println("term:", term)
 	switch term.Op {
 	case x86asm.RET:
-		// TODO: Add support for non-void returns.
+		// Handle return values of non-void functions (passed through EAX).
+		if !types.Equal(f.Sig.Ret, types.Void) {
+			result := d.useArg(f, block, nil, x86asm.EAX)
+			block.NewRet(result)
+			return nil
+		}
 		block.NewRet(nil)
 		return nil
 	default:

@@ -262,6 +262,7 @@ func parseFile(binPath string) (*disassembler, error) {
 			entry:    entry,
 			blocks:   make(map[bin.Address]*basicBlock),
 			regs:     make(map[x86asm.Reg]*ir.InstAlloca),
+			status:   make(map[StatusFlag]*ir.InstAlloca),
 		}
 		d.funcs[entry] = fn
 	}

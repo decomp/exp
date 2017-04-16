@@ -11,22 +11,40 @@ import (
 	"github.com/pkg/errors"
 )
 
+// function tracks the information required to translate a function from x86
+// machine code to LLVM IR assembly.
 type function struct {
+	// LLVM IR code for the function.
 	*ir.Function
-	entry  bin.Address
+	// Entry address of the function.
+	entry bin.Address
+	// Basic blocks of the function.
 	blocks map[bin.Address]*basicBlock
-	regs   map[x86asm.Reg]*ir.InstAlloca
+	// Registers used within the function.
+	regs map[x86asm.Reg]*ir.InstAlloca
+	// Status flags used within the function.
+	status map[StatusFlag]*ir.InstAlloca
 }
 
+// basicBlock tracks the information required to translate a basic block from
+// x86 machine code to LLVM IR assembly.
 type basicBlock struct {
+	// LLVM IR code for the basic block.
 	*ir.BasicBlock
-	addr  bin.Address
+	// Entry address of the basic block.
+	addr bin.Address
+	// Instructions of the basic block.
 	insts []*instruction
-	term  *instruction
+	// Terminator of the basic block.
+	term *instruction
 }
 
+// instruction tracks the information required to translate an instruction from
+// x86 machine code to LLVM IR assembly.
 type instruction struct {
+	// Decoded x86 instruction.
 	x86asm.Inst
+	// Address of the instruction.
 	addr bin.Address
 }
 
@@ -39,6 +57,7 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*function, error) {
 			entry:  entry,
 			blocks: make(map[bin.Address]*basicBlock),
 			regs:   make(map[x86asm.Reg]*ir.InstAlloca),
+			status: make(map[StatusFlag]*ir.InstAlloca),
 		}
 	}
 	queue := newQueue()
@@ -83,7 +102,11 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
 	maxLen := d.getMaxBlockLen(addr)
 
 	// Decode instructions.
+	label := fmt.Sprintf("block_%06X", uint64(addr))
 	block := &basicBlock{
+		BasicBlock: &ir.BasicBlock{
+			Name: label,
+		},
 		addr: addr,
 	}
 	for j := int64(0); j < maxLen; {
@@ -182,8 +205,6 @@ func (d *disassembler) targets(entry bin.Address, term *instruction) []bin.Addre
 func (d *disassembler) isTailCall(funcEntry bin.Address, inst *instruction) bool {
 	funcEnd := d.getFuncEndAddr(funcEntry)
 	next := inst.addr + bin.Address(inst.Len)
-	fmt.Println("start:", funcEntry)
-	fmt.Println("funcEnd:", funcEnd)
 	switch arg := inst.Args[0].(type) {
 	//case x86asm.Reg:
 	case x86asm.Mem:
@@ -344,11 +365,17 @@ func (q *queue) push(addr bin.Address) {
 
 // pop pops an address from the queue.
 func (q *queue) pop() bin.Address {
-	for addr := range q.addrs {
-		delete(q.addrs, addr)
-		return addr
+	if len(q.addrs) == 0 {
+		panic("invalid call to pop; empty queue")
 	}
-	panic("invalid call to pop; empty queue")
+	var min bin.Address
+	for addr := range q.addrs {
+		if min == 0 || addr < min {
+			min = addr
+		}
+	}
+	delete(q.addrs, min)
+	return min
 }
 
 // empty reports whether the queue is empty.

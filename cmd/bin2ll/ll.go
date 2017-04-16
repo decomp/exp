@@ -59,14 +59,21 @@ func (d *disassembler) translateFunc(f *function) error {
 	}
 	sort.Slice(blocks, less)
 
-	// Add new entry basic block to define registers used within the function.
-	if len(f.regs) > 0 {
+	// Add new entry basic block to define registers and status flags used within
+	// the function.
+	if len(f.regs) > 0 || len(f.status) > 0 {
 		entry := &basicBlock{
 			BasicBlock: &ir.BasicBlock{},
 		}
 		// Allocate local variables for each register used within the function.
 		for reg := x86asm.AL; reg <= x86asm.TR7; reg++ {
 			if inst, ok := f.regs[reg]; ok {
+				entry.AppendInst(inst)
+			}
+		}
+		// Allocate local variables for each status flag used within the function.
+		for status := CF; status <= OF; status++ {
+			if inst, ok := f.status[status]; ok {
 				entry.AppendInst(inst)
 			}
 		}
@@ -120,6 +127,8 @@ func (d *disassembler) translateBlock(f *function, block *basicBlock) error {
 func (d *disassembler) translateInst(f *function, block *basicBlock, inst *instruction) error {
 	fmt.Println("inst:", inst)
 	switch inst.Op {
+	case x86asm.ADD:
+		return d.instADD(f, block, inst)
 	case x86asm.AND:
 		return d.instAND(f, block, inst)
 	case x86asm.CALL:
@@ -140,6 +149,16 @@ func (d *disassembler) translateInst(f *function, block *basicBlock, inst *instr
 	default:
 		panic(fmt.Errorf("support for instruction opcode %v not yet implemented", inst.Op))
 	}
+}
+
+// instADD translates the given ADD instruction from x86 machine code to LLVM IR
+// assembly.
+func (d *disassembler) instADD(f *function, block *basicBlock, inst *instruction) error {
+	x := d.useArg(f, block, inst, inst.Args[0])
+	y := d.useArg(f, block, inst, inst.Args[1])
+	result := block.NewAdd(x, y)
+	d.defArg(f, block, inst, inst.Args[0], result)
+	return nil
 }
 
 // instAND translates the given AND instruction from x86 machine code to LLVM IR
@@ -194,9 +213,8 @@ func (d *disassembler) instCALL(f *function, block *basicBlock, inst *instructio
 func (d *disassembler) instCMP(f *function, block *basicBlock, inst *instruction) error {
 	x := d.useArg(f, block, inst, inst.Args[0])
 	y := d.useArg(f, block, inst, inst.Args[1])
-	result := block.NewSub(x, y)
 	// Set the status flags according to the result.
-	return d.updateStatusFlags(f, block, result)
+	return d.updateStatusFlags(f, block, x, y)
 }
 
 // instIMUL translates the given IMUL instruction from x86 machine code to LLVM
@@ -240,6 +258,14 @@ func (d *disassembler) instXOR(f *function, block *basicBlock, inst *instruction
 // translateTerm translates the given terminator from x86 machine code to LLVM
 // IR assembly.
 func (d *disassembler) translateTerm(f *function, block *basicBlock, term *instruction) error {
+	if term.isDummyTerm() {
+		target, ok := f.blocks[term.addr]
+		if !ok {
+			return errors.Errorf("unable to locate basic block at %v", term.addr)
+		}
+		block.NewBr(target.BasicBlock)
+		return nil
+	}
 	fmt.Println("term:", term)
 	switch term.Op {
 	case x86asm.JA, x86asm.JAE, x86asm.JB, x86asm.JBE, x86asm.JCXZ, x86asm.JE, x86asm.JECXZ, x86asm.JG, x86asm.JGE, x86asm.JL, x86asm.JLE, x86asm.JNE, x86asm.JNO, x86asm.JNP, x86asm.JNS, x86asm.JO, x86asm.JP, x86asm.JRCXZ, x86asm.JS:
@@ -251,6 +277,180 @@ func (d *disassembler) translateTerm(f *function, block *basicBlock, term *instr
 	default:
 		panic(fmt.Errorf("support for terminator opcode %v not yet implemented", term.Op))
 	}
+}
+
+// termCondBranch translates the given conditional branch terminator from x86
+// machine code to LLVM IR assembly.
+func (d *disassembler) termCondBranch(f *function, block *basicBlock, term *instruction) error {
+	// target branch of conditional branching instruction.
+	next := term.addr + bin.Address(term.Len)
+	targetTrueAddrs := d.getAddrs(next, term.Args[0])
+	if len(targetTrueAddrs) != 1 {
+		return errors.Errorf("invalid number of true branches; expected 1, got %d", len(targetTrueAddrs))
+	}
+	targetTrueAddr := targetTrueAddrs[0]
+	targetTrueBlock, ok := f.blocks[targetTrueAddr]
+	if !ok {
+		return errors.Errorf("unable to locate basic block at %v", targetTrueAddr)
+	}
+	targetTrue := targetTrueBlock.BasicBlock
+	// fallthrough branch of conditional branching instruction.
+	targetFalseAddr := next
+	targetFalseBlock, ok := f.blocks[targetFalseAddr]
+	if !ok {
+		return errors.Errorf("unable to locate basic block at %v", targetTrueAddr)
+	}
+	targetFalse := targetFalseBlock.BasicBlock
+	// Compute conditional value.
+	//
+	//    Op      Desc
+	//
+	//    (CF=0 and ZF=0)    JA      Jump if above.
+	//    (CF=0 and ZF=0)    JNBE    Jump if not below or equal.     PSEUDO-instruction
+	//    (CF=0)             JAE     Jump if above or equal.
+	//    (CF=0)             JNB     Jump if not below.              PSEUDO-instruction
+	//    (CF=0)             JNC     Jump if not carry.              PSEUDO-instruction
+	//    (CF=1 or ZF=1)     JBE     Jump if below or equal.
+	//    (CF=1 or ZF=1)     JNA     Jump if not above.              PSEUDO-instruction
+	//    (CF=1)             JB      Jump if below.
+	//    (CF=1)             JC      Jump if carry.                  PSEUDO-instruction
+	//    (CF=1)             JNAE    Jump if not above or equal.     PSEUDO-instruction
+	//    (CX=0)             JCXZ    Jump if CX register is zero.
+	//    (ECX=0)            JECXZ   Jump if ECX register is zero.
+	//    (OF=0)             JNO     Jump if not overflow.
+	//    (OF=1)             JO      Jump if overflow.
+	//    (PF=0)             JNP     Jump if not parity.
+	//    (PF=0)             JPO     Jump if parity odd.             PSEUDO-instruction
+	//    (PF=1)             JP      Jump if parity.
+	//    (PF=1)             JPE     Jump if parity even.            PSEUDO-instruction
+	//    (RCX=0)            JRCXZ   Jump if RCX register is zero.
+	//    (SF=0)             JNS     Jump if not sign.
+	//    (SF=1)             JS      Jump if sign.
+	//    (SF=OF)            JGE     Jump if greater or equal.
+	//    (SF=OF)            JNL     Jump if not less.               PSEUDO-instruction
+	//    (SF≠OF)            JL      Jump if less.
+	//    (SF≠OF)            JNGE    Jump if not greater or equal.   PSEUDO-instruction
+	//    (ZF=0 and SF=OF)   JG      Jump if greater.
+	//    (ZF=0 and SF=OF)   JNLE    Jump if not less or equal.      PSEUDO-instruction
+	//    (ZF=0)             JNE     Jump if not equal.
+	//    (ZF=0)             JNZ     Jump if not zero.               PSEUDO-instruction
+	//    (ZF=1 or SF≠OF)    JLE     Jump if less or equal.
+	//    (ZF=1 or SF≠OF)    JNG     Jump if not greater.            PSEUDO-instruction
+	//    (ZF=1)             JE      Jump if equal.
+	//    (ZF=1)             JZ      Jump if zero.                   PSEUDO-instruction
+	//
+	// ref: $ 3.2 Jcc - Jump if Condition Is Met, Intel 64 and IA-32
+	// Architectures Software Developer's Manual
+	var cond value.Value
+	switch term.Op {
+	case x86asm.JA:
+		// Jump if above.
+		//
+		//    CF=0 and ZF=0
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JAE:
+		// Jump if above or equal.
+		//
+		//    CF=0
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JBE:
+		// Jump if below or equal.
+		//
+		//    CF=1 or ZF=1
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JB:
+		// Jump if below.
+		//
+		//    CF=1
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JCXZ:
+		// Jump if CX register is zero.
+		//
+		//    CX=0
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JECXZ:
+		// Jump if ECX register is zero.
+		//
+		//    ECX=0
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JNO:
+		// Jump if not overflow.
+		//
+		//    OF=0
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JO:
+		// Jump if overflow.
+		//
+		//    OF=1
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JNP:
+		// Jump if not parity.
+		//
+		//    PF=0
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JP:
+		// Jump if parity.
+		//
+		//    PF=1
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JRCXZ:
+		// Jump if RCX register is zero.
+		//
+		//    RCX=0
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JNS:
+		// Jump if not sign.
+		//
+		//    SF=0
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JS:
+		// Jump if sign.
+		//
+		//    SF=1
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JGE:
+		// Jump if greater or equal.
+		//
+		//    SF=OF
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JL:
+		// Jump if less.
+		//
+		//    SF≠OF
+		sf := d.useStatus(f, block, SF)
+		of := d.useStatus(f, block, OF)
+		cond = block.NewICmp(ir.IntNE, sf, of)
+	case x86asm.JG:
+		// Jump if greater.
+		//
+		//    ZF=0 and SF=OF
+		sf := d.useStatus(f, block, SF)
+		of := d.useStatus(f, block, OF)
+		zf := d.useStatus(f, block, ZF)
+		cond1 := block.NewICmp(ir.IntEQ, zf, constant.False)
+		cond2 := block.NewICmp(ir.IntEQ, sf, of)
+		cond = block.NewAnd(cond1, cond2)
+	case x86asm.JNE:
+		// Jump if not equal.
+		//
+		//    ZF=0
+		zf := d.useStatus(f, block, ZF)
+		cond = block.NewICmp(ir.IntEQ, zf, constant.False)
+	case x86asm.JLE:
+		// Jump if less or equal.
+		//
+		//    ZF=1 or SF≠OF
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	case x86asm.JE:
+		// Jump if equal.
+		//
+		//    ZF=1
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	default:
+		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+	}
+	block.NewCondBr(cond, targetTrue, targetFalse)
+	return nil
 }
 
 // termJMP translates the given JMP terminator from x86 machine code to LLVM IR
@@ -265,7 +465,6 @@ func (d *disassembler) termJMP(f *function, block *basicBlock, term *instruction
 		if err := d.instCALL(f, block, term); err != nil {
 			return errors.WithStack(err)
 		}
-
 		// Add return statement.
 		// Handle return values of non-void functions (passed through EAX).
 		if !types.Equal(f.Sig.Ret, types.Void) {
@@ -278,41 +477,6 @@ func (d *disassembler) termJMP(f *function, block *basicBlock, term *instruction
 	}
 	// TODO: Add proper support for JMP terminators.
 	panic(fmt.Errorf("support for terminator opcode %v not yet implemented", term.Op))
-}
-
-// termCondBranch translates the given conditional branch terminator from x86
-// machine code to LLVM IR assembly.
-func (d *disassembler) termCondBranch(f *function, block *basicBlock, term *instruction) error {
-	// target branch of conditional branching instruction.
-	next := term.addr + bin.Address(term.Len)
-	targetTrueAddrs := d.getAddrs(next, term.Args[0])
-	if len(targetTrueAddrs) != 1 {
-		return errors.Errorf("invalid number of true branches; expected 1, got %d", len(targetTrueAddrs))
-	}
-	targetTrueAddr := targetTrueAddrs[0]
-	targetTrue, ok := f.blocks[targetTrueAddr]
-	if !ok {
-		return errors.Errorf("unable to locate basic block at %v", targetTrueAddr)
-	}
-
-	// fallthrough branch of conditional branching instruction.
-	targetFalseAddr := next
-	targetFalse, ok := f.blocks[targetFalseAddr]
-	if !ok {
-		return errors.Errorf("unable to locate basic block at %v", targetTrueAddr)
-	}
-
-	// Compute conditional value.
-	var cond value.Value
-	switch term.Op {
-	case x86asm.JNE:
-		zf := block.NewLoad(d.status(f, ZF))
-		cond = block.NewICmp(ir.IntNE, zf, constant.True)
-	default:
-		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
-	}
-	block.NewCondBr(cond, targetTrue.BasicBlock, targetFalse.BasicBlock)
-	return nil
 }
 
 // termRET translates the given RET terminator from x86 machine code to LLVM IR
@@ -343,9 +507,11 @@ func (d *disassembler) useArg(f *function, block *basicBlock, inst *instruction,
 		//    Base    Reg
 		//    Scale   uint8
 		//    Index   Reg
-		if g, ok := d.globals[bin.Address(arg.Disp)]; ok {
-			return block.NewLoad(g)
-		} else if arg.Disp > 0 {
+		if arg.Segment == 0 && arg.Base == 0 && arg.Scale == 0 && arg.Index == 0 {
+			addr := bin.Address(arg.Disp)
+			return d.useGlobal(f, block, addr)
+		}
+		if arg.Disp > 0 {
 			fmt.Printf("unable to locate memory at address %v\n", bin.Address(arg.Disp))
 		}
 		pretty.Println(arg)
@@ -357,10 +523,7 @@ func (d *disassembler) useArg(f *function, block *basicBlock, inst *instruction,
 		if v, ok := d.funcs[addr]; ok {
 			return v
 		}
-		if v, ok := d.globals[addr]; ok {
-			return v
-		}
-		panic(fmt.Errorf("unable to locate value at address %v", addr))
+		return d.useGlobal(f, block, addr)
 	default:
 		pretty.Println(arg)
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
@@ -382,10 +545,12 @@ func (d *disassembler) defArg(f *function, block *basicBlock, inst *instruction,
 		//    Base    Reg
 		//    Scale   uint8
 		//    Index   Reg
-		if dst, ok := d.globals[bin.Address(arg.Disp)]; ok {
-			block.NewStore(v, dst)
+		if arg.Segment == 0 && arg.Base == 0 && arg.Scale == 0 && arg.Index == 0 {
+			addr := bin.Address(arg.Disp)
+			d.defGlobal(f, block, addr, v)
 			return
-		} else if arg.Disp > 0 {
+		}
+		if arg.Disp > 0 {
 			fmt.Printf("unable to locate memory at address %v\n", bin.Address(arg.Disp))
 		}
 		pretty.Println(arg)
@@ -479,7 +644,7 @@ func (d *disassembler) reg(f *function, reg x86asm.Reg) value.Value {
 //
 // ref: $ 3.4.3.1 Status Flags, Intel 64 and IA-32 Architectures Software
 // Developer's Manual
-func (d *disassembler) updateStatusFlags(f *function, block *basicBlock, result value.Value) error {
+func (d *disassembler) updateStatusFlags(f *function, block *basicBlock, x, y value.Value) error {
 	// CF (bit 0) Carry flag - Set if an arithmetic operation generates a carry
 	// or a borrow out of the most- significant bit of the result; cleared
 	// otherwise. This flag indicates an overflow condition for unsigned-integer
@@ -499,21 +664,19 @@ func (d *disassembler) updateStatusFlags(f *function, block *basicBlock, result 
 	// TODO: Add support for the AF status flag.
 
 	// ZF (bit 6) Zero flag - Set if the result is zero; cleared otherwise.
-
-	zf := block.NewICmp(ir.IntEQ, result, constant.NewInt(0, types.I32))
-	dst := d.status(f, ZF)
-	block.NewStore(zf, dst)
+	zf := block.NewICmp(ir.IntEQ, x, y)
+	d.defStatus(f, block, ZF, zf)
 
 	// SF (bit 7) Sign flag - Set equal to the most-significant bit of the
 	// result, which is the sign bit of a signed integer. (0 indicates a positive
 	// value and 1 indicates a negative value.)
-
-	// TODO: Add support for the SF status flag.
+	sf := block.NewICmp(ir.IntSLT, x, y)
+	d.defStatus(f, block, SF, sf)
 
 	// OF (bit 11) Overflow flag - Set if the integer result is too large a
-	// positive number or too small a nega- tive number (excluding the sign-bit)
-	// to fit in the destination operand; cleared otherwise. This flag indicates
-	// an overflow condition for signed-integer (two’s complement) arithmetic.
+	// positive number or too small a negative number (excluding the sign-bit) to
+	// fit in the destination operand; cleared otherwise. This flag indicates an
+	// overflow condition for signed-integer (two's complement) arithmetic.
 
 	// TODO: Add support for the OF status flag.
 
@@ -549,7 +712,8 @@ func (status StatusFlag) String() string {
 	return fmt.Sprintf("unknown status flag %d", uint(status))
 }
 
-// status returns the LLVM IR value associated with the given status flag.
+// status returns a pointer to the LLVM IR value associated with the given
+// status flag.
 func (d *disassembler) status(f *function, status StatusFlag) value.Value {
 	if v, ok := f.status[status]; ok {
 		return v
@@ -558,4 +722,123 @@ func (d *disassembler) status(f *function, status StatusFlag) value.Value {
 	v.SetName(strings.ToLower(status.String()))
 	f.status[status] = v
 	return v
+}
+
+// useStatus loads and returns the LLVM IR value associated with the given
+// status flag.
+func (d *disassembler) useStatus(f *function, block *basicBlock, status StatusFlag) value.Value {
+	src := d.status(f, status)
+	return block.NewLoad(src)
+}
+
+// defStatus stores the given value to the LLVM IR value associated with the
+// given status flag.
+func (d *disassembler) defStatus(f *function, block *basicBlock, status StatusFlag, v value.Value) {
+	dst := d.status(f, status)
+	block.NewStore(v, dst)
+}
+
+// useGlobal loads and returns the LLVM IR value associated with the given
+// global variable address.
+func (d *disassembler) useGlobal(f *function, block *basicBlock, addr bin.Address) value.Value {
+	src := d.global(f, block, addr)
+	return block.NewLoad(src)
+}
+
+// defGlobal stores the given value to the LLVM IR value associated with the
+// given global variable address.
+func (d *disassembler) defGlobal(f *function, block *basicBlock, addr bin.Address, v value.Value) {
+	dst := d.global(f, block, addr)
+	block.NewStore(v, dst)
+}
+
+// global returns a pointer to the LLVM IR value associated with the given
+// global variable.
+func (d *disassembler) global(f *function, block *basicBlock, addr bin.Address) value.Value {
+	// Early return if direct access to global variable.
+	if src, ok := d.globals[addr]; ok {
+		return src
+	}
+
+	// Use binary search if indirect access to global variable (e.g. struct
+	// field, array element).
+	var globalAddrs []bin.Address
+	for globalAddr := range d.globals {
+		globalAddrs = append(globalAddrs, globalAddr)
+	}
+	sort.Sort(bin.Addresses(globalAddrs))
+	less := func(i int) bool {
+		return addr < globalAddrs[i]
+	}
+	index := sort.Search(len(globalAddrs), less)
+	index--
+	if 0 <= index && index < len(globalAddrs) {
+		start := globalAddrs[index]
+		g := d.globals[start]
+		size := d.sizeOfType(g.Typ.Elem)
+		end := start + bin.Address(size)
+		if start <= addr && addr < end {
+			offset := int64(addr - start)
+			return d.getElementPtr(block, g, offset)
+		}
+	}
+	panic(fmt.Errorf("unable to locate global variable at %v", addr))
+}
+
+// getElementPtr returns a pointer to the given offset into the source value.
+func (d *disassembler) getElementPtr(block *basicBlock, src value.Value, offset int64) *ir.InstGetElementPtr {
+	srcType, ok := src.Type().(*types.PointerType)
+	if !ok {
+		panic(fmt.Errorf("invalid source address type; expected *types.PointerType, got %T", src.Type()))
+	}
+	elem := srcType.Elem
+	e := elem
+	total := int64(0)
+	var indices []value.Value
+	for i := 0; ; i++ {
+		if total >= offset {
+			break
+		}
+		if i == 0 {
+			// Ignore checking the 0th index as it simply follows the pointer of
+			// src.
+			//
+			// ref: http://llvm.org/docs/GetElementPtr.html#why-is-the-extra-0-index-required
+			index := constant.NewInt(0, types.I64)
+			indices = append(indices, index)
+			continue
+		}
+		switch t := e.(type) {
+		case *types.PointerType:
+			// ref: http://llvm.org/docs/GetElementPtr.html#what-is-dereferenced-by-gep
+			panic("unable to index into element of pointer type; for more information, see http://llvm.org/docs/GetElementPtr.html#what-is-dereferenced-by-gep")
+		case *types.ArrayType:
+			elemSize := d.sizeOfType(t.Elem)
+			j := int64(0)
+			for ; j < t.Len; j++ {
+				if total+elemSize > offset {
+					break
+				}
+				total += elemSize
+			}
+			index := constant.NewInt(j, types.I64)
+			indices = append(indices, index)
+			e = t.Elem
+		case *types.StructType:
+			j := int64(0)
+			for ; j < int64(len(t.Fields)); j++ {
+				fieldSize := d.sizeOfType(t.Fields[j])
+				if total+fieldSize > offset {
+					break
+				}
+				total += fieldSize
+			}
+			index := constant.NewInt(j, types.I64)
+			indices = append(indices, index)
+			e = t.Fields[j]
+		default:
+			panic(fmt.Errorf("support for indexing element type %T not yet implemented", e))
+		}
+	}
+	return block.NewGetElementPtr(src, indices...)
 }

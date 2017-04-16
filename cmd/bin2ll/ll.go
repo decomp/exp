@@ -118,6 +118,8 @@ func (d *disassembler) translateInst(f *function, block *basicBlock, inst *instr
 	case x86asm.PUSH, x86asm.POP:
 		// TODO: Figure out how to handle push and pop.
 		return nil
+	case x86asm.XOR:
+		return d.instXOR(f, block, inst)
 	default:
 		panic(fmt.Errorf("support for instruction opcode %v not yet implemented", inst.Op))
 	}
@@ -179,11 +181,44 @@ func (d *disassembler) instMOV(f *function, block *basicBlock, inst *instruction
 	return nil
 }
 
+// instXOR translates the given XOR instruction from x86 machine code to LLVM IR
+// assembly.
+func (d *disassembler) instXOR(f *function, block *basicBlock, inst *instruction) error {
+	x := d.useArg(f, block, inst, inst.Args[0])
+	y := d.useArg(f, block, inst, inst.Args[1])
+	result := block.NewXor(x, y)
+	d.defArg(f, block, inst, inst.Args[0], result)
+	return nil
+}
+
 // translateTerm translates the given terminator from x86 machine code to LLVM
 // IR assembly.
 func (d *disassembler) translateTerm(f *function, block *basicBlock, term *instruction) error {
 	fmt.Println("term:", term)
 	switch term.Op {
+	case x86asm.JMP:
+		if d.isTailCall(f.entry, term) {
+			// Handle tail call terminator instructions.
+
+			// Hack: interpret JMP instruction as CALL instruction. Works since
+			// instCALL only interprets inst.Args[0], which is the same in both
+			// call and jmp instructions.
+			if err := d.instCALL(f, block, term); err != nil {
+				return errors.WithStack(err)
+			}
+
+			// Add return statement.
+			// Handle return values of non-void functions (passed through EAX).
+			if !types.Equal(f.Sig.Ret, types.Void) {
+				result := d.useArg(f, block, nil, x86asm.EAX)
+				block.NewRet(result)
+				return nil
+			}
+			block.NewRet(nil)
+			return nil
+		}
+		// TODO: Add proper support for JMP terminators.
+		panic(fmt.Errorf("support for terminator opcode %v not yet implemented", term.Op))
 	case x86asm.RET:
 		// Handle return values of non-void functions (passed through EAX).
 		if !types.Equal(f.Sig.Ret, types.Void) {
@@ -215,6 +250,8 @@ func (d *disassembler) useArg(f *function, block *basicBlock, inst *instruction,
 		//    Index   Reg
 		if g, ok := d.globals[bin.Address(arg.Disp)]; ok {
 			return block.NewLoad(g)
+		} else if arg.Disp > 0 {
+			fmt.Printf("unable to locate memory at address %v\n", bin.Address(arg.Disp))
 		}
 		pretty.Println(arg)
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
@@ -253,6 +290,8 @@ func (d *disassembler) defArg(f *function, block *basicBlock, inst *instruction,
 		if dst, ok := d.globals[bin.Address(arg.Disp)]; ok {
 			block.NewStore(v, dst)
 			return
+		} else if arg.Disp > 0 {
+			fmt.Printf("unable to locate memory at address %v\n", bin.Address(arg.Disp))
 		}
 		pretty.Println(arg)
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))

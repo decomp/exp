@@ -263,14 +263,6 @@ func parseFile(binPath string) (*disassembler, error) {
 			blocks:   make(map[bin.Address]*basicBlock),
 			regs:     make(map[x86asm.Reg]*ir.InstAlloca),
 		}
-		// Parse calling convention metadata.
-		if node, ok := f.Metadata["callconv"]; ok {
-			var callconv string
-			if err := metadata.Unmarshal(node, &callconv); err != nil {
-				return nil, errors.WithStack(err)
-			}
-			fn.callconv = callconv
-		}
 		d.funcs[entry] = fn
 	}
 

@@ -63,14 +63,21 @@ func (d *disassembler) translateFunc(f *function) error {
 			}
 		}
 		// Handle calling conventions.
-		switch f.callconv {
-		case "__fastcall":
-			if ecx, ok := f.regs[x86asm.ECX]; ok {
-				entry.NewStore(f.Sig.Params[0], ecx)
+		switch f.CallConv {
+		case ir.CallConvX86FastCall:
+			params := f.Sig.Params
+			if len(params) > 0 {
+				if ecx, ok := f.regs[x86asm.ECX]; ok {
+					entry.NewStore(f.Sig.Params[0], ecx)
+				}
 			}
-			if edx, ok := f.regs[x86asm.EDX]; ok {
-				entry.NewStore(f.Sig.Params[1], edx)
+			if len(params) > 1 {
+				if edx, ok := f.regs[x86asm.EDX]; ok {
+					entry.NewStore(f.Sig.Params[1], edx)
+				}
 			}
+		default:
+			// TODO: Add support for additional calling conventions.
 		}
 		target := blocks[0].BasicBlock
 		entry.NewBr(target)
@@ -139,15 +146,34 @@ func (d *disassembler) instAND(f *function, block *basicBlock, inst *instruction
 // IR assembly.
 func (d *disassembler) instCALL(f *function, block *basicBlock, inst *instruction) error {
 	c := d.useArg(f, block, inst, inst.Args[0])
-	callee, ok := c.(value.Named)
+	// TODO: Add support for value.Named callees. Using *ir.Function for now, to
+	// gain access to the calling convention of the function. Data flow and type
+	// analysis will provide this information in the future also for local
+	// function pointer callees.
+	callee, ok := c.(*function)
 	if !ok {
-		return errors.Errorf("invalid callee type; expected value.Named, got %T", c)
+		return errors.Errorf("invalid callee type; expected *main.function, got %T", c)
 	}
-	// TODO: Handle call arguments.
-	result := block.NewCall(callee)
+	var args []value.Value
+	switch callee.CallConv {
+	case ir.CallConvX86FastCall:
+		params := callee.Sig.Params
+		fmt.Println("params:", params)
+		if len(params) > 0 {
+			arg := d.useArg(f, block, nil, x86asm.ECX)
+			args = append(args, arg)
+		}
+		if len(params) > 1 {
+			arg := d.useArg(f, block, nil, x86asm.EDX)
+			args = append(args, arg)
+		}
+	default:
+		// TODO: Handle call arguments.
+	}
+	result := block.NewCall(callee, args...)
 	// Handle return values of non-void callees (passed through EAX).
-	fmt.Println("call result type:", result.Type())
-	if !types.Equal(result.Type(), types.Void) {
+	fmt.Println("call result type:", callee.Sig.Ret)
+	if !types.Equal(callee.Sig.Ret, types.Void) {
 		d.defArg(f, block, nil, x86asm.EAX, result)
 	}
 	return nil

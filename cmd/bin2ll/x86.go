@@ -16,9 +16,6 @@ type function struct {
 	entry  bin.Address
 	blocks map[bin.Address]*basicBlock
 	regs   map[x86asm.Reg]*ir.InstAlloca
-	// Calling convention; or empty string if default calling convention.
-	// TODO: Specify the default calling convention.
-	callconv string
 }
 
 type basicBlock struct {

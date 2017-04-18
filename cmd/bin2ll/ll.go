@@ -135,17 +135,25 @@ func (d *disassembler) translateInst(f *function, block *basicBlock, inst *instr
 		return d.instCALL(f, block, inst)
 	case x86asm.CMP:
 		return d.instCMP(f, block, inst)
+	case x86asm.DEC:
+		return d.instDEC(f, block, inst)
 	case x86asm.IMUL:
 		return d.instIMUL(f, block, inst)
 	case x86asm.INC:
 		return d.instINC(f, block, inst)
+	case x86asm.LEA:
+		return d.instLEA(f, block, inst)
 	case x86asm.MOV:
 		return d.instMOV(f, block, inst)
+	case x86asm.SHR:
+		return d.instSHR(f, block, inst)
+	case x86asm.TEST:
+		return d.instTEST(f, block, inst)
+	case x86asm.XOR:
+		return d.instXOR(f, block, inst)
 	case x86asm.PUSH, x86asm.POP:
 		// TODO: Figure out how to handle push and pop.
 		return nil
-	case x86asm.XOR:
-		return d.instXOR(f, block, inst)
 	default:
 		panic(fmt.Errorf("support for instruction opcode %v not yet implemented", inst.Op))
 	}
@@ -174,14 +182,24 @@ func (d *disassembler) instAND(f *function, block *basicBlock, inst *instruction
 // instCALL translates the given CALL instruction from x86 machine code to LLVM
 // IR assembly.
 func (d *disassembler) instCALL(f *function, block *basicBlock, inst *instruction) error {
-	c := d.useArg(f, block, inst, inst.Args[0])
-	// TODO: Add support for value.Named callees. Using *ir.Function for now, to
-	// gain access to the calling convention of the function. Data flow and type
-	// analysis will provide this information in the future also for local
-	// function pointer callees.
-	callee, ok := c.(*function)
-	if !ok {
-		return errors.Errorf("invalid callee type; expected *main.function, got %T", c)
+	var callee *function
+	if addr, ok := d.getAddr(f, block, inst, inst.Args[0]); ok {
+		if c, ok := d.funcs[addr]; ok {
+			callee = c
+		} else {
+			return errors.Errorf("unable to locate function at %v", addr)
+		}
+	} else {
+		c := d.useArg(f, block, inst, inst.Args[0])
+		// TODO: Add support for value.Named callees. Using *ir.Function for now, to
+		// gain access to the calling convention of the function. Data flow and type
+		// analysis will provide this information in the future also for local
+		// function pointer callees.
+		var ok bool
+		callee, ok = c.(*function)
+		if !ok {
+			return errors.Errorf("invalid callee type; expected *main.function, got %T", c)
+		}
 	}
 	var args []value.Value
 	switch callee.CallConv {
@@ -214,7 +232,20 @@ func (d *disassembler) instCMP(f *function, block *basicBlock, inst *instruction
 	x := d.useArg(f, block, inst, inst.Args[0])
 	y := d.useArg(f, block, inst, inst.Args[1])
 	// Set the status flags according to the result.
+
+	// TODO: Fix calculation of status flags. Pass SUB from CMP instruction and
+	// AND from TEST instruction.
 	return d.updateStatusFlags(f, block, x, y)
+}
+
+// instDEC translates the given DEC instruction from x86 machine code to LLVM IR
+// assembly.
+func (d *disassembler) instDEC(f *function, block *basicBlock, inst *instruction) error {
+	x := d.useArg(f, block, inst, inst.Args[0])
+	one := constant.NewInt(1, types.I32)
+	result := block.NewSub(x, one)
+	d.defArg(f, block, inst, inst.Args[0], result)
+	return nil
 }
 
 // instIMUL translates the given IMUL instruction from x86 machine code to LLVM
@@ -237,12 +268,47 @@ func (d *disassembler) instINC(f *function, block *basicBlock, inst *instruction
 	return nil
 }
 
+// instLEA translates the given LEA instruction from x86 machine code to LLVM IR
+// assembly.
+func (d *disassembler) instLEA(f *function, block *basicBlock, inst *instruction) error {
+	y, ok := inst.Args[1].(x86asm.Mem)
+	if !ok {
+		return errors.Errorf("invalid LEA operand type; expected x86asm.Mem, got %T", inst.Args[1])
+	}
+	result := d.mem(f, block, inst, y)
+	d.defArg(f, block, inst, inst.Args[0], result)
+	return nil
+}
+
 // instMOV translates the given MOV instruction from x86 machine code to LLVM IR
 // assembly.
 func (d *disassembler) instMOV(f *function, block *basicBlock, inst *instruction) error {
 	y := d.useArg(f, block, inst, inst.Args[1])
 	d.defArg(f, block, inst, inst.Args[0], y)
 	return nil
+}
+
+// instSHR translates the given SHR instruction from x86 machine code to LLVM IR
+// assembly.
+func (d *disassembler) instSHR(f *function, block *basicBlock, inst *instruction) error {
+	// shift logical right (SHR)
+	x := d.useArg(f, block, inst, inst.Args[0])
+	y := d.useArg(f, block, inst, inst.Args[1])
+	result := block.NewLShr(x, y)
+	d.defArg(f, block, inst, inst.Args[0], result)
+	return nil
+}
+
+// instTEST translates the given TEST instruction from x86 machine code to LLVM IR
+// assembly.
+func (d *disassembler) instTEST(f *function, block *basicBlock, inst *instruction) error {
+	x := d.useArg(f, block, inst, inst.Args[0])
+	y := d.useArg(f, block, inst, inst.Args[1])
+	// Set the status flags according to the result.
+
+	// TODO: Fix calculation of status flags. Pass SUB from CMP instruction and
+	// AND from TEST instruction.
+	return d.updateStatusFlags(f, block, x, y)
 }
 
 // instXOR translates the given XOR instruction from x86 machine code to LLVM IR
@@ -445,7 +511,8 @@ func (d *disassembler) termCondBranch(f *function, block *basicBlock, term *inst
 		// Jump if equal.
 		//
 		//    ZF=1
-		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+		zf := d.useStatus(f, block, ZF)
+		cond = block.NewICmp(ir.IntEQ, zf, constant.True)
 	default:
 		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
 	}
@@ -475,7 +542,15 @@ func (d *disassembler) termJMP(f *function, block *basicBlock, term *instruction
 		block.NewRet(nil)
 		return nil
 	}
+	if addr, ok := d.getAddr(f, block, term, term.Args[0]); ok {
+		if target, ok := f.blocks[addr]; ok {
+			block.NewBr(target.BasicBlock)
+			return nil
+		}
+		return errors.Errorf("unable to locate basic block at %v", addr)
+	}
 	// TODO: Add proper support for JMP terminators.
+	fmt.Println("termJMP arg:", term.Args[0])
 	panic(fmt.Errorf("support for terminator opcode %v not yet implemented", term.Op))
 }
 
@@ -492,12 +567,11 @@ func (d *disassembler) termRET(f *function, block *basicBlock, term *instruction
 	return nil
 }
 
-func (d *disassembler) useArg(f *function, block *basicBlock, inst *instruction, arg x86asm.Arg) value.Value {
-	fmt.Println("useArg:", arg)
+// getAddr returns the address specified by the given argument, and a boolean
+// value indicating success.
+func (d *disassembler) getAddr(f *function, block *basicBlock, inst *instruction, arg x86asm.Arg) (bin.Address, bool) {
 	switch arg := arg.(type) {
-	case x86asm.Reg:
-		src := d.reg(f, arg)
-		return block.NewLoad(src)
+	//case x86asm.Reg:
 	case x86asm.Mem:
 		// Segment:[Base+Scale*Index+Disp].
 
@@ -508,14 +582,102 @@ func (d *disassembler) useArg(f *function, block *basicBlock, inst *instruction,
 		//    Scale   uint8
 		//    Index   Reg
 		if arg.Segment == 0 && arg.Base == 0 && arg.Scale == 0 && arg.Index == 0 {
-			addr := bin.Address(arg.Disp)
-			return d.useGlobal(f, block, addr)
+			return bin.Address(arg.Disp), true
 		}
 		if arg.Disp > 0 {
 			fmt.Printf("unable to locate memory at address %v\n", bin.Address(arg.Disp))
 		}
 		pretty.Println(arg)
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
+
+	//case x86asm.Imm:
+	case x86asm.Rel:
+		next := inst.addr + bin.Address(inst.Len)
+		return next + bin.Address(arg), true
+	default:
+		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
+	}
+}
+
+// mem returns a pointer to the LLVM IR value associated with the given memory
+// argument.
+func (d *disassembler) mem(f *function, block *basicBlock, inst *instruction, arg x86asm.Mem) value.Value {
+	// Early return if constant address.
+	if arg.Segment == 0 && arg.Base == 0 && arg.Scale == 0 && arg.Index == 0 {
+		addr := bin.Address(arg.Disp)
+		if fn, ok := d.funcs[addr]; ok {
+			return fn
+		}
+		if g, ok := d.global(f, block, addr); ok {
+			return g
+		}
+		panic(fmt.Errorf("unable to locate function or global at %v", addr))
+	}
+
+	// TODO: Figure out how to handle Segment.
+
+	// Segment:[Base+Scale*Index+Disp].
+	//
+	//    Segment Reg
+	//    Base    Reg
+	//    Scale   uint8
+	//    Index   Reg
+	//    Disp    int64
+	var result value.Value
+	var base value.Value
+	if arg.Base != 0 {
+		base = d.useArg(f, block, inst, arg.Base)
+	}
+	var scaledIndex value.Value
+	if arg.Index != 0 {
+		if arg.Scale == 0 {
+			panic(fmt.Errorf("invalid scale; zero scale used with non-zero index %v", arg.Index))
+		}
+		index := d.useArg(f, block, inst, arg.Index)
+		if arg.Scale == 1 {
+			scaledIndex = index
+		} else {
+			scale := constant.NewInt(int64(arg.Scale), types.I32)
+			scaledIndex = block.NewMul(scale, index)
+		}
+	}
+	var disp value.Value
+	if arg.Disp != 0 {
+		disp = constant.NewInt(arg.Disp, types.I64)
+	}
+	if base != nil {
+		result = base
+	}
+	if scaledIndex != nil {
+		if result == nil {
+			result = scaledIndex
+		} else {
+			result = block.NewAdd(result, scaledIndex)
+		}
+	}
+	if disp != nil {
+		if result == nil {
+			result = disp
+		} else {
+			result = block.NewAdd(result, disp)
+		}
+	}
+	if result == nil {
+		result = constant.NewInt(0, types.I64)
+	}
+	// TODO: Fix type once type analysis information is available.
+	return block.NewBitCast(result, types.NewPointer(result.Type()))
+}
+
+func (d *disassembler) useArg(f *function, block *basicBlock, inst *instruction, arg x86asm.Arg) value.Value {
+	fmt.Println("useArg:", arg)
+	switch arg := arg.(type) {
+	case x86asm.Reg:
+		src := d.reg(f, arg)
+		return block.NewLoad(src)
+	case x86asm.Mem:
+		src := d.mem(f, block, inst, arg)
+		return block.NewLoad(src)
 	case x86asm.Imm:
 		return constant.NewInt(int64(arg), types.I32)
 	case x86asm.Rel:
@@ -523,7 +685,15 @@ func (d *disassembler) useArg(f *function, block *basicBlock, inst *instruction,
 		if v, ok := d.funcs[addr]; ok {
 			return v
 		}
-		return d.useGlobal(f, block, addr)
+		if g, ok := d.global(f, block, addr); ok {
+			fmt.Println("inst:", inst)
+			fmt.Println("arg:", arg)
+			panic("not yet implemented")
+			// TODO: Verify if the global variable should be loaded, or used as
+			// pointer.
+			return block.NewLoad(g)
+		}
+		panic(fmt.Errorf("unable to locate global or function at %v", addr))
 	default:
 		pretty.Println(arg)
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
@@ -537,24 +707,8 @@ func (d *disassembler) defArg(f *function, block *basicBlock, inst *instruction,
 		dst := d.reg(f, arg)
 		block.NewStore(v, dst)
 	case x86asm.Mem:
-		// Segment:[Base+Scale*Index+Disp].
-
-		// TODO: Add proper support for memory arguments.
-		//
-		//    Segment Reg
-		//    Base    Reg
-		//    Scale   uint8
-		//    Index   Reg
-		if arg.Segment == 0 && arg.Base == 0 && arg.Scale == 0 && arg.Index == 0 {
-			addr := bin.Address(arg.Disp)
-			d.defGlobal(f, block, addr, v)
-			return
-		}
-		if arg.Disp > 0 {
-			fmt.Printf("unable to locate memory at address %v\n", bin.Address(arg.Disp))
-		}
-		pretty.Println(arg)
-		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
+		dst := d.mem(f, block, inst, arg)
+		block.NewStore(v, dst)
 	//case x86asm.Imm:
 	//case x86asm.Rel:
 	default:
@@ -741,23 +895,29 @@ func (d *disassembler) defStatus(f *function, block *basicBlock, status StatusFl
 // useGlobal loads and returns the LLVM IR value associated with the given
 // global variable address.
 func (d *disassembler) useGlobal(f *function, block *basicBlock, addr bin.Address) value.Value {
-	src := d.global(f, block, addr)
+	src, ok := d.global(f, block, addr)
+	if !ok {
+		panic(fmt.Sprintf("unable to locate global variable at %v", addr))
+	}
 	return block.NewLoad(src)
 }
 
 // defGlobal stores the given value to the LLVM IR value associated with the
 // given global variable address.
 func (d *disassembler) defGlobal(f *function, block *basicBlock, addr bin.Address, v value.Value) {
-	dst := d.global(f, block, addr)
+	dst, ok := d.global(f, block, addr)
+	if !ok {
+		panic(fmt.Sprintf("unable to locate global variable at %v", addr))
+	}
 	block.NewStore(v, dst)
 }
 
 // global returns a pointer to the LLVM IR value associated with the given
-// global variable.
-func (d *disassembler) global(f *function, block *basicBlock, addr bin.Address) value.Value {
+// global variable, and a boolean value indicating success.
+func (d *disassembler) global(f *function, block *basicBlock, addr bin.Address) (value.Value, bool) {
 	// Early return if direct access to global variable.
 	if src, ok := d.globals[addr]; ok {
-		return src
+		return src, true
 	}
 
 	// Use binary search if indirect access to global variable (e.g. struct
@@ -779,10 +939,10 @@ func (d *disassembler) global(f *function, block *basicBlock, addr bin.Address) 
 		end := start + bin.Address(size)
 		if start <= addr && addr < end {
 			offset := int64(addr - start)
-			return d.getElementPtr(block, g, offset)
+			return d.getElementPtr(block, g, offset), true
 		}
 	}
-	panic(fmt.Errorf("unable to locate global variable at %v", addr))
+	return nil, false
 }
 
 // getElementPtr returns a pointer to the given offset into the source value.
@@ -795,10 +955,7 @@ func (d *disassembler) getElementPtr(block *basicBlock, src value.Value, offset 
 	e := elem
 	total := int64(0)
 	var indices []value.Value
-	for i := 0; ; i++ {
-		if total >= offset {
-			break
-		}
+	for i := 0; total < offset; i++ {
 		if i == 0 {
 			// Ignore checking the 0th index as it simply follows the pointer of
 			// src.

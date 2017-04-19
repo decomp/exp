@@ -7,8 +7,8 @@ import (
 	"github.com/decomp/exp/bin"
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
-	"github.com/mewbak/x86/x86asm"
 	"github.com/pkg/errors"
+	"golang.org/x/arch/x86asm"
 )
 
 // function tracks the information required to translate a function from x86

@@ -12,8 +12,8 @@ import (
 	"github.com/llir/llvm/ir/metadata"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
-	"github.com/mewbak/x86/x86asm"
 	"github.com/pkg/errors"
+	"golang.org/x/arch/x86asm"
 )
 
 // translateFunc translates the given function from x86 machine code to LLVM IR

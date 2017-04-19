@@ -6,7 +6,7 @@
 //
 //    .text:004163AC ; FUNCTION CHUNK	AT .text:00416481 SIZE 00000007	BYTES
 
-// The lst2json tool extracts basic block addresses from IDA assembly listings
+// The lst2json tool extracts information for decomp from IDA assembly listings
 // (*.lst -> *.json).
 package main
 
@@ -27,7 +27,7 @@ import (
 
 func usage() {
 	const use = `
-Extract basic block addresses from IDA assembly listings (*.lst -> *.json).
+Extract information for decomp from IDA assembly listings (*.lst -> *.json).
 
 Usage:
 

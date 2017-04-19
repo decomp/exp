@@ -19,7 +19,7 @@ import (
 	"github.com/llir/llvm/ir/metadata"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
-	"golang.org/x/arch/x86asm"
+	"golang.org/x/arch/x86/x86asm"
 )
 
 // dbg represents a logger with the "bin2ll:" prefix, which logs debug messages

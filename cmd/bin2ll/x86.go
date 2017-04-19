@@ -8,7 +8,7 @@ import (
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
 	"github.com/pkg/errors"
-	"golang.org/x/arch/x86asm"
+	"golang.org/x/arch/x86/x86asm"
 )
 
 // function tracks the information required to translate a function from x86

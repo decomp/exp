@@ -139,6 +139,17 @@ func extract(lstPath string) error {
 		return errors.WithStack(err)
 	}
 
+	// Locate function signatures.
+	sigs, err := locateFuncSigs(input)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	for _, funcAddr := range funcAddrs {
+		if _, ok := sigs[funcAddr]; !ok {
+			fmt.Println(funcAddr)
+		}
+	}
+
 	// Store JSON files.
 	if err := storeJSON("funcs.json", funcAddrs); err != nil {
 		return errors.WithStack(err)
@@ -152,11 +163,49 @@ func extract(lstPath string) error {
 	if err := storeJSON("tables.json", tables); err != nil {
 		return errors.WithStack(err)
 	}
+	if err := storeJSON("sigs.json", sigs); err != nil {
+		return errors.WithStack(err)
+	}
 
 	return nil
 }
 
-// locateTargets locates the targets of jump tables within the IDA assembly
+// FuncSig represents a function signature.
+type FuncSig struct {
+	// Function name.
+	Name string `json:"name"`
+	// Function signature.
+	Sig string `json:"sig"`
+}
+
+// locateFuncSigs locates function signatures in the input IDA assembly listing.
+func locateFuncSigs(input []byte) (map[bin.Address]FuncSig, error) {
+	const regFuncSig = `(;[ \t]* ([^\n]+))?[\n][.]text[:]00([0-9a-fA-F]+)[ \t]+([a-zA-Z0-9_?@$]+)[ \t]+proc[ \t]near`
+	re, err := regexp.Compile(regFuncSig)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	subs := re.FindAllSubmatch(input, -1)
+	sigs := make(map[bin.Address]FuncSig)
+	for _, sub := range subs {
+		var sig FuncSig
+		// parse function signature.
+		sig.Sig = string(sub[2])
+		// parse address.
+		s := string(sub[3])
+		x, err := strconv.ParseUint(s, 16, 64)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		addr := bin.Address(x)
+		// parse function name.
+		sig.Name = string(sub[4])
+		sigs[addr] = sig
+	}
+	return sigs, nil
+}
+
+// locateTargets locates the targets of jump tables in the input IDA assembly
 // listing.
 func locateTargets(input []byte, tableAddrs map[bin.Address]bool) (map[bin.Address][]bin.Address, error) {
 	tables := make(map[bin.Address][]bin.Address)
@@ -197,21 +246,8 @@ func locateTargets(input []byte, tableAddrs map[bin.Address]bool) (map[bin.Addre
 	return tables, nil
 }
 
-// storeJSON stores a JSON encoded representation of the addresses to the given
-// file.
-func storeJSON(path string, v interface{}) error {
-	buf, err := json.MarshalIndent(v, "", "\t")
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	buf = append(buf, '\n')
-	if err := ioutil.WriteFile(path, buf, 0644); err != nil {
-		return errors.WithStack(err)
-	}
-	return nil
-}
-
-// locateAddrs locates addresses in input based on the given regular expression.
+// locateAddrs locates addresses in the input IDA assembly listing based on the
+// given regular expression.
 func locateAddrs(input []byte, m map[bin.Address]bool, reg string) error {
 	re, err := regexp.Compile(reg)
 	if err != nil {
@@ -226,6 +262,20 @@ func locateAddrs(input []byte, m map[bin.Address]bool, reg string) error {
 		}
 		addr := bin.Address(x)
 		m[addr] = true
+	}
+	return nil
+}
+
+// storeJSON stores a JSON encoded representation of the addresses to the given
+// file.
+func storeJSON(path string, v interface{}) error {
+	buf, err := json.MarshalIndent(v, "", "\t")
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	buf = append(buf, '\n')
+	if err := ioutil.WriteFile(path, buf, 0644); err != nil {
+		return errors.WithStack(err)
 	}
 	return nil
 }

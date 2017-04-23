@@ -221,7 +221,7 @@ func locateFuncSigs(input []byte) (map[bin.Address]FuncSig, error) {
 
 // locateImports locates imports in the input IDA assembly listing.
 func locateImports(input []byte) (map[bin.Address]FuncSig, error) {
-	const regImport = `(;[ \t]*([^\n]+))?[\n][.]idata[:]00([0-9a-fA-F]+)[ \t]+extrn[ \t]+([a-zA-Z0-9_?@$]+)`
+	const regImport = `([.]idata[:]00[0-9a-fA-F]+[ \t];[ \t]*([^\n]+))?[\n][.]idata[:]00([0-9a-fA-F]+)[ \t]+extrn[ \t]+([a-zA-Z0-9_?@$]+)`
 	re, err := regexp.Compile(regImport)
 	if err != nil {
 		return nil, errors.WithStack(err)

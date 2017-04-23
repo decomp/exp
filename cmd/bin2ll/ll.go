@@ -203,6 +203,7 @@ func (d *disassembler) instCALL(f *function, block *basicBlock, inst *instructio
 			return errors.Errorf("unable to locate function at %v", addr)
 		}
 	} else {
+		panic(fmt.Errorf("unknown callee address from argument `%v` in call instruction at %v", inst.Args[0], inst.addr))
 		c := d.useArg(f, block, inst, inst.Args[0])
 		// TODO: Add support for value.Named callees. Using *ir.Function for now, to
 		// gain access to the calling convention of the function. Data flow and type
@@ -485,7 +486,9 @@ func (d *disassembler) termCondBranch(f *function, block *basicBlock, term *inst
 		// Jump if below or equal.
 		//
 		//    CF=1 or ZF=1
-		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+		cf := d.useStatus(f, block, CF)
+		zf := d.useStatus(f, block, ZF)
+		cond = block.NewOr(cf, zf)
 	case x86asm.JB:
 		// Jump if below.
 		//
@@ -574,7 +577,7 @@ func (d *disassembler) termCondBranch(f *function, block *basicBlock, term *inst
 		//
 		//    ZF=1
 		zf := d.useStatus(f, block, ZF)
-		cond = block.NewICmp(ir.IntEQ, zf, constant.True)
+		cond = zf
 	default:
 		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
 	}
@@ -665,7 +668,14 @@ func (d *disassembler) termRET(f *function, block *basicBlock, term *instruction
 // value indicating success.
 func (d *disassembler) getAddr(f *function, block *basicBlock, inst *instruction, arg x86asm.Arg) (bin.Address, bool) {
 	switch arg := arg.(type) {
-	//case x86asm.Reg:
+	case x86asm.Reg:
+		fmt.Println("arg:", arg)
+		pretty.Println(arg)
+		if context, ok := d.contexts[inst.addr]; ok {
+			if v, ok := context[arg]; ok {
+				return bin.Address(v), true
+			}
+		}
 	case x86asm.Mem:
 		// Segment:[Base+Scale*Index+Disp].
 
@@ -681,7 +691,6 @@ func (d *disassembler) getAddr(f *function, block *basicBlock, inst *instruction
 		if arg.Disp > 0 {
 			fmt.Printf("unable to locate memory at address %v\n", bin.Address(arg.Disp))
 		}
-		return 0, false
 
 	//case x86asm.Imm:
 	case x86asm.Rel:
@@ -690,6 +699,7 @@ func (d *disassembler) getAddr(f *function, block *basicBlock, inst *instruction
 	default:
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
 	}
+	return 0, false
 }
 
 // mem returns a pointer to the LLVM IR value associated with the given memory

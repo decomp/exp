@@ -12,6 +12,8 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
 
 	"github.com/decomp/exp/bin"
 	"github.com/llir/llvm/asm"
@@ -146,6 +148,8 @@ type disassembler struct {
 	// Map from basic block address (function chunk) to function address, to
 	// which the basic block belongs.
 	chunkFunc map[bin.Address]bin.Address
+	// CPU contexts
+	contexts Contexts
 	// TODO: Remove.
 	decodedBlock map[bin.Address]bool
 }
@@ -268,6 +272,13 @@ func parseFile(binPath string) (*disassembler, error) {
 		d.globals[addr] = g
 	}
 
+	// Parse CPU contexts.
+	contexts, err := parseContexts("contexts.json")
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	d.contexts = contexts
+
 	return d, nil
 }
 
@@ -297,6 +308,48 @@ func parseSigs(llPath string, funcs map[bin.Address]*function) error {
 		funcs[entry] = fn
 	}
 	return nil
+}
+
+// parseContexts parses the given JSON file and returns the CPU contexts
+// contained within.
+func parseContexts(jsonPath string) (Contexts, error) {
+	contexts := make(Contexts)
+	m := make(map[string]map[string]string)
+	if err := parseJSON(jsonPath, &m); err != nil {
+		return nil, errors.WithStack(err)
+	}
+	for key, val := range m {
+		var addr bin.Address
+		if err := addr.Set(key); err != nil {
+			return nil, errors.WithStack(err)
+		}
+		context := make(Context)
+		for k, v := range val {
+			reg := regFromString(k)
+			x, err := parseUint64(v)
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
+			context[reg] = x
+		}
+		contexts[addr] = context
+	}
+	return contexts, nil
+}
+
+// parseUint64 parses the given integer, which may optionally be encoded in
+// hexadecimal representation.
+func parseUint64(s string) (uint64, error) {
+	base := 10
+	if strings.HasPrefix(s, "0x") {
+		s = s[len("0x"):]
+		base = 16
+	}
+	x, err := strconv.ParseUint(s, base, 64)
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+	return x, nil
 }
 
 // vaddr returns the virtual address for the specified offset from the image

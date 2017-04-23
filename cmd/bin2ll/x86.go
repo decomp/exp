@@ -37,6 +37,9 @@ type basicBlock struct {
 	insts []*instruction
 	// Terminator of the basic block.
 	term *instruction
+	// Additional basic blocks used when translation of single x86 basic blocks
+	// require multiple LLVM IR basic blocks.
+	extra []*basicBlock
 }
 
 // instruction tracks the information required to translate an instruction from

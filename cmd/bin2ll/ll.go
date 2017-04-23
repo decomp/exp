@@ -101,6 +101,9 @@ func (d *disassembler) translateFunc(f *function) error {
 
 	for _, block := range blocks {
 		f.AppendBlock(block.BasicBlock)
+		for _, extra := range block.extra {
+			f.AppendBlock(extra.BasicBlock)
+		}
 	}
 
 	return nil
@@ -145,6 +148,14 @@ func (d *disassembler) translateInst(f *function, block *basicBlock, inst *instr
 		return d.instLEA(f, block, inst)
 	case x86asm.MOV:
 		return d.instMOV(f, block, inst)
+	case x86asm.MOVSB:
+		return d.instMOVSB(f, block, inst)
+	case x86asm.MOVSD:
+		return d.instMOVSD(f, block, inst)
+	case x86asm.MOVSW:
+		return d.instMOVSW(f, block, inst)
+	case x86asm.MOVZX:
+		return d.instMOVZX(f, block, inst)
 	case x86asm.SHR:
 		return d.instSHR(f, block, inst)
 	case x86asm.SUB:
@@ -153,8 +164,8 @@ func (d *disassembler) translateInst(f *function, block *basicBlock, inst *instr
 		return d.instTEST(f, block, inst)
 	case x86asm.XOR:
 		return d.instXOR(f, block, inst)
-	case x86asm.PUSH, x86asm.POP:
-		// TODO: Figure out how to handle push and pop.
+	case x86asm.PUSH, x86asm.POP, x86asm.LEAVE:
+		// TODO: Figure out how to handle push and pop, and function epilogue.
 		return nil
 	default:
 		panic(fmt.Errorf("support for instruction opcode %v not yet implemented", inst.Op))
@@ -285,6 +296,41 @@ func (d *disassembler) instLEA(f *function, block *basicBlock, inst *instruction
 // instMOV translates the given MOV instruction from x86 machine code to LLVM IR
 // assembly.
 func (d *disassembler) instMOV(f *function, block *basicBlock, inst *instruction) error {
+	y := d.useArg(f, block, inst, inst.Args[1])
+	d.defArg(f, block, inst, inst.Args[0], y)
+	return nil
+}
+
+// instMOVSB translates the given MOVSB instruction from x86 machine code to
+// LLVM IR assembly.
+func (d *disassembler) instMOVSB(f *function, block *basicBlock, inst *instruction) error {
+	y := d.useArg(f, block, inst, inst.Args[1])
+	y = block.NewBitCast(y, types.NewPointer(types.I8))
+	d.defArg(f, block, inst, inst.Args[0], y)
+	return nil
+}
+
+// instMOVSD translates the given MOVSD instruction from x86 machine code to
+// LLVM IR assembly.
+func (d *disassembler) instMOVSD(f *function, block *basicBlock, inst *instruction) error {
+	y := d.useArg(f, block, inst, inst.Args[1])
+	y = block.NewBitCast(y, types.NewPointer(types.I32))
+	d.defArg(f, block, inst, inst.Args[0], y)
+	return nil
+}
+
+// instMOVSW translates the given MOVSW instruction from x86 machine code to
+// LLVM IR assembly.
+func (d *disassembler) instMOVSW(f *function, block *basicBlock, inst *instruction) error {
+	y := d.useArg(f, block, inst, inst.Args[1])
+	y = block.NewBitCast(y, types.NewPointer(types.I16))
+	d.defArg(f, block, inst, inst.Args[0], y)
+	return nil
+}
+
+// instMOVZX translates the given MOVZX instruction from x86 machine code to
+// LLVM IR assembly.
+func (d *disassembler) instMOVZX(f *function, block *basicBlock, inst *instruction) error {
 	y := d.useArg(f, block, inst, inst.Args[1])
 	d.defArg(f, block, inst, inst.Args[0], y)
 	return nil
@@ -579,9 +625,10 @@ func (d *disassembler) termJMP(f *function, block *basicBlock, term *instruction
 			// This assumption will be validated and revisited when information
 			// from symbolic execution is available.
 			index := d.useReg(f, block, arg.Index)
-			unreachable := &ir.BasicBlock{}
+			unreachable := &basicBlock{BasicBlock: &ir.BasicBlock{}}
 			unreachable.NewUnreachable()
-			targetDefault := unreachable
+			block.extra = append(block.extra, unreachable)
+			targetDefault := unreachable.BasicBlock
 			var cases []*ir.Case
 			for i, targetAddr := range targetAddrs {
 				target, ok := f.blocks[targetAddr]

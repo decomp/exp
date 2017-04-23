@@ -243,33 +243,16 @@ func parseFile(binPath string) (*disassembler, error) {
 
 	// Functions.
 	d.funcs = make(map[bin.Address]*function)
-	module, err := asm.ParseFile("funcs.ll")
-	if err != nil {
+	if err := parseSigs("sigs.ll", d.funcs); err != nil {
 		return nil, errors.WithStack(err)
 	}
-	for _, f := range module.Funcs {
-		// Parse function address metadata.
-		node, ok := f.Metadata["addr"]
-		if !ok {
-			return nil, errors.Errorf(`unable to locate "addr" metadata for function %q`, f.Name)
-		}
-		var entry bin.Address
-		if err := metadata.Unmarshal(node, &entry); err != nil {
-			return nil, errors.WithStack(err)
-		}
-		fn := &function{
-			Function: f,
-			entry:    entry,
-			blocks:   make(map[bin.Address]*basicBlock),
-			regs:     make(map[x86asm.Reg]*ir.InstAlloca),
-			status:   make(map[StatusFlag]*ir.InstAlloca),
-		}
-		d.funcs[entry] = fn
+	if err := parseSigs("imports.ll", d.funcs); err != nil {
+		return nil, errors.WithStack(err)
 	}
 
 	// Global variables.
 	d.globals = make(map[bin.Address]*ir.Global)
-	module, err = asm.ParseFile("globals.ll")
+	module, err := asm.ParseFile("globals.ll")
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -286,6 +269,34 @@ func parseFile(binPath string) (*disassembler, error) {
 	}
 
 	return d, nil
+}
+
+// parseSigs parses the function signatures of the given LLVM IR assembly file.
+func parseSigs(llPath string, funcs map[bin.Address]*function) error {
+	module, err := asm.ParseFile(llPath)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	for _, f := range module.Funcs {
+		// Parse function address metadata.
+		node, ok := f.Metadata["addr"]
+		if !ok {
+			return errors.Errorf(`unable to locate "addr" metadata for function %q`, f.Name)
+		}
+		var entry bin.Address
+		if err := metadata.Unmarshal(node, &entry); err != nil {
+			return errors.WithStack(err)
+		}
+		fn := &function{
+			Function: f,
+			entry:    entry,
+			blocks:   make(map[bin.Address]*basicBlock),
+			regs:     make(map[x86asm.Reg]*ir.InstAlloca),
+			status:   make(map[StatusFlag]*ir.InstAlloca),
+		}
+		funcs[entry] = fn
+	}
+	return nil
 }
 
 // vaddr returns the virtual address for the specified offset from the image

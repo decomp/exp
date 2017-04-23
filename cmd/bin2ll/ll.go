@@ -79,7 +79,7 @@ func (d *disassembler) translateFunc(f *function) error {
 		}
 		// Handle calling conventions.
 		switch f.CallConv {
-		case ir.CallConvX86FastCall:
+		case ir.CallConvX86_FastCall:
 			params := f.Sig.Params
 			if len(params) > 0 {
 				if ecx, ok := f.regs[x86asm.ECX]; ok {
@@ -203,7 +203,7 @@ func (d *disassembler) instCALL(f *function, block *basicBlock, inst *instructio
 	}
 	var args []value.Value
 	switch callee.CallConv {
-	case ir.CallConvX86FastCall:
+	case ir.CallConvX86_FastCall:
 		params := callee.Sig.Params
 		fmt.Println("params:", params)
 		if len(params) > 0 {

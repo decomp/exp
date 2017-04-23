@@ -22,8 +22,13 @@ import (
 	"strconv"
 
 	"github.com/decomp/exp/bin"
+	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
 )
+
+// dbg represents a logger with the "lst2json:" prefix, which logs debug
+// messages to standard error.
+var dbg = log.New(os.Stderr, term.RedBold("lst2json:")+" ", 0)
 
 func usage() {
 	const use = `
@@ -55,7 +60,7 @@ func main() {
 	}
 }
 
-// extract extracts basic block addresses from the given assembly listing.
+// extract extracts information for decomp from the given IDA assembly listing.
 func extract(lstPath string) error {
 	// Read file.
 	input, err := ioutil.ReadFile(lstPath)
@@ -146,8 +151,14 @@ func extract(lstPath string) error {
 	}
 	for _, funcAddr := range funcAddrs {
 		if _, ok := sigs[funcAddr]; !ok {
-			fmt.Println(funcAddr)
+			dbg.Printf("WARNING: unable to locate function signature for function at %v", funcAddr)
 		}
+	}
+
+	// Locate imports.
+	imports, err := locateImports(input)
+	if err != nil {
+		return errors.WithStack(err)
 	}
 
 	// Store JSON files.
@@ -166,6 +177,9 @@ func extract(lstPath string) error {
 	if err := storeJSON("sigs.json", sigs); err != nil {
 		return errors.WithStack(err)
 	}
+	if err := storeJSON("imports.json", imports); err != nil {
+		return errors.WithStack(err)
+	}
 
 	return nil
 }
@@ -180,8 +194,35 @@ type FuncSig struct {
 
 // locateFuncSigs locates function signatures in the input IDA assembly listing.
 func locateFuncSigs(input []byte) (map[bin.Address]FuncSig, error) {
-	const regFuncSig = `(;[ \t]* ([^\n]+))?[\n][.]text[:]00([0-9a-fA-F]+)[ \t]+([a-zA-Z0-9_?@$]+)[ \t]+proc[ \t]near`
+	const regFuncSig = `(;[ \t]*([^\n]+))?[\n][.]text[:]00([0-9a-fA-F]+)[ \t]+([a-zA-Z0-9_?@$]+)[ \t]+proc[ \t]near`
 	re, err := regexp.Compile(regFuncSig)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	subs := re.FindAllSubmatch(input, -1)
+	sigs := make(map[bin.Address]FuncSig)
+	for _, sub := range subs {
+		var sig FuncSig
+		// parse function signature.
+		sig.Sig = string(sub[2])
+		// parse address.
+		s := string(sub[3])
+		x, err := strconv.ParseUint(s, 16, 64)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		addr := bin.Address(x)
+		// parse function name.
+		sig.Name = string(sub[4])
+		sigs[addr] = sig
+	}
+	return sigs, nil
+}
+
+// locateImports locates imports in the input IDA assembly listing.
+func locateImports(input []byte) (map[bin.Address]FuncSig, error) {
+	const regImport = `(;[ \t]*([^\n]+))?[\n][.]idata[:]00([0-9a-fA-F]+)[ \t]+extrn[ \t]+([a-zA-Z0-9_?@$]+)`
+	re, err := regexp.Compile(regImport)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

@@ -147,6 +147,8 @@ func (d *disassembler) translateInst(f *function, block *basicBlock, inst *instr
 		return d.instMOV(f, block, inst)
 	case x86asm.SHR:
 		return d.instSHR(f, block, inst)
+	case x86asm.SUB:
+		return d.instSUB(f, block, inst)
 	case x86asm.TEST:
 		return d.instTEST(f, block, inst)
 	case x86asm.XOR:
@@ -299,6 +301,16 @@ func (d *disassembler) instSHR(f *function, block *basicBlock, inst *instruction
 	return nil
 }
 
+// instSUB translates the given SUB instruction from x86 machine code to LLVM IR
+// assembly.
+func (d *disassembler) instSUB(f *function, block *basicBlock, inst *instruction) error {
+	x := d.useArg(f, block, inst, inst.Args[0])
+	y := d.useArg(f, block, inst, inst.Args[1])
+	result := block.NewSub(x, y)
+	d.defArg(f, block, inst, inst.Args[0], result)
+	return nil
+}
+
 // instTEST translates the given TEST instruction from x86 machine code to LLVM IR
 // assembly.
 func (d *disassembler) instTEST(f *function, block *basicBlock, inst *instruction) error {
@@ -413,7 +425,11 @@ func (d *disassembler) termCondBranch(f *function, block *basicBlock, term *inst
 		// Jump if above.
 		//
 		//    CF=0 and ZF=0
-		panic(fmt.Sprintf("support for conditional branch instruction with opcode %v not yet implemented", term.Op))
+		cf := d.useStatus(f, block, CF)
+		zf := d.useStatus(f, block, ZF)
+		cond1 := block.NewICmp(ir.IntEQ, cf, constant.False)
+		cond2 := block.NewICmp(ir.IntEQ, zf, constant.False)
+		cond = block.NewAnd(cond1, cond2)
 	case x86asm.JAE:
 		// Jump if above or equal.
 		//
@@ -549,6 +565,37 @@ func (d *disassembler) termJMP(f *function, block *basicBlock, term *instruction
 		}
 		return errors.Errorf("unable to locate basic block at %v", addr)
 	}
+	if arg, ok := term.Args[0].(x86asm.Mem); ok {
+		if targetAddrs, ok := d.tables[bin.Address(arg.Disp)]; ok {
+			// TODO: Implement proper support for switch table jmp translation.
+
+			// TODO: Locate default target using information from symbolic
+			// execution and predecessor basic blocks.
+
+			// At this stage of recovery, the assumption is `index` is always
+			// within the range of the jump table offsets. Thus, the default branch
+			// is always unreachable.
+			//
+			// This assumption will be validated and revisited when information
+			// from symbolic execution is available.
+			index := d.useReg(f, block, arg.Index)
+			unreachable := &ir.BasicBlock{}
+			unreachable.NewUnreachable()
+			targetDefault := unreachable
+			var cases []*ir.Case
+			for i, targetAddr := range targetAddrs {
+				target, ok := f.blocks[targetAddr]
+				if !ok {
+					return errors.Errorf("unable to locate basic block at %v", targetAddr)
+				}
+				c := ir.NewCase(constant.NewInt(int64(i), index.Type()), target.BasicBlock)
+				cases = append(cases, c)
+			}
+			// TODO: Add support for indirect switch statements.
+			block.NewSwitch(index, targetDefault, cases...)
+			return nil
+		}
+	}
 	// TODO: Add proper support for JMP terminators.
 	fmt.Println("termJMP arg:", term.Args[0])
 	panic(fmt.Errorf("support for terminator opcode %v not yet implemented", term.Op))
@@ -587,8 +634,7 @@ func (d *disassembler) getAddr(f *function, block *basicBlock, inst *instruction
 		if arg.Disp > 0 {
 			fmt.Printf("unable to locate memory at address %v\n", bin.Address(arg.Disp))
 		}
-		pretty.Println(arg)
-		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
+		return 0, false
 
 	//case x86asm.Imm:
 	case x86asm.Rel:
@@ -673,8 +719,7 @@ func (d *disassembler) useArg(f *function, block *basicBlock, inst *instruction,
 	fmt.Println("useArg:", arg)
 	switch arg := arg.(type) {
 	case x86asm.Reg:
-		src := d.reg(f, arg)
-		return block.NewLoad(src)
+		return d.useReg(f, block, arg)
 	case x86asm.Mem:
 		src := d.mem(f, block, inst, arg)
 		return block.NewLoad(src)
@@ -698,6 +743,11 @@ func (d *disassembler) useArg(f *function, block *basicBlock, inst *instruction,
 		pretty.Println(arg)
 		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
 	}
+}
+
+func (d *disassembler) useReg(f *function, block *basicBlock, arg x86asm.Reg) value.Value {
+	src := d.reg(f, arg)
+	return block.NewLoad(src)
 }
 
 func (d *disassembler) defArg(f *function, block *basicBlock, inst *instruction, arg x86asm.Arg, v value.Value) {

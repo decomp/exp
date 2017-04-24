@@ -12,8 +12,6 @@ import (
 	"log"
 	"os"
 	"sort"
-	"strconv"
-	"strings"
 
 	"github.com/decomp/exp/bin"
 	"github.com/llir/llvm/asm"
@@ -277,11 +275,9 @@ func parseFile(binPath string) (*disassembler, error) {
 	}
 
 	// Parse CPU contexts.
-	contexts, err := parseContexts("contexts.json")
-	if err != nil {
+	if err := parseJSON("contexts.json", &d.contexts); err != nil {
 		return nil, errors.WithStack(err)
 	}
-	d.contexts = contexts
 
 	return d, nil
 }
@@ -317,47 +313,38 @@ func parseSigs(llPath string, funcs map[bin.Address]*Func, d *disassembler) erro
 	return nil
 }
 
+/*
 // parseContexts parses the given JSON file and returns the CPU contexts
 // contained within.
 func parseContexts(jsonPath string) (Contexts, error) {
 	contexts := make(Contexts)
-	m := make(map[string]map[string]string)
+	m := make(map[string]map[string]map[string]string)
 	if err := parseJSON(jsonPath, &m); err != nil {
 		return nil, errors.WithStack(err)
 	}
-	for key, val := range m {
+	for addrKey, regContextVal := range m {
 		var addr bin.Address
-		if err := addr.Set(key); err != nil {
+		if err := addr.Set(addrKey); err != nil {
 			return nil, errors.WithStack(err)
 		}
-		context := make(Context)
-		for k, v := range val {
-			reg := regFromString(k)
-			x, err := parseUint64(v)
-			if err != nil {
-				return nil, errors.WithStack(err)
+		regContext := make(map[x86asm.Reg]Context)
+		for regKey, contextVal := range regContextVal {
+			reg := parseReg(regKey)
+			context := make(Context)
+			for key, val := range contextVal {
+				x, err := bin.ParseUint64(val)
+				if err != nil {
+					return nil, errors.WithStack(err)
+				}
+				context[key] = x
 			}
-			context[reg] = x
+			regContext[reg] = context
 		}
-		contexts[addr] = context
+		contexts[addr] = regContext
 	}
 	return contexts, nil
 }
-
-// parseUint64 parses the given integer, which may optionally be encoded in
-// hexadecimal representation.
-func parseUint64(s string) (uint64, error) {
-	base := 10
-	if strings.HasPrefix(s, "0x") {
-		s = s[len("0x"):]
-		base = 16
-	}
-	x, err := strconv.ParseUint(s, base, 64)
-	if err != nil {
-		return 0, errors.WithStack(err)
-	}
-	return x, nil
-}
+*/
 
 // vaddr returns the virtual address for the specified offset from the image
 // base.

@@ -5,6 +5,7 @@ import (
 
 	"github.com/decomp/exp/bin"
 	"github.com/llir/llvm/ir"
+	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	"golang.org/x/arch/x86/x86asm"
@@ -1297,7 +1298,10 @@ func (f *Func) emitInstADC(inst *Inst) error {
 // emitInst translates the given x86 ADD instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstADD(inst *Inst) error {
-	panic("emitInstADD: not yet implemented")
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	result := f.cur.NewAdd(x, y)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ ADDPD ] ---------------------------------------------------------------
@@ -1401,7 +1405,10 @@ func (f *Func) emitInstAESKEYGENASSIST(inst *Inst) error {
 // emitInst translates the given x86 AND instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstAND(inst *Inst) error {
-	panic("emitInstAND: not yet implemented")
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	result := f.cur.NewAnd(x, y)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ ANDNPD ] --------------------------------------------------------------
@@ -1560,11 +1567,11 @@ func (f *Func) emitInstCALL(inst *Inst) error {
 		case ir.CallConvX86_FastCall:
 			switch i {
 			case 0:
-				arg := f.useReg(x86asm.ECX)
+				arg := f.useReg(ECX)
 				args = append(args, arg)
 				continue
 			case 1:
-				arg := f.useReg(x86asm.EDX)
+				arg := f.useReg(EDX)
 				args = append(args, arg)
 				continue
 			}
@@ -1593,7 +1600,7 @@ func (f *Func) emitInstCALL(inst *Inst) error {
 
 	// Handle return value.
 	if !types.Equal(f.Sig.Ret, types.Void) {
-		f.defReg(x86asm.EAX, result)
+		f.defReg(EAX, result)
 	}
 	return nil
 }
@@ -1803,7 +1810,9 @@ func (f *Func) emitInstCMOVS(inst *Inst) error {
 // emitInst translates the given x86 CMP instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstCMP(inst *Inst) error {
+	// result = x SUB y; set CF, PF, AF, ZF, SF, and OF according to result.
 	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	result := f.cur.NewSub(x, y)
 
 	// CF (bit 0) Carry flag - Set if an arithmetic operation generates a carry
 	// or a borrow out of the most- significant bit of the result; cleared
@@ -1824,14 +1833,15 @@ func (f *Func) emitInstCMP(inst *Inst) error {
 	// TODO: Add support for the AF status flag.
 
 	// ZF (bit 6) Zero flag - Set if the result is zero; cleared otherwise.
-	zf := f.cur.NewICmp(ir.IntEQ, x, y)
+	zero := constant.NewInt(0, types.I32)
+	zf := f.cur.NewICmp(ir.IntEQ, result, zero)
 	f.defStatus(ZF, zf)
 
 	// SF (bit 7) Sign flag - Set equal to the most-significant bit of the
 	// result, which is the sign bit of a signed integer. (0 indicates a positive
 	// value and 1 indicates a negative value.)
-	sf := f.cur.NewICmp(ir.IntSLT, x, y)
-	f.defStatus(SF, sf)
+
+	// TODO: Add support for SF flag.
 
 	// OF (bit 11) Overflow flag - Set if the integer result is too large a
 	// positive number or too small a negative number (excluding the sign-bit) to
@@ -2184,7 +2194,11 @@ func (f *Func) emitInstDAS(inst *Inst) error {
 // emitInst translates the given x86 DEC instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstDEC(inst *Inst) error {
-	panic("emitInstDEC: not yet implemented")
+	x := f.useArg(inst.Arg(0))
+	one := constant.NewInt(1, types.I32)
+	result := f.cur.NewSub(x, one)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ DIV ] -----------------------------------------------------------------
@@ -3080,7 +3094,11 @@ func (f *Func) emitInstIN(inst *Inst) error {
 // emitInst translates the given x86 INC instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstINC(inst *Inst) error {
-	panic("emitInstINC: not yet implemented")
+	x := f.useArg(inst.Arg(0))
+	one := constant.NewInt(1, types.I32)
+	result := f.cur.NewAdd(x, one)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ INSB ] ----------------------------------------------------------------
@@ -3392,7 +3410,10 @@ func (f *Func) emitInstLDS(inst *Inst) error {
 // emitInst translates the given x86 LEA instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstLEA(inst *Inst) error {
-	panic("emitInstLEA: not yet implemented")
+	a1 := NewMem(inst.Args[1], inst)
+	y := f.mem(a1)
+	f.defArg(inst.Arg(0), y)
+	return nil
 }
 
 // --- [ LEAVE ] ---------------------------------------------------------------
@@ -4818,9 +4839,10 @@ func (f *Func) emitInstPOP(inst *Inst) error {
 // pop pops a value from the top of the stack of the function, emitting code to
 // f.
 func (f *Func) pop() value.Value {
-	mem := x86asm.Mem{
+	m := x86asm.Mem{
 		Base: x86asm.ESP,
 	}
+	mem := NewMem(m, nil)
 	v := f.useMem(mem)
 	f.espDisp += 4
 	return v
@@ -5223,10 +5245,11 @@ func (f *Func) emitInstPUSH(inst *Inst) error {
 // push pushes the given value onto the top of the stack of the function,
 // emitting code to f.
 func (f *Func) push(v value.Value) {
-	mem := x86asm.Mem{
+	m := x86asm.Mem{
 		Base: x86asm.ESP,
 		Disp: -4,
 	}
+	mem := NewMem(m, nil)
 	f.defMem(mem, v)
 	f.espDisp -= 4
 }
@@ -5668,7 +5691,11 @@ func (f *Func) emitInstSHLD(inst *Inst) error {
 // emitInst translates the given x86 SHR instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstSHR(inst *Inst) error {
-	panic("emitInstSHR: not yet implemented")
+	// shift logical right (SHR)
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	result := f.cur.NewLShr(x, y)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ SHRD ] ----------------------------------------------------------------
@@ -5828,7 +5855,10 @@ func (f *Func) emitInstSTR(inst *Inst) error {
 // emitInst translates the given x86 SUB instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstSUB(inst *Inst) error {
-	panic("emitInstSUB: not yet implemented")
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	result := f.cur.NewSub(x, y)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ SUBPD ] ---------------------------------------------------------------
@@ -5908,7 +5938,28 @@ func (f *Func) emitInstSYSRET(inst *Inst) error {
 // emitInst translates the given x86 TEST instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstTEST(inst *Inst) error {
-	panic("emitInstTEST: not yet implemented")
+	// result = x AND y; set PF, ZF, and SF according to result.
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	result := f.cur.NewAnd(x, y)
+
+	// PF (bit 2) Parity flag - Set if the least-significant byte of the result
+	// contains an even number of 1 bits; cleared otherwise.
+
+	// TODO: Add support for the PF status flag.
+
+	// ZF (bit 6) Zero flag - Set if the result is zero; cleared otherwise.
+	zero := constant.NewInt(0, types.I32)
+	zf := f.cur.NewICmp(ir.IntEQ, result, zero)
+	f.defStatus(ZF, zf)
+
+	// SF (bit 7) Sign flag - Set equal to the most-significant bit of the
+	// result, which is the sign bit of a signed integer. (0 indicates a positive
+	// value and 1 indicates a negative value.)
+
+	// TODO: Add support for the SF flag.
+
+	return nil
+
 }
 
 // --- [ TZCNT ] ---------------------------------------------------------------

@@ -2,30 +2,24 @@ package bin
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/llir/llvm/ir/metadata"
 	"github.com/pkg/errors"
 )
 
-// An Address represents a virtual address; it implements the flag.Value,
-// json.Unmarshaler and metadata.Unmarshaler interface.
+// Address represents a virtual address, which may be specified in hexadecimal
+// notation. It implements the flag.Value, encoding.TextUnmarshaler and
+// metadata.Unmarshaler interfaces.
 type Address uint64
 
-// String returns the hexadecimal string representation of the address.
+// String returns the hexadecimal string representation of v.
 func (v Address) String() string {
 	return fmt.Sprintf("0x%X", uint64(v))
 }
 
 // Set sets v to the numberic value represented by s.
 func (v *Address) Set(s string) error {
-	base := 10
-	if strings.HasPrefix(s, "0x") || strings.HasPrefix(s, "0X") {
-		s = s[2:]
-		base = 16
-	}
-	x, err := strconv.ParseUint(s, base, 64)
+	x, err := ParseUint64(s)
 	if err != nil {
 		return errors.WithStack(err)
 	}

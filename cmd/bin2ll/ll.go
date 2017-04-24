@@ -100,20 +100,21 @@ func (d *disassembler) translateFunc(f *Func) error {
 			case ir.CallConvX86_FastCall:
 				switch i {
 				case 0:
-					f.defReg(x86asm.ECX, param)
+					f.defReg(ECX, param)
 					continue
 				case 1:
-					f.defReg(x86asm.EDX, param)
+					f.defReg(EDX, param)
 					continue
 				}
 			default:
 				// TODO: Add support for more calling conventions.
 			}
 			// Use parameter on stack.
-			mem := x86asm.Mem{
+			m := x86asm.Mem{
 				Base: x86asm.ESP,
 				Disp: 4,
 			}
+			mem := NewMem(m, nil)
 			f.defMem(mem, param)
 		}
 		target := f.Blocks[0]
@@ -143,57 +144,6 @@ func (d *disassembler) translateBlock(f *Func, bb *BasicBlock) error {
 		return errors.WithStack(err)
 	}
 	return nil
-}
-
-// translateInst translates the given instruction from x86 machine code to LLVM
-// IR assembly.
-func (d *disassembler) translateInst(f *Func, bb *BasicBlock, inst *Inst) error {
-	fmt.Println("inst:", inst)
-	switch inst.Op {
-	case x86asm.ADD:
-		return d.instADD(f, bb, inst)
-	case x86asm.AND:
-		return d.instAND(f, bb, inst)
-	case x86asm.CALL:
-		return d.instCALL(f, bb, inst)
-	case x86asm.CDQ:
-		return d.instCDQ(f, bb, inst)
-	case x86asm.CMP:
-		return d.instCMP(f, bb, inst)
-	case x86asm.DEC:
-		return d.instDEC(f, bb, inst)
-	case x86asm.IMUL:
-		return d.instIMUL(f, bb, inst)
-	case x86asm.INC:
-		return d.instINC(f, bb, inst)
-	case x86asm.LEA:
-		return d.instLEA(f, bb, inst)
-	case x86asm.MOV:
-		return d.instMOV(f, bb, inst)
-	case x86asm.MOVSB:
-		return d.instMOVSB(f, bb, inst)
-	case x86asm.MOVSD:
-		return d.instMOVSD(f, bb, inst)
-	case x86asm.MOVSW:
-		return d.instMOVSW(f, bb, inst)
-	case x86asm.MOVZX:
-		return d.instMOVZX(f, bb, inst)
-	case x86asm.SAR:
-		return d.instSAR(f, bb, inst)
-	case x86asm.SHR:
-		return d.instSHR(f, bb, inst)
-	case x86asm.SUB:
-		return d.instSUB(f, bb, inst)
-	case x86asm.TEST:
-		return d.instTEST(f, bb, inst)
-	case x86asm.XOR:
-		return d.instXOR(f, bb, inst)
-	case x86asm.PUSH, x86asm.POP, x86asm.LEAVE:
-		// TODO: Figure out how to handle push and pop, and function epilogue.
-		return nil
-	default:
-		panic(fmt.Errorf("support for instruction opcode %v not yet implemented", inst.Op))
-	}
 }
 
 // instADD translates the given ADD instruction from x86 machine code to LLVM IR
@@ -392,17 +342,6 @@ func (d *disassembler) instSAR(f *Func, bb *BasicBlock, inst *Inst) error {
 	x := d.useArg(f, bb, inst, inst.Args[0])
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	result := f.cur.NewAShr(x, y)
-	d.defArg(f, bb, inst, inst.Args[0], result)
-	return nil
-}
-
-// instSHR translates the given SHR instruction from x86 machine code to LLVM IR
-// assembly.
-func (d *disassembler) instSHR(f *Func, bb *BasicBlock, inst *Inst) error {
-	// shift logical right (SHR)
-	x := d.useArg(f, bb, inst, inst.Args[0])
-	y := d.useArg(f, bb, inst, inst.Args[1])
-	result := f.cur.NewLShr(x, y)
 	d.defArg(f, bb, inst, inst.Args[0], result)
 	return nil
 }
@@ -729,8 +668,10 @@ func (d *disassembler) getAddr(f *Func, bb *BasicBlock, inst *Inst, arg x86asm.A
 		fmt.Println("arg:", arg)
 		pretty.Println(arg)
 		if context, ok := d.contexts[inst.addr]; ok {
-			if v, ok := context[arg]; ok {
-				return bin.Address(v), true
+			if c, ok := context.Regs[Register(arg)]; ok {
+				if addr, ok := c["addr"]; ok {
+					return bin.Address(addr), true
+				}
 			}
 		}
 	case x86asm.Mem:

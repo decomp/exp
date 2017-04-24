@@ -4,6 +4,9 @@ import (
 	"fmt"
 
 	"github.com/decomp/exp/bin"
+	"github.com/llir/llvm/ir"
+	"github.com/llir/llvm/ir/types"
+	"github.com/llir/llvm/ir/value"
 	"golang.org/x/arch/x86/x86asm"
 )
 
@@ -18,6 +21,7 @@ type Inst struct {
 // emitInst translates the given x86 instruction to LLVM IR, emitting code to f.
 func (f *Func) emitInst(inst *Inst) error {
 	dbg.Println("lifting instruction:", inst.Inst)
+
 	switch inst.Op {
 	case x86asm.AAA:
 		return f.emitInstAAA(inst)
@@ -1541,7 +1545,57 @@ func (f *Func) emitInstBTS(inst *Inst) error {
 // emitInst translates the given x86 CALL instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstCALL(inst *Inst) error {
-	panic("emitInstCALL: not yet implemented")
+	// Locate callee information.
+	callee, sig, callconv, ok := f.getFunc(inst.Arg(0))
+	if !ok {
+		panic(fmt.Errorf("unable to locate function for argument %v", inst.Arg(0)))
+	}
+
+	// Handle function arguments.
+	var args []value.Value
+	purge := int64(0)
+	for i := range sig.Params {
+		// Pass argument in register.
+		switch callconv {
+		case ir.CallConvX86_FastCall:
+			switch i {
+			case 0:
+				arg := f.useReg(x86asm.ECX)
+				args = append(args, arg)
+				continue
+			case 1:
+				arg := f.useReg(x86asm.EDX)
+				args = append(args, arg)
+				continue
+			}
+		default:
+			// TODO: Add support for more calling conventions.
+		}
+		// Pass argument on stack.
+		arg := f.pop()
+		args = append(args, arg)
+		switch callconv {
+		case ir.CallConvX86_FastCall, ir.CallConvX86_StdCall:
+			// callee purge.
+			purge += 4
+		case ir.CallConvC:
+			// caller purge; nothing to do.
+		default:
+			// TODO: Add support for more calling conventions.
+		}
+	}
+
+	// Emit call instruction.
+	result := f.cur.NewCall(callee, args...)
+
+	// Handle purged arguments by callee.
+	f.espDisp += purge
+
+	// Handle return value.
+	if !types.Equal(f.Sig.Ret, types.Void) {
+		f.defReg(x86asm.EAX, result)
+	}
+	return nil
 }
 
 // --- [ CBW ] -----------------------------------------------------------------
@@ -1749,7 +1803,44 @@ func (f *Func) emitInstCMOVS(inst *Inst) error {
 // emitInst translates the given x86 CMP instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstCMP(inst *Inst) error {
-	panic("emitInstCMP: not yet implemented")
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+
+	// CF (bit 0) Carry flag - Set if an arithmetic operation generates a carry
+	// or a borrow out of the most- significant bit of the result; cleared
+	// otherwise. This flag indicates an overflow condition for unsigned-integer
+	// arithmetic. It is also used in multiple-precision arithmetic.
+
+	// TODO: Add support for the CF status flag.
+
+	// PF (bit 2) Parity flag - Set if the least-significant byte of the result
+	// contains an even number of 1 bits; cleared otherwise.
+
+	// TODO: Add support for the PF status flag.
+
+	// AF (bit 4) Auxiliary Carry flag - Set if an arithmetic operation generates
+	// a carry or a borrow out of bit 3 of the result; cleared otherwise. This
+	// flag is used in binary-coded decimal (BCD) arithmetic.
+
+	// TODO: Add support for the AF status flag.
+
+	// ZF (bit 6) Zero flag - Set if the result is zero; cleared otherwise.
+	zf := f.cur.NewICmp(ir.IntEQ, x, y)
+	f.defStatus(ZF, zf)
+
+	// SF (bit 7) Sign flag - Set equal to the most-significant bit of the
+	// result, which is the sign bit of a signed integer. (0 indicates a positive
+	// value and 1 indicates a negative value.)
+	sf := f.cur.NewICmp(ir.IntSLT, x, y)
+	f.defStatus(SF, sf)
+
+	// OF (bit 11) Overflow flag - Set if the integer result is too large a
+	// positive number or too small a negative number (excluding the sign-bit) to
+	// fit in the destination operand; cleared otherwise. This flag indicates an
+	// overflow condition for signed-integer (two's complement) arithmetic.
+
+	// TODO: Add support for the OF status flag.
+
+	return nil
 }
 
 // --- [ CMPPD ] ---------------------------------------------------------------
@@ -4719,7 +4810,20 @@ func (f *Func) emitInstPMULUDQ(inst *Inst) error {
 // emitInst translates the given x86 POP instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstPOP(inst *Inst) error {
-	panic("emitInstPOP: not yet implemented")
+	v := f.pop()
+	f.defArg(inst.Arg(0), v)
+	return nil
+}
+
+// pop pops a value from the top of the stack of the function, emitting code to
+// f.
+func (f *Func) pop() value.Value {
+	mem := x86asm.Mem{
+		Base: x86asm.ESP,
+	}
+	v := f.useMem(mem)
+	f.espDisp += 4
+	return v
 }
 
 // --- [ POPA ] ----------------------------------------------------------------
@@ -5111,7 +5215,20 @@ func (f *Func) emitInstPUNPCKLWD(inst *Inst) error {
 // emitInst translates the given x86 PUSH instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstPUSH(inst *Inst) error {
-	panic("emitInstPUSH: not yet implemented")
+	v := f.useArg(inst.Arg(0))
+	f.push(v)
+	return nil
+}
+
+// push pushes the given value onto the top of the stack of the function,
+// emitting code to f.
+func (f *Func) push(v value.Value) {
+	mem := x86asm.Mem{
+		Base: x86asm.ESP,
+		Disp: -4,
+	}
+	f.defMem(mem, v)
+	f.espDisp -= 4
 }
 
 // --- [ PUSHA ] ---------------------------------------------------------------

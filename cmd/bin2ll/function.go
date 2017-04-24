@@ -23,6 +23,13 @@ type Func struct {
 	regs map[x86asm.Reg]*ir.InstAlloca
 	// Status flags used within the function.
 	statusFlags map[StatusFlag]*ir.InstAlloca
+	// Local varialbes used within the function.
+	locals map[string]*ir.InstAlloca
+	// TODO: Move espDisp from Func to BasicBlock, and propagate symbolic
+	// execution information through context.json.
+
+	// ESP disposition; used for shadow stack.
+	espDisp int64
 	// Read-only global disassembler state.
 	d *disassembler
 }

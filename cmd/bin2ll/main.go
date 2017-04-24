@@ -309,6 +309,7 @@ func parseSigs(llPath string, funcs map[bin.Address]*Func, d *disassembler) erro
 			blocks:      make(map[bin.Address]*ir.BasicBlock),
 			regs:        make(map[x86asm.Reg]*ir.InstAlloca),
 			statusFlags: make(map[StatusFlag]*ir.InstAlloca),
+			locals:      make(map[string]*ir.InstAlloca),
 			d:           d,
 		}
 		funcs[entry] = fn

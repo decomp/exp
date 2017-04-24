@@ -77,22 +77,44 @@ func (d *disassembler) translateFunc(f *Func) error {
 				entry.AppendInst(inst)
 			}
 		}
+		// Allocate local variables for each local variable used within the
+		// function.
+		var names []string
+		for name := range f.locals {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+		for _, name := range names {
+			inst := f.locals[name]
+			entry.AppendInst(inst)
+		}
 		// Handle calling conventions.
-		switch f.CallConv {
-		case ir.CallConvX86_FastCall:
-			params := f.Sig.Params
-			if len(params) > 0 {
-				if ecx, ok := f.regs[x86asm.ECX]; ok {
-					entry.NewStore(f.Sig.Params[0], ecx)
+		f.cur = entry
+		// TODO: Initialize parameter initialization in entry block prior to basic
+		// block translation. Move this code to before f.translateBlock, and remove
+		// f.espDisp = 0.
+		f.espDisp = 0
+		for i, param := range f.Sig.Params {
+			// Use parameter in register.
+			switch f.CallConv {
+			case ir.CallConvX86_FastCall:
+				switch i {
+				case 0:
+					f.defReg(x86asm.ECX, param)
+					continue
+				case 1:
+					f.defReg(x86asm.EDX, param)
+					continue
 				}
+			default:
+				// TODO: Add support for more calling conventions.
 			}
-			if len(params) > 1 {
-				if edx, ok := f.regs[x86asm.EDX]; ok {
-					entry.NewStore(f.Sig.Params[1], edx)
-				}
+			// Use parameter on stack.
+			mem := x86asm.Mem{
+				Base: x86asm.ESP,
+				Disp: 4,
 			}
-		default:
-			// TODO: Add support for additional calling conventions.
+			f.defMem(mem, param)
 		}
 		target := f.Blocks[0]
 		entry.NewBr(target)
@@ -982,35 +1004,6 @@ func (d *disassembler) updateStatusFlags(f *Func, bb *BasicBlock, x, y value.Val
 	// TODO: Add support for the OF status flag.
 
 	return nil
-}
-
-// StatusFlag represents the set of status flags.
-type StatusFlag uint
-
-// Status flags.
-const (
-	CF StatusFlag = iota // Carry Flag
-	PF                   // Parity Flag
-	AF                   // Auxiliary Carry Flag
-	ZF                   // Zero Flag
-	SF                   // Sign Flag
-	OF                   // Overflow Flag
-)
-
-// String returns the string representation of the status flag.
-func (status StatusFlag) String() string {
-	m := map[StatusFlag]string{
-		CF: "CF",
-		PF: "PF",
-		AF: "AF",
-		ZF: "ZF",
-		SF: "SF",
-		OF: "OF",
-	}
-	if s, ok := m[status]; ok {
-		return s
-	}
-	return fmt.Sprintf("unknown status flag %d", uint(status))
 }
 
 // status returns a pointer to the LLVM IR value associated with the given

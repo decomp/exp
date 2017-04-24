@@ -22,6 +22,7 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*Func, error) {
 			blocks:      make(map[bin.Address]*ir.BasicBlock),
 			regs:        make(map[x86asm.Reg]*ir.InstAlloca),
 			statusFlags: make(map[StatusFlag]*ir.InstAlloca),
+			locals:      make(map[string]*ir.InstAlloca),
 			d:           d,
 		}
 	}

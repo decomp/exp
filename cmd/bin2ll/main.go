@@ -22,9 +22,15 @@ import (
 	"golang.org/x/arch/x86/x86asm"
 )
 
-// dbg represents a logger with the "bin2ll:" prefix, which logs debug messages
-// to standard error.
-var dbg = log.New(os.Stderr, term.MagentaBold("bin2ll:")+" ", 0)
+// Loggers.
+var (
+	// dbg represents a logger with the "bin2ll:" prefix, which logs debug
+	// messages to standard error.
+	dbg = log.New(os.Stderr, term.MagentaBold("bin2ll:")+" ", 0)
+	// warn represents a logger with the "warning:" prefix, which logs warning
+	// messages to standard error.
+	warn = log.New(os.Stderr, term.RedBold("warning:")+" ", 0)
+)
 
 func usage() {
 	const use = `
@@ -64,9 +70,10 @@ func main() {
 		os.Exit(1)
 	}
 	binPath := flag.Arg(0)
-	// Mute debug messages if `-q` is set.
+	// Mute debug and warning messages if `-q` is set.
 	if quiet {
 		dbg.SetOutput(ioutil.Discard)
+		warn.SetOutput(ioutil.Discard)
 	}
 
 	// Convert binary into LLVM IR assembly.

@@ -243,7 +243,7 @@ func regType(reg x86asm.Reg) types.Type {
 		panic(fmt.Errorf("support for register %v not yet implemented", reg))
 	// Segment registers.
 	case x86asm.ES, x86asm.CS, x86asm.SS, x86asm.DS, x86asm.FS, x86asm.GS:
-		panic(fmt.Errorf("support for register %v not yet implemented", reg))
+		return types.I16
 	// System registers.
 	case x86asm.GDTR:
 		panic(fmt.Errorf("support for register %v not yet implemented", reg))

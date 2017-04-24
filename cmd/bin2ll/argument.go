@@ -32,6 +32,16 @@ func (inst *Inst) Arg(i int) *Arg {
 	}
 }
 
+// Mem returns the memory reference at the i:th argument of the instruction.
+func (inst *Inst) Mem(i int) *Mem {
+	return NewMem(inst.Args[i], inst)
+}
+
+// Reg returns the register at the i:th argument of the instruction.
+func (inst *Inst) Reg(i int) *Reg {
+	return NewReg(inst.Args[i], inst)
+}
+
 // useArg returns the value held by the given argument, emitting code to f.
 func (f *Func) useArg(arg *Arg) value.Value {
 	switch a := arg.Arg.(type) {
@@ -140,14 +150,22 @@ func NewMem(arg x86asm.Arg, parent *Inst) *Mem {
 	}
 }
 
-// useMem loads and returns the value of the given memory argument, emitting
+// useMem loads and returns the value of the given memory reference, emitting
 // code to f.
 func (f *Func) useMem(mem *Mem) value.Value {
 	src := f.mem(mem)
 	return f.cur.NewLoad(src)
 }
 
-// defMem stores the value to the given memory argument, emitting code to f.
+// useMemElem loads and returns a value of the specified element type from the
+// given memory reference, emitting code to f.
+func (f *Func) useMemElem(mem *Mem, elem types.Type) value.Value {
+	src := f.mem(mem)
+	src = f.cur.NewBitCast(src, elem)
+	return f.cur.NewLoad(src)
+}
+
+// defMem stores the value to the given memory reference, emitting code to f.
 func (f *Func) defMem(mem *Mem, v value.Value) {
 	dst := f.mem(mem)
 	f.cur.NewStore(v, dst)
@@ -173,7 +191,7 @@ func (f *Func) mem(mem *Mem) value.Value {
 		index = f.useReg(NewReg(mem.Index, mem.parent))
 	}
 
-	// TODO: Add proper support for memory arguments.
+	// TODO: Add proper support for memory references.
 	//    Segment Reg
 	//    Base    Reg
 	//    Scale   uint8
@@ -204,7 +222,7 @@ func (f *Func) mem(mem *Mem) value.Value {
 					addr := bin.Address(mem.Disp - offset)
 					v, ok := f.addr(addr)
 					if !ok {
-						panic(fmt.Errorf("unable to locate value at address %v, referenced from instruction at %v", addr, mem.parent.addr))
+						panic(fmt.Errorf("unable to locate value at address %v, referenced from %v instruction at %v", addr, mem.parent.Op, mem.parent.addr))
 					}
 					// TODO: Figure out how to handle negative offsets.
 					disp = f.getElementPtr(v, offset)
@@ -215,7 +233,7 @@ func (f *Func) mem(mem *Mem) value.Value {
 			addr := bin.Address(mem.Disp)
 			v, ok := f.addr(addr)
 			if !ok {
-				panic(fmt.Errorf("unable to locate value at address %v, referenced from instruction at %v", addr, mem.parent.addr))
+				warn.Printf("unable to locate value at address %v, referenced from %v instruction at %v", addr, mem.parent.Op, mem.parent.addr)
 			}
 			disp = v
 		}
@@ -229,8 +247,9 @@ func (f *Func) mem(mem *Mem) value.Value {
 	// TODO: Handle Segment.
 	src := disp
 	if segment != nil {
-		pretty.Println(mem)
-		panic("support for memory reference segment not yet implemented")
+		// Ignore segments for now, assume byte addressing.
+		//pretty.Println(mem)
+		//panic("support for memory reference segment not yet implemented")
 	}
 
 	// Handle Base.
@@ -361,8 +380,8 @@ func (f *Func) addr(addr bin.Address) (value.Value, bool) {
 	if fn, ok := f.d.funcs[addr]; ok {
 		return fn.Function, true
 	}
-	fmt.Printf("unable to locate value at address %v\n", addr)
-	panic("not yet implemented")
+	// TODO: Add support for lookup of more globally addressable values.
+	return nil, false
 }
 
 // === [ helpers ] =============================================================
@@ -371,6 +390,14 @@ func (f *Func) addr(addr bin.Address) (value.Value, bool) {
 // boolean indicating success.
 func (f *Func) getAddr(arg *Arg) (bin.Address, bool) {
 	switch a := arg.Arg.(type) {
+	case x86asm.Reg:
+		if context, ok := f.d.contexts[arg.parent.addr]; ok {
+			if c, ok := context.Regs[Register(a)]; ok {
+				if addr, ok := c["addr"]; ok {
+					return bin.Address(addr), true
+				}
+			}
+		}
 	case x86asm.Rel:
 		next := arg.parent.addr + bin.Address(arg.parent.Len)
 		addr := next + bin.Address(a)

@@ -161,7 +161,7 @@ func (f *Func) useMem(mem *Mem) value.Value {
 // given memory reference, emitting code to f.
 func (f *Func) useMemElem(mem *Mem, elem types.Type) value.Value {
 	src := f.mem(mem)
-	src = f.cur.NewBitCast(src, elem)
+	src = f.cur.NewBitCast(src, types.NewPointer(elem))
 	return f.cur.NewLoad(src)
 }
 
@@ -241,6 +241,10 @@ func (f *Func) mem(mem *Mem) value.Value {
 
 	// Early return for direct memory access.
 	if segment == nil && base == nil && index == nil {
+		if disp == nil {
+			addr := bin.Address(mem.Disp)
+			panic(fmt.Errorf("unable to locate value at address %v, referenced from %v instruction at %v", addr, mem.parent.Op, mem.parent.addr))
+		}
 		return disp
 	}
 
@@ -283,8 +287,38 @@ func (f *Func) mem(mem *Mem) value.Value {
 	// TODO: Cast into proper type, once type analysis information is available.
 
 	// Force bitcast into pointer type.
-	if typ := src.Type(); !types.IsPointer(typ) {
-		src = f.cur.NewBitCast(src, types.NewPointer(typ))
+	elem := src.Type()
+	for _, prefix := range mem.parent.Prefix[:] {
+		// The first zero in the array marks the end of the prefixes.
+		if prefix == 0 {
+			break
+		}
+		// Validate that implied prefixes are supported.
+		implied := prefix&x86asm.PrefixImplicit != 0
+		if implied {
+			switch prefix & 0x0FFF {
+			case x86asm.PrefixData16:
+				switch mem.parent.Op {
+				case x86asm.MOVSW:
+					// supported.
+				default:
+					panic(fmt.Errorf("support for implied prefix %v (0x%04X) not yet implemented for %v instruction", prefix, uint16(prefix), mem.parent.Op))
+				}
+			default:
+				panic(fmt.Errorf("support for prefix %v (0x%04X) not yet implemented", prefix, uint16(prefix)))
+			}
+		} else {
+			switch prefix & 0x0FFF {
+			case x86asm.PrefixData16:
+				elem = types.I16
+				panic(fmt.Errorf("inst prefix: %v", mem.parent))
+			default:
+				panic(fmt.Errorf("support for prefix %v (0x%04X) not yet implemented", prefix, uint16(prefix)))
+			}
+		}
+	}
+	if !types.IsPointer(elem) {
+		src = f.cur.NewBitCast(src, types.NewPointer(elem))
 	}
 
 	return src

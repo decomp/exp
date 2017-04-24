@@ -25,17 +25,14 @@ func (f *Func) emitInst(inst *Inst) error {
 	dbg.Println("lifting instruction:", inst.Inst)
 
 	// Check if prefix is present.
-	hasPrefix := false
 	for _, prefix := range inst.Prefix[:] {
-		if prefix != 0 {
-			hasPrefix = true
+		// The first zero in the array marks the end of the prefixes.
+		if prefix == 0 {
 			break
 		}
-	}
-	if hasPrefix {
-		switch inst.Op {
-		case x86asm.MOVSW:
-			// already supported.
+		switch prefix {
+		case x86asm.PrefixData16, x86asm.PrefixData16 | x86asm.PrefixImplicit:
+			// prefix already supported.
 		default:
 			pretty.Println("instruction with prefix:", inst)
 			panic(fmt.Errorf("support for %v instruction with prefix not yet implemented", inst.Op))
@@ -1673,8 +1670,25 @@ func (f *Func) emitInstCBW(inst *Inst) error {
 // emitInst translates the given x86 CDQ instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstCDQ(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstCDQ: not yet implemented")
+	// EDX:EAX = sign-extend of EAX.
+	eax := f.useReg(EAX)
+	tmp := f.cur.NewLShr(eax, constant.NewInt(31, types.I32))
+	cond := f.cur.NewTrunc(tmp, types.I1)
+	targetTrue := &ir.BasicBlock{}
+	targetFalse := &ir.BasicBlock{}
+	exit := &ir.BasicBlock{}
+	f.AppendBlock(targetTrue)
+	f.AppendBlock(targetFalse)
+	f.AppendBlock(exit)
+	f.cur.NewCondBr(cond, targetTrue, targetFalse)
+	f.cur = targetTrue
+	f.defReg(EDX, constant.NewInt(0xFFFFFFFF, types.I32))
+	f.cur = targetFalse
+	f.defReg(EDX, constant.NewInt(0, types.I32))
+	targetTrue.NewBr(exit)
+	targetFalse.NewBr(exit)
+	f.cur = exit
+	return nil
 }
 
 // --- [ CDQE ] ----------------------------------------------------------------
@@ -4256,8 +4270,7 @@ func (f *Func) emitInstMOVQ2DQ(inst *Inst) error {
 // emitInst translates the given x86 MOVSB instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstMOVSB(inst *Inst) error {
-	elem := types.NewPointer(types.I8)
-	src := f.useMemElem(inst.Mem(1), elem)
+	src := f.useMemElem(inst.Mem(1), types.I8)
 	f.defArg(inst.Arg(0), src)
 	return nil
 }
@@ -4267,8 +4280,7 @@ func (f *Func) emitInstMOVSB(inst *Inst) error {
 // emitInst translates the given x86 MOVSD instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstMOVSD(inst *Inst) error {
-	elem := types.NewPointer(types.I32)
-	src := f.useMemElem(inst.Mem(1), elem)
+	src := f.useMemElem(inst.Mem(1), types.I32)
 	f.defArg(inst.Arg(0), src)
 	return nil
 }
@@ -4323,8 +4335,7 @@ func (f *Func) emitInstMOVSS(inst *Inst) error {
 // emitInst translates the given x86 MOVSW instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstMOVSW(inst *Inst) error {
-	elem := types.NewPointer(types.I16)
-	src := f.useMemElem(inst.Mem(1), elem)
+	src := f.useMemElem(inst.Mem(1), types.I16)
 	f.defArg(inst.Arg(0), src)
 	return nil
 }
@@ -4370,9 +4381,17 @@ func (f *Func) emitInstMOVUPS(inst *Inst) error {
 // emitInst translates the given x86 MOVZX instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstMOVZX(inst *Inst) error {
-	size := inst.MemBytes * 8
-	elem := types.NewPointer(types.NewInt(size))
-	src := f.useMemElem(inst.Mem(1), elem)
+	var src value.Value
+	switch arg := inst.Args[1].(type) {
+	case x86asm.Reg:
+		src = f.useReg(inst.Reg(1))
+	case x86asm.Mem:
+		size := inst.MemBytes * 8
+		elem := types.NewInt(size)
+		src = f.useMemElem(inst.Mem(1), elem)
+	default:
+		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
+	}
 	// TODO: Handle dst type dynamically.
 	src = f.cur.NewZExt(src, types.I32)
 	f.defArg(inst.Arg(0), src)
@@ -6030,8 +6049,11 @@ func (f *Func) emitInstSAHF(inst *Inst) error {
 // emitInst translates the given x86 SAR instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstSAR(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSAR: not yet implemented")
+	// shift arithmetic right (SAR)
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	result := f.cur.NewAShr(x, y)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ SBB ] -----------------------------------------------------------------

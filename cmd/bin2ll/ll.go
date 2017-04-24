@@ -63,7 +63,7 @@ func (d *disassembler) translateFunc(f *Func) error {
 
 	// Add new entry basic block to define registers and status flags used within
 	// the function.
-	if len(f.regs) > 0 || len(f.status) > 0 {
+	if len(f.regs) > 0 || len(f.statusFlags) > 0 {
 		entry := &ir.BasicBlock{}
 		// Allocate local variables for each register used within the function.
 		for reg := x86asm.AL; reg <= x86asm.TR7; reg++ {
@@ -73,7 +73,7 @@ func (d *disassembler) translateFunc(f *Func) error {
 		}
 		// Allocate local variables for each status flag used within the function.
 		for status := CF; status <= OF; status++ {
-			if inst, ok := f.status[status]; ok {
+			if inst, ok := f.statusFlags[status]; ok {
 				entry.AppendInst(inst)
 			}
 		}
@@ -1016,12 +1016,12 @@ func (status StatusFlag) String() string {
 // status returns a pointer to the LLVM IR value associated with the given
 // status flag.
 func (d *disassembler) status(f *Func, status StatusFlag) value.Value {
-	if v, ok := f.status[status]; ok {
+	if v, ok := f.statusFlags[status]; ok {
 		return v
 	}
 	v := ir.NewAlloca(types.I1)
 	v.SetName(strings.ToLower(status.String()))
-	f.status[status] = v
+	f.statusFlags[status] = v
 	return v
 }
 

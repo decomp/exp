@@ -22,7 +22,7 @@ type Func struct {
 	// Registers used within the function.
 	regs map[x86asm.Reg]*ir.InstAlloca
 	// Status flags used within the function.
-	status map[StatusFlag]*ir.InstAlloca
+	statusFlags map[StatusFlag]*ir.InstAlloca
 	// Read-only global disassembler state.
 	d *disassembler
 }

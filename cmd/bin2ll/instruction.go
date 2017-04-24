@@ -17,6 +17,7 @@ type Inst struct {
 
 // emitInst translates the given x86 instruction to LLVM IR, emitting code to f.
 func (f *Func) emitInst(inst *Inst) error {
+	dbg.Println("lifting instruction:", inst.Inst)
 	switch inst.Op {
 	case x86asm.AAA:
 		return f.emitInstAAA(inst)

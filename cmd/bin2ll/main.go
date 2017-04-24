@@ -303,13 +303,13 @@ func parseSigs(llPath string, funcs map[bin.Address]*Func, d *disassembler) erro
 			return errors.WithStack(err)
 		}
 		fn := &Func{
-			Function: f,
-			addr:     entry,
-			bbs:      make(map[bin.Address]*BasicBlock),
-			blocks:   make(map[bin.Address]*ir.BasicBlock),
-			regs:     make(map[x86asm.Reg]*ir.InstAlloca),
-			status:   make(map[StatusFlag]*ir.InstAlloca),
-			d:        d,
+			Function:    f,
+			addr:        entry,
+			bbs:         make(map[bin.Address]*BasicBlock),
+			blocks:      make(map[bin.Address]*ir.BasicBlock),
+			regs:        make(map[x86asm.Reg]*ir.InstAlloca),
+			statusFlags: make(map[StatusFlag]*ir.InstAlloca),
+			d:           d,
 		}
 		funcs[entry] = fn
 	}

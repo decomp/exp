@@ -17,12 +17,12 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*Func, error) {
 	f, ok := d.funcs[entry]
 	if !ok {
 		f = &Func{
-			addr:   entry,
-			bbs:    make(map[bin.Address]*BasicBlock),
-			blocks: make(map[bin.Address]*ir.BasicBlock),
-			regs:   make(map[x86asm.Reg]*ir.InstAlloca),
-			status: make(map[StatusFlag]*ir.InstAlloca),
-			d:      d,
+			addr:        entry,
+			bbs:         make(map[bin.Address]*BasicBlock),
+			blocks:      make(map[bin.Address]*ir.BasicBlock),
+			regs:        make(map[x86asm.Reg]*ir.InstAlloca),
+			statusFlags: make(map[StatusFlag]*ir.InstAlloca),
+			d:           d,
 		}
 	}
 	queue := newQueue()

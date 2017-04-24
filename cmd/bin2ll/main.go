@@ -116,6 +116,10 @@ func main() {
 }
 
 // A disassembler tracks information required to disassemble x86 executables.
+//
+// Information to this structure should be written exactly once, during
+// initialization. After initialization the structure is considered in read-only
+// mode to allow for concurrent decoding of functions.
 type disassembler struct {
 	// PE file.
 	file *pe.File

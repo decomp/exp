@@ -12,7 +12,7 @@ type Func struct {
 	// LLVM IR code for the function.
 	*ir.Function
 	// Entry address of the function.
-	addr bin.Address
+	entry bin.Address
 	// Current basic block being generated.
 	cur *ir.BasicBlock
 	// x86 basic blocks of the function.

@@ -304,7 +304,7 @@ func parseSigs(llPath string, funcs map[bin.Address]*Func, d *disassembler) erro
 		}
 		fn := &Func{
 			Function:    f,
-			addr:        entry,
+			entry:       entry,
 			bbs:         make(map[bin.Address]*BasicBlock),
 			blocks:      make(map[bin.Address]*ir.BasicBlock),
 			regs:        make(map[x86asm.Reg]*ir.InstAlloca),

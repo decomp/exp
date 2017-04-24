@@ -30,7 +30,7 @@ func (d *disassembler) translateFunc(f *Func) error {
 	if f.Function == nil {
 		// TODO: Add proper support for type signatures once type analysis has
 		// been conducted.
-		name := fmt.Sprintf("f_%06X", uint64(f.addr))
+		name := fmt.Sprintf("f_%06X", uint64(f.entry))
 		sig := types.NewFunc(types.Void)
 		typ := types.NewPointer(sig)
 		f.Function = &ir.Function{
@@ -39,12 +39,12 @@ func (d *disassembler) translateFunc(f *Func) error {
 			Sig:  sig,
 			Metadata: map[string]*metadata.Metadata{
 				"addr": &metadata.Metadata{
-					Nodes: []metadata.Node{&metadata.String{Val: f.addr.String()}},
+					Nodes: []metadata.Node{&metadata.String{Val: f.entry.String()}},
 				},
 			},
 		}
 	}
-	dbg.Printf("translating function %q at %v", f.Name, f.addr)
+	dbg.Printf("translating function %q at %v", f.Name, f.entry)
 
 	var blockAddrs []bin.Address
 	for _, bb := range f.bbs {
@@ -623,7 +623,7 @@ func (d *disassembler) termCondBranch(f *Func, bb *BasicBlock, term *Inst) error
 // termJMP translates the given JMP terminator from x86 machine code to LLVM IR
 // assembly.
 func (d *disassembler) termJMP(f *Func, bb *BasicBlock, term *Inst) error {
-	if d.isTailCall(f.addr, term) {
+	if d.isTailCall(f.entry, term) {
 		// Handle tail call terminator instructions.
 
 		// Hack: interpret JMP instruction as CALL instruction. Works since

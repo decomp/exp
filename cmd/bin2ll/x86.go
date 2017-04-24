@@ -17,7 +17,7 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*Func, error) {
 	f, ok := d.funcs[entry]
 	if !ok {
 		f = &Func{
-			addr:        entry,
+			entry:       entry,
 			bbs:         make(map[bin.Address]*BasicBlock),
 			blocks:      make(map[bin.Address]*ir.BasicBlock),
 			regs:        make(map[x86asm.Reg]*ir.InstAlloca),

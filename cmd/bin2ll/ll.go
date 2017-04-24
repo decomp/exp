@@ -424,8 +424,6 @@ func (d *disassembler) termCondBranch(f *Func, bb *BasicBlock, term *Inst) error
 	}
 	// Compute conditional value.
 	//
-	//    Op      Desc
-	//
 	//    (CF=0 and ZF=0)    JA      Jump if above.
 	//    (CF=0 and ZF=0)    JNBE    Jump if not below or equal.     PSEUDO-instruction
 	//    (CF=0)             JAE     Jump if above or equal.

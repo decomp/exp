@@ -62,6 +62,23 @@ func (f *Func) useArg(arg *Arg) value.Value {
 	}
 }
 
+// useArgElem returns a value of the specified element type held by the given
+// argument, emitting code to f.
+func (f *Func) useArgElem(arg *Arg, elem types.Type) value.Value {
+	switch a := arg.Arg.(type) {
+	case x86asm.Reg:
+		reg := NewReg(a, arg.parent)
+		return f.useRegElem(reg, elem)
+	case x86asm.Mem:
+		mem := NewMem(a, arg.parent)
+		return f.useMemElem(mem, elem)
+	//case x86asm.Imm:
+	//case x86asm.Rel:
+	default:
+		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
+	}
+}
+
 // defArg stores the value to the given argument, emitting code to f.
 func (f *Func) defArg(arg *Arg, v value.Value) {
 	switch a := arg.Arg.(type) {
@@ -71,6 +88,23 @@ func (f *Func) defArg(arg *Arg, v value.Value) {
 	case x86asm.Mem:
 		mem := NewMem(a, arg.parent)
 		f.defMem(mem, v)
+	//case x86asm.Imm:
+	//case x86asm.Rel:
+	default:
+		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
+	}
+}
+
+// defArgElem stores the value of the specified element type to the given
+// argument, emitting code to f.
+func (f *Func) defArgElem(arg *Arg, v value.Value, elem types.Type) {
+	switch a := arg.Arg.(type) {
+	case x86asm.Reg:
+		reg := NewReg(a, arg.parent)
+		f.defRegElem(reg, v, elem)
+	case x86asm.Mem:
+		mem := NewMem(a, arg.parent)
+		f.defMemElem(mem, v, elem)
 	//case x86asm.Imm:
 	//case x86asm.Rel:
 	default:
@@ -88,7 +122,7 @@ type Reg struct {
 	parent *Inst
 }
 
-// NewReg returns a new register argument with the given parent instruction.
+// NewReg returns a new x86 register argument with the given parent instruction.
 func NewReg(arg x86asm.Arg, parent *Inst) *Reg {
 	reg, ok := arg.(x86asm.Reg)
 	if !ok {
@@ -100,16 +134,38 @@ func NewReg(arg x86asm.Arg, parent *Inst) *Reg {
 	}
 }
 
-// useReg loads and returns the value of the given x86 register, emitting code
+// useReg loads and returns a value from the given x86 register, emitting code
 // to f.
 func (f *Func) useReg(reg *Reg) value.Value {
 	src := f.reg(reg.Reg)
 	return f.cur.NewLoad(src)
 }
 
+// useRegElem loads and returns a value of the specified element type from the
+// given x86 register, emitting code to f.
+func (f *Func) useRegElem(reg *Reg, elem types.Type) value.Value {
+	src := f.reg(reg.Reg)
+	typ := types.NewPointer(elem)
+	if !typ.Equal(src.Type()) {
+		src = f.cur.NewBitCast(src, typ)
+	}
+	return f.cur.NewLoad(src)
+}
+
 // defReg stores the value to the given x86 register, emitting code to f.
 func (f *Func) defReg(reg *Reg, v value.Value) {
 	dst := f.reg(reg.Reg)
+	f.cur.NewStore(v, dst)
+}
+
+// defRegElem stores the value of the specified element type to the given x86
+// register, emitting code to f.
+func (f *Func) defRegElem(reg *Reg, v value.Value, elem types.Type) {
+	dst := f.reg(reg.Reg)
+	typ := types.NewPointer(elem)
+	if !typ.Equal(dst.Type()) {
+		dst = f.cur.NewBitCast(dst, typ)
+	}
 	f.cur.NewStore(v, dst)
 }
 
@@ -161,13 +217,27 @@ func (f *Func) useMem(mem *Mem) value.Value {
 // given memory reference, emitting code to f.
 func (f *Func) useMemElem(mem *Mem, elem types.Type) value.Value {
 	src := f.mem(mem)
-	src = f.cur.NewBitCast(src, types.NewPointer(elem))
+	typ := types.NewPointer(elem)
+	if !typ.Equal(src.Type()) {
+		src = f.cur.NewBitCast(src, typ)
+	}
 	return f.cur.NewLoad(src)
 }
 
 // defMem stores the value to the given memory reference, emitting code to f.
 func (f *Func) defMem(mem *Mem, v value.Value) {
 	dst := f.mem(mem)
+	f.cur.NewStore(v, dst)
+}
+
+// defMemElem stores the value of the specified element type to the given memory
+// reference, emitting code to f.
+func (f *Func) defMemElem(mem *Mem, v value.Value, elem types.Type) {
+	dst := f.mem(mem)
+	typ := types.NewPointer(elem)
+	if !typ.Equal(dst.Type()) {
+		dst = f.cur.NewBitCast(dst, typ)
+	}
 	f.cur.NewStore(v, dst)
 }
 

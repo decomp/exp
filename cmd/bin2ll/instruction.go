@@ -4270,7 +4270,7 @@ func (f *Func) emitInstMOVQ2DQ(inst *Inst) error {
 // emitInst translates the given x86 MOVSB instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstMOVSB(inst *Inst) error {
-	src := f.useMemElem(inst.Mem(1), types.I8)
+	src := f.useArgElem(inst.Arg(1), types.I8)
 	f.defArg(inst.Arg(0), src)
 	return nil
 }
@@ -4280,7 +4280,7 @@ func (f *Func) emitInstMOVSB(inst *Inst) error {
 // emitInst translates the given x86 MOVSD instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstMOVSD(inst *Inst) error {
-	src := f.useMemElem(inst.Mem(1), types.I32)
+	src := f.useArgElem(inst.Arg(1), types.I32)
 	f.defArg(inst.Arg(0), src)
 	return nil
 }
@@ -4335,7 +4335,7 @@ func (f *Func) emitInstMOVSS(inst *Inst) error {
 // emitInst translates the given x86 MOVSW instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstMOVSW(inst *Inst) error {
-	src := f.useMemElem(inst.Mem(1), types.I16)
+	src := f.useArgElem(inst.Arg(1), types.I16)
 	f.defArg(inst.Arg(0), src)
 	return nil
 }
@@ -4381,17 +4381,9 @@ func (f *Func) emitInstMOVUPS(inst *Inst) error {
 // emitInst translates the given x86 MOVZX instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstMOVZX(inst *Inst) error {
-	var src value.Value
-	switch arg := inst.Args[1].(type) {
-	case x86asm.Reg:
-		src = f.useReg(inst.Reg(1))
-	case x86asm.Mem:
-		size := inst.MemBytes * 8
-		elem := types.NewInt(size)
-		src = f.useMemElem(inst.Mem(1), elem)
-	default:
-		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
-	}
+	size := inst.MemBytes * 8
+	elem := types.NewInt(size)
+	src := f.useArgElem(inst.Arg(1), elem)
 	// TODO: Handle dst type dynamically.
 	src = f.cur.NewZExt(src, types.I32)
 	f.defArg(inst.Arg(0), src)
@@ -6099,150 +6091,6 @@ func (f *Func) emitInstSCASQ(inst *Inst) error {
 func (f *Func) emitInstSCASW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSCASW: not yet implemented")
-}
-
-// --- [ SETA ] ----------------------------------------------------------------
-
-// emitInst translates the given x86 SETA instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETA(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETA: not yet implemented")
-}
-
-// --- [ SETAE ] ---------------------------------------------------------------
-
-// emitInst translates the given x86 SETAE instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETAE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETAE: not yet implemented")
-}
-
-// --- [ SETB ] ----------------------------------------------------------------
-
-// emitInst translates the given x86 SETB instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETB(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETB: not yet implemented")
-}
-
-// --- [ SETBE ] ---------------------------------------------------------------
-
-// emitInst translates the given x86 SETBE instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETBE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETBE: not yet implemented")
-}
-
-// --- [ SETE ] ----------------------------------------------------------------
-
-// emitInst translates the given x86 SETE instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETE: not yet implemented")
-}
-
-// --- [ SETG ] ----------------------------------------------------------------
-
-// emitInst translates the given x86 SETG instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETG(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETG: not yet implemented")
-}
-
-// --- [ SETGE ] ---------------------------------------------------------------
-
-// emitInst translates the given x86 SETGE instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETGE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETGE: not yet implemented")
-}
-
-// --- [ SETL ] ----------------------------------------------------------------
-
-// emitInst translates the given x86 SETL instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETL(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETL: not yet implemented")
-}
-
-// --- [ SETLE ] ---------------------------------------------------------------
-
-// emitInst translates the given x86 SETLE instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETLE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETLE: not yet implemented")
-}
-
-// --- [ SETNE ] ---------------------------------------------------------------
-
-// emitInst translates the given x86 SETNE instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETNE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETNE: not yet implemented")
-}
-
-// --- [ SETNO ] ---------------------------------------------------------------
-
-// emitInst translates the given x86 SETNO instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETNO(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETNO: not yet implemented")
-}
-
-// --- [ SETNP ] ---------------------------------------------------------------
-
-// emitInst translates the given x86 SETNP instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETNP(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETNP: not yet implemented")
-}
-
-// --- [ SETNS ] ---------------------------------------------------------------
-
-// emitInst translates the given x86 SETNS instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETNS(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETNS: not yet implemented")
-}
-
-// --- [ SETO ] ----------------------------------------------------------------
-
-// emitInst translates the given x86 SETO instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETO(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETO: not yet implemented")
-}
-
-// --- [ SETP ] ----------------------------------------------------------------
-
-// emitInst translates the given x86 SETP instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETP(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETP: not yet implemented")
-}
-
-// --- [ SETS ] ----------------------------------------------------------------
-
-// emitInst translates the given x86 SETS instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstSETS(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSETS: not yet implemented")
 }
 
 // --- [ SFENCE ] --------------------------------------------------------------

@@ -146,7 +146,7 @@ type disassembler struct {
 	// Chunks of bytes.
 	chunks []Chunk
 	// Functions.
-	funcs map[bin.Address]*function
+	funcs map[bin.Address]*Func
 	// Global variables.
 	globals map[bin.Address]*ir.Global
 	// Map from basic block address (function chunk) to function address, to
@@ -250,11 +250,11 @@ func parseFile(binPath string) (*disassembler, error) {
 	sort.Slice(d.chunks, less)
 
 	// Functions.
-	d.funcs = make(map[bin.Address]*function)
-	if err := parseSigs("sigs.ll", d.funcs); err != nil {
+	d.funcs = make(map[bin.Address]*Func)
+	if err := parseSigs("sigs.ll", d.funcs, d); err != nil {
 		return nil, errors.WithStack(err)
 	}
-	if err := parseSigs("imports.ll", d.funcs); err != nil {
+	if err := parseSigs("imports.ll", d.funcs, d); err != nil {
 		return nil, errors.WithStack(err)
 	}
 
@@ -287,7 +287,7 @@ func parseFile(binPath string) (*disassembler, error) {
 }
 
 // parseSigs parses the function signatures of the given LLVM IR assembly file.
-func parseSigs(llPath string, funcs map[bin.Address]*function) error {
+func parseSigs(llPath string, funcs map[bin.Address]*Func, d *disassembler) error {
 	module, err := asm.ParseFile(llPath)
 	if err != nil {
 		return errors.WithStack(err)
@@ -302,13 +302,14 @@ func parseSigs(llPath string, funcs map[bin.Address]*function) error {
 		if err := metadata.Unmarshal(node, &entry); err != nil {
 			return errors.WithStack(err)
 		}
-		fn := &function{
+		fn := &Func{
 			Function: f,
-			entry:    entry,
-			bbs:      make(map[bin.Address]*basicBlock),
+			addr:     entry,
+			bbs:      make(map[bin.Address]*BasicBlock),
 			blocks:   make(map[bin.Address]*ir.BasicBlock),
 			regs:     make(map[x86asm.Reg]*ir.InstAlloca),
 			status:   make(map[StatusFlag]*ir.InstAlloca),
+			d:        d,
 		}
 		funcs[entry] = fn
 	}

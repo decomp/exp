@@ -3,1236 +3,1245 @@ package main
 import (
 	"fmt"
 
+	"github.com/decomp/exp/bin"
 	"golang.org/x/arch/x86/x86asm"
 )
 
+// An Inst is a single x86 instruction.
+type Inst struct {
+	// x86 instruction.
+	x86asm.Inst
+	// Address of the instruction.
+	addr bin.Address
+}
+
 // emitInst translates the given x86 instruction to LLVM IR, emitting code to f.
-func (d *disassembler) emitInst(f *function, inst *instruction) error {
+func (f *Func) emitInst(inst *Inst) error {
 	switch inst.Op {
 	case x86asm.AAA:
-		return d.emitInstAAA(f, inst)
+		return f.emitInstAAA(inst)
 	case x86asm.AAD:
-		return d.emitInstAAD(f, inst)
+		return f.emitInstAAD(inst)
 	case x86asm.AAM:
-		return d.emitInstAAM(f, inst)
+		return f.emitInstAAM(inst)
 	case x86asm.AAS:
-		return d.emitInstAAS(f, inst)
+		return f.emitInstAAS(inst)
 	case x86asm.ADC:
-		return d.emitInstADC(f, inst)
+		return f.emitInstADC(inst)
 	case x86asm.ADD:
-		return d.emitInstADD(f, inst)
+		return f.emitInstADD(inst)
 	case x86asm.ADDPD:
-		return d.emitInstADDPD(f, inst)
+		return f.emitInstADDPD(inst)
 	case x86asm.ADDPS:
-		return d.emitInstADDPS(f, inst)
+		return f.emitInstADDPS(inst)
 	case x86asm.ADDSD:
-		return d.emitInstADDSD(f, inst)
+		return f.emitInstADDSD(inst)
 	case x86asm.ADDSS:
-		return d.emitInstADDSS(f, inst)
+		return f.emitInstADDSS(inst)
 	case x86asm.ADDSUBPD:
-		return d.emitInstADDSUBPD(f, inst)
+		return f.emitInstADDSUBPD(inst)
 	case x86asm.ADDSUBPS:
-		return d.emitInstADDSUBPS(f, inst)
+		return f.emitInstADDSUBPS(inst)
 	case x86asm.AESDEC:
-		return d.emitInstAESDEC(f, inst)
+		return f.emitInstAESDEC(inst)
 	case x86asm.AESDECLAST:
-		return d.emitInstAESDECLAST(f, inst)
+		return f.emitInstAESDECLAST(inst)
 	case x86asm.AESENC:
-		return d.emitInstAESENC(f, inst)
+		return f.emitInstAESENC(inst)
 	case x86asm.AESENCLAST:
-		return d.emitInstAESENCLAST(f, inst)
+		return f.emitInstAESENCLAST(inst)
 	case x86asm.AESIMC:
-		return d.emitInstAESIMC(f, inst)
+		return f.emitInstAESIMC(inst)
 	case x86asm.AESKEYGENASSIST:
-		return d.emitInstAESKEYGENASSIST(f, inst)
+		return f.emitInstAESKEYGENASSIST(inst)
 	case x86asm.AND:
-		return d.emitInstAND(f, inst)
+		return f.emitInstAND(inst)
 	case x86asm.ANDNPD:
-		return d.emitInstANDNPD(f, inst)
+		return f.emitInstANDNPD(inst)
 	case x86asm.ANDNPS:
-		return d.emitInstANDNPS(f, inst)
+		return f.emitInstANDNPS(inst)
 	case x86asm.ANDPD:
-		return d.emitInstANDPD(f, inst)
+		return f.emitInstANDPD(inst)
 	case x86asm.ANDPS:
-		return d.emitInstANDPS(f, inst)
+		return f.emitInstANDPS(inst)
 	case x86asm.ARPL:
-		return d.emitInstARPL(f, inst)
+		return f.emitInstARPL(inst)
 	case x86asm.BLENDPD:
-		return d.emitInstBLENDPD(f, inst)
+		return f.emitInstBLENDPD(inst)
 	case x86asm.BLENDPS:
-		return d.emitInstBLENDPS(f, inst)
+		return f.emitInstBLENDPS(inst)
 	case x86asm.BLENDVPD:
-		return d.emitInstBLENDVPD(f, inst)
+		return f.emitInstBLENDVPD(inst)
 	case x86asm.BLENDVPS:
-		return d.emitInstBLENDVPS(f, inst)
+		return f.emitInstBLENDVPS(inst)
 	case x86asm.BOUND:
-		return d.emitInstBOUND(f, inst)
+		return f.emitInstBOUND(inst)
 	case x86asm.BSF:
-		return d.emitInstBSF(f, inst)
+		return f.emitInstBSF(inst)
 	case x86asm.BSR:
-		return d.emitInstBSR(f, inst)
+		return f.emitInstBSR(inst)
 	case x86asm.BSWAP:
-		return d.emitInstBSWAP(f, inst)
+		return f.emitInstBSWAP(inst)
 	case x86asm.BT:
-		return d.emitInstBT(f, inst)
+		return f.emitInstBT(inst)
 	case x86asm.BTC:
-		return d.emitInstBTC(f, inst)
+		return f.emitInstBTC(inst)
 	case x86asm.BTR:
-		return d.emitInstBTR(f, inst)
+		return f.emitInstBTR(inst)
 	case x86asm.BTS:
-		return d.emitInstBTS(f, inst)
+		return f.emitInstBTS(inst)
 	case x86asm.CALL:
-		return d.emitInstCALL(f, inst)
+		return f.emitInstCALL(inst)
 	case x86asm.CBW:
-		return d.emitInstCBW(f, inst)
+		return f.emitInstCBW(inst)
 	case x86asm.CDQ:
-		return d.emitInstCDQ(f, inst)
+		return f.emitInstCDQ(inst)
 	case x86asm.CDQE:
-		return d.emitInstCDQE(f, inst)
+		return f.emitInstCDQE(inst)
 	case x86asm.CLC:
-		return d.emitInstCLC(f, inst)
+		return f.emitInstCLC(inst)
 	case x86asm.CLD:
-		return d.emitInstCLD(f, inst)
+		return f.emitInstCLD(inst)
 	case x86asm.CLFLUSH:
-		return d.emitInstCLFLUSH(f, inst)
+		return f.emitInstCLFLUSH(inst)
 	case x86asm.CLI:
-		return d.emitInstCLI(f, inst)
+		return f.emitInstCLI(inst)
 	case x86asm.CLTS:
-		return d.emitInstCLTS(f, inst)
+		return f.emitInstCLTS(inst)
 	case x86asm.CMC:
-		return d.emitInstCMC(f, inst)
+		return f.emitInstCMC(inst)
 	case x86asm.CMOVA:
-		return d.emitInstCMOVA(f, inst)
+		return f.emitInstCMOVA(inst)
 	case x86asm.CMOVAE:
-		return d.emitInstCMOVAE(f, inst)
+		return f.emitInstCMOVAE(inst)
 	case x86asm.CMOVB:
-		return d.emitInstCMOVB(f, inst)
+		return f.emitInstCMOVB(inst)
 	case x86asm.CMOVBE:
-		return d.emitInstCMOVBE(f, inst)
+		return f.emitInstCMOVBE(inst)
 	case x86asm.CMOVE:
-		return d.emitInstCMOVE(f, inst)
+		return f.emitInstCMOVE(inst)
 	case x86asm.CMOVG:
-		return d.emitInstCMOVG(f, inst)
+		return f.emitInstCMOVG(inst)
 	case x86asm.CMOVGE:
-		return d.emitInstCMOVGE(f, inst)
+		return f.emitInstCMOVGE(inst)
 	case x86asm.CMOVL:
-		return d.emitInstCMOVL(f, inst)
+		return f.emitInstCMOVL(inst)
 	case x86asm.CMOVLE:
-		return d.emitInstCMOVLE(f, inst)
+		return f.emitInstCMOVLE(inst)
 	case x86asm.CMOVNE:
-		return d.emitInstCMOVNE(f, inst)
+		return f.emitInstCMOVNE(inst)
 	case x86asm.CMOVNO:
-		return d.emitInstCMOVNO(f, inst)
+		return f.emitInstCMOVNO(inst)
 	case x86asm.CMOVNP:
-		return d.emitInstCMOVNP(f, inst)
+		return f.emitInstCMOVNP(inst)
 	case x86asm.CMOVNS:
-		return d.emitInstCMOVNS(f, inst)
+		return f.emitInstCMOVNS(inst)
 	case x86asm.CMOVO:
-		return d.emitInstCMOVO(f, inst)
+		return f.emitInstCMOVO(inst)
 	case x86asm.CMOVP:
-		return d.emitInstCMOVP(f, inst)
+		return f.emitInstCMOVP(inst)
 	case x86asm.CMOVS:
-		return d.emitInstCMOVS(f, inst)
+		return f.emitInstCMOVS(inst)
 	case x86asm.CMP:
-		return d.emitInstCMP(f, inst)
+		return f.emitInstCMP(inst)
 	case x86asm.CMPPD:
-		return d.emitInstCMPPD(f, inst)
+		return f.emitInstCMPPD(inst)
 	case x86asm.CMPPS:
-		return d.emitInstCMPPS(f, inst)
+		return f.emitInstCMPPS(inst)
 	case x86asm.CMPSB:
-		return d.emitInstCMPSB(f, inst)
+		return f.emitInstCMPSB(inst)
 	case x86asm.CMPSD:
-		return d.emitInstCMPSD(f, inst)
+		return f.emitInstCMPSD(inst)
 	case x86asm.CMPSD_XMM:
-		return d.emitInstCMPSD_XMM(f, inst)
+		return f.emitInstCMPSD_XMM(inst)
 	case x86asm.CMPSQ:
-		return d.emitInstCMPSQ(f, inst)
+		return f.emitInstCMPSQ(inst)
 	case x86asm.CMPSS:
-		return d.emitInstCMPSS(f, inst)
+		return f.emitInstCMPSS(inst)
 	case x86asm.CMPSW:
-		return d.emitInstCMPSW(f, inst)
+		return f.emitInstCMPSW(inst)
 	case x86asm.CMPXCHG:
-		return d.emitInstCMPXCHG(f, inst)
+		return f.emitInstCMPXCHG(inst)
 	case x86asm.CMPXCHG16B:
-		return d.emitInstCMPXCHG16B(f, inst)
+		return f.emitInstCMPXCHG16B(inst)
 	case x86asm.CMPXCHG8B:
-		return d.emitInstCMPXCHG8B(f, inst)
+		return f.emitInstCMPXCHG8B(inst)
 	case x86asm.COMISD:
-		return d.emitInstCOMISD(f, inst)
+		return f.emitInstCOMISD(inst)
 	case x86asm.COMISS:
-		return d.emitInstCOMISS(f, inst)
+		return f.emitInstCOMISS(inst)
 	case x86asm.CPUID:
-		return d.emitInstCPUID(f, inst)
+		return f.emitInstCPUID(inst)
 	case x86asm.CQO:
-		return d.emitInstCQO(f, inst)
+		return f.emitInstCQO(inst)
 	case x86asm.CRC32:
-		return d.emitInstCRC32(f, inst)
+		return f.emitInstCRC32(inst)
 	case x86asm.CVTDQ2PD:
-		return d.emitInstCVTDQ2PD(f, inst)
+		return f.emitInstCVTDQ2PD(inst)
 	case x86asm.CVTDQ2PS:
-		return d.emitInstCVTDQ2PS(f, inst)
+		return f.emitInstCVTDQ2PS(inst)
 	case x86asm.CVTPD2DQ:
-		return d.emitInstCVTPD2DQ(f, inst)
+		return f.emitInstCVTPD2DQ(inst)
 	case x86asm.CVTPD2PI:
-		return d.emitInstCVTPD2PI(f, inst)
+		return f.emitInstCVTPD2PI(inst)
 	case x86asm.CVTPD2PS:
-		return d.emitInstCVTPD2PS(f, inst)
+		return f.emitInstCVTPD2PS(inst)
 	case x86asm.CVTPI2PD:
-		return d.emitInstCVTPI2PD(f, inst)
+		return f.emitInstCVTPI2PD(inst)
 	case x86asm.CVTPI2PS:
-		return d.emitInstCVTPI2PS(f, inst)
+		return f.emitInstCVTPI2PS(inst)
 	case x86asm.CVTPS2DQ:
-		return d.emitInstCVTPS2DQ(f, inst)
+		return f.emitInstCVTPS2DQ(inst)
 	case x86asm.CVTPS2PD:
-		return d.emitInstCVTPS2PD(f, inst)
+		return f.emitInstCVTPS2PD(inst)
 	case x86asm.CVTPS2PI:
-		return d.emitInstCVTPS2PI(f, inst)
+		return f.emitInstCVTPS2PI(inst)
 	case x86asm.CVTSD2SI:
-		return d.emitInstCVTSD2SI(f, inst)
+		return f.emitInstCVTSD2SI(inst)
 	case x86asm.CVTSD2SS:
-		return d.emitInstCVTSD2SS(f, inst)
+		return f.emitInstCVTSD2SS(inst)
 	case x86asm.CVTSI2SD:
-		return d.emitInstCVTSI2SD(f, inst)
+		return f.emitInstCVTSI2SD(inst)
 	case x86asm.CVTSI2SS:
-		return d.emitInstCVTSI2SS(f, inst)
+		return f.emitInstCVTSI2SS(inst)
 	case x86asm.CVTSS2SD:
-		return d.emitInstCVTSS2SD(f, inst)
+		return f.emitInstCVTSS2SD(inst)
 	case x86asm.CVTSS2SI:
-		return d.emitInstCVTSS2SI(f, inst)
+		return f.emitInstCVTSS2SI(inst)
 	case x86asm.CVTTPD2DQ:
-		return d.emitInstCVTTPD2DQ(f, inst)
+		return f.emitInstCVTTPD2DQ(inst)
 	case x86asm.CVTTPD2PI:
-		return d.emitInstCVTTPD2PI(f, inst)
+		return f.emitInstCVTTPD2PI(inst)
 	case x86asm.CVTTPS2DQ:
-		return d.emitInstCVTTPS2DQ(f, inst)
+		return f.emitInstCVTTPS2DQ(inst)
 	case x86asm.CVTTPS2PI:
-		return d.emitInstCVTTPS2PI(f, inst)
+		return f.emitInstCVTTPS2PI(inst)
 	case x86asm.CVTTSD2SI:
-		return d.emitInstCVTTSD2SI(f, inst)
+		return f.emitInstCVTTSD2SI(inst)
 	case x86asm.CVTTSS2SI:
-		return d.emitInstCVTTSS2SI(f, inst)
+		return f.emitInstCVTTSS2SI(inst)
 	case x86asm.CWD:
-		return d.emitInstCWD(f, inst)
+		return f.emitInstCWD(inst)
 	case x86asm.CWDE:
-		return d.emitInstCWDE(f, inst)
+		return f.emitInstCWDE(inst)
 	case x86asm.DAA:
-		return d.emitInstDAA(f, inst)
+		return f.emitInstDAA(inst)
 	case x86asm.DAS:
-		return d.emitInstDAS(f, inst)
+		return f.emitInstDAS(inst)
 	case x86asm.DEC:
-		return d.emitInstDEC(f, inst)
+		return f.emitInstDEC(inst)
 	case x86asm.DIV:
-		return d.emitInstDIV(f, inst)
+		return f.emitInstDIV(inst)
 	case x86asm.DIVPD:
-		return d.emitInstDIVPD(f, inst)
+		return f.emitInstDIVPD(inst)
 	case x86asm.DIVPS:
-		return d.emitInstDIVPS(f, inst)
+		return f.emitInstDIVPS(inst)
 	case x86asm.DIVSD:
-		return d.emitInstDIVSD(f, inst)
+		return f.emitInstDIVSD(inst)
 	case x86asm.DIVSS:
-		return d.emitInstDIVSS(f, inst)
+		return f.emitInstDIVSS(inst)
 	case x86asm.DPPD:
-		return d.emitInstDPPD(f, inst)
+		return f.emitInstDPPD(inst)
 	case x86asm.DPPS:
-		return d.emitInstDPPS(f, inst)
+		return f.emitInstDPPS(inst)
 	case x86asm.EMMS:
-		return d.emitInstEMMS(f, inst)
+		return f.emitInstEMMS(inst)
 	case x86asm.ENTER:
-		return d.emitInstENTER(f, inst)
+		return f.emitInstENTER(inst)
 	case x86asm.EXTRACTPS:
-		return d.emitInstEXTRACTPS(f, inst)
+		return f.emitInstEXTRACTPS(inst)
 	case x86asm.F2XM1:
-		return d.emitInstF2XM1(f, inst)
+		return f.emitInstF2XM1(inst)
 	case x86asm.FABS:
-		return d.emitInstFABS(f, inst)
+		return f.emitInstFABS(inst)
 	case x86asm.FADD:
-		return d.emitInstFADD(f, inst)
+		return f.emitInstFADD(inst)
 	case x86asm.FADDP:
-		return d.emitInstFADDP(f, inst)
+		return f.emitInstFADDP(inst)
 	case x86asm.FBLD:
-		return d.emitInstFBLD(f, inst)
+		return f.emitInstFBLD(inst)
 	case x86asm.FBSTP:
-		return d.emitInstFBSTP(f, inst)
+		return f.emitInstFBSTP(inst)
 	case x86asm.FCHS:
-		return d.emitInstFCHS(f, inst)
+		return f.emitInstFCHS(inst)
 	case x86asm.FCMOVB:
-		return d.emitInstFCMOVB(f, inst)
+		return f.emitInstFCMOVB(inst)
 	case x86asm.FCMOVBE:
-		return d.emitInstFCMOVBE(f, inst)
+		return f.emitInstFCMOVBE(inst)
 	case x86asm.FCMOVE:
-		return d.emitInstFCMOVE(f, inst)
+		return f.emitInstFCMOVE(inst)
 	case x86asm.FCMOVNB:
-		return d.emitInstFCMOVNB(f, inst)
+		return f.emitInstFCMOVNB(inst)
 	case x86asm.FCMOVNBE:
-		return d.emitInstFCMOVNBE(f, inst)
+		return f.emitInstFCMOVNBE(inst)
 	case x86asm.FCMOVNE:
-		return d.emitInstFCMOVNE(f, inst)
+		return f.emitInstFCMOVNE(inst)
 	case x86asm.FCMOVNU:
-		return d.emitInstFCMOVNU(f, inst)
+		return f.emitInstFCMOVNU(inst)
 	case x86asm.FCMOVU:
-		return d.emitInstFCMOVU(f, inst)
+		return f.emitInstFCMOVU(inst)
 	case x86asm.FCOM:
-		return d.emitInstFCOM(f, inst)
+		return f.emitInstFCOM(inst)
 	case x86asm.FCOMI:
-		return d.emitInstFCOMI(f, inst)
+		return f.emitInstFCOMI(inst)
 	case x86asm.FCOMIP:
-		return d.emitInstFCOMIP(f, inst)
+		return f.emitInstFCOMIP(inst)
 	case x86asm.FCOMP:
-		return d.emitInstFCOMP(f, inst)
+		return f.emitInstFCOMP(inst)
 	case x86asm.FCOMPP:
-		return d.emitInstFCOMPP(f, inst)
+		return f.emitInstFCOMPP(inst)
 	case x86asm.FCOS:
-		return d.emitInstFCOS(f, inst)
+		return f.emitInstFCOS(inst)
 	case x86asm.FDECSTP:
-		return d.emitInstFDECSTP(f, inst)
+		return f.emitInstFDECSTP(inst)
 	case x86asm.FDIV:
-		return d.emitInstFDIV(f, inst)
+		return f.emitInstFDIV(inst)
 	case x86asm.FDIVP:
-		return d.emitInstFDIVP(f, inst)
+		return f.emitInstFDIVP(inst)
 	case x86asm.FDIVR:
-		return d.emitInstFDIVR(f, inst)
+		return f.emitInstFDIVR(inst)
 	case x86asm.FDIVRP:
-		return d.emitInstFDIVRP(f, inst)
+		return f.emitInstFDIVRP(inst)
 	case x86asm.FFREE:
-		return d.emitInstFFREE(f, inst)
+		return f.emitInstFFREE(inst)
 	case x86asm.FFREEP:
-		return d.emitInstFFREEP(f, inst)
+		return f.emitInstFFREEP(inst)
 	case x86asm.FIADD:
-		return d.emitInstFIADD(f, inst)
+		return f.emitInstFIADD(inst)
 	case x86asm.FICOM:
-		return d.emitInstFICOM(f, inst)
+		return f.emitInstFICOM(inst)
 	case x86asm.FICOMP:
-		return d.emitInstFICOMP(f, inst)
+		return f.emitInstFICOMP(inst)
 	case x86asm.FIDIV:
-		return d.emitInstFIDIV(f, inst)
+		return f.emitInstFIDIV(inst)
 	case x86asm.FIDIVR:
-		return d.emitInstFIDIVR(f, inst)
+		return f.emitInstFIDIVR(inst)
 	case x86asm.FILD:
-		return d.emitInstFILD(f, inst)
+		return f.emitInstFILD(inst)
 	case x86asm.FIMUL:
-		return d.emitInstFIMUL(f, inst)
+		return f.emitInstFIMUL(inst)
 	case x86asm.FINCSTP:
-		return d.emitInstFINCSTP(f, inst)
+		return f.emitInstFINCSTP(inst)
 	case x86asm.FIST:
-		return d.emitInstFIST(f, inst)
+		return f.emitInstFIST(inst)
 	case x86asm.FISTP:
-		return d.emitInstFISTP(f, inst)
+		return f.emitInstFISTP(inst)
 	case x86asm.FISTTP:
-		return d.emitInstFISTTP(f, inst)
+		return f.emitInstFISTTP(inst)
 	case x86asm.FISUB:
-		return d.emitInstFISUB(f, inst)
+		return f.emitInstFISUB(inst)
 	case x86asm.FISUBR:
-		return d.emitInstFISUBR(f, inst)
+		return f.emitInstFISUBR(inst)
 	case x86asm.FLD:
-		return d.emitInstFLD(f, inst)
+		return f.emitInstFLD(inst)
 	case x86asm.FLD1:
-		return d.emitInstFLD1(f, inst)
+		return f.emitInstFLD1(inst)
 	case x86asm.FLDCW:
-		return d.emitInstFLDCW(f, inst)
+		return f.emitInstFLDCW(inst)
 	case x86asm.FLDENV:
-		return d.emitInstFLDENV(f, inst)
+		return f.emitInstFLDENV(inst)
 	case x86asm.FLDL2E:
-		return d.emitInstFLDL2E(f, inst)
+		return f.emitInstFLDL2E(inst)
 	case x86asm.FLDL2T:
-		return d.emitInstFLDL2T(f, inst)
+		return f.emitInstFLDL2T(inst)
 	case x86asm.FLDLG2:
-		return d.emitInstFLDLG2(f, inst)
+		return f.emitInstFLDLG2(inst)
 	case x86asm.FLDLN2:
-		return d.emitInstFLDLN2(f, inst)
+		return f.emitInstFLDLN2(inst)
 	case x86asm.FLDPI:
-		return d.emitInstFLDPI(f, inst)
+		return f.emitInstFLDPI(inst)
 	case x86asm.FLDZ:
-		return d.emitInstFLDZ(f, inst)
+		return f.emitInstFLDZ(inst)
 	case x86asm.FMUL:
-		return d.emitInstFMUL(f, inst)
+		return f.emitInstFMUL(inst)
 	case x86asm.FMULP:
-		return d.emitInstFMULP(f, inst)
+		return f.emitInstFMULP(inst)
 	case x86asm.FNCLEX:
-		return d.emitInstFNCLEX(f, inst)
+		return f.emitInstFNCLEX(inst)
 	case x86asm.FNINIT:
-		return d.emitInstFNINIT(f, inst)
+		return f.emitInstFNINIT(inst)
 	case x86asm.FNOP:
-		return d.emitInstFNOP(f, inst)
+		return f.emitInstFNOP(inst)
 	case x86asm.FNSAVE:
-		return d.emitInstFNSAVE(f, inst)
+		return f.emitInstFNSAVE(inst)
 	case x86asm.FNSTCW:
-		return d.emitInstFNSTCW(f, inst)
+		return f.emitInstFNSTCW(inst)
 	case x86asm.FNSTENV:
-		return d.emitInstFNSTENV(f, inst)
+		return f.emitInstFNSTENV(inst)
 	case x86asm.FNSTSW:
-		return d.emitInstFNSTSW(f, inst)
+		return f.emitInstFNSTSW(inst)
 	case x86asm.FPATAN:
-		return d.emitInstFPATAN(f, inst)
+		return f.emitInstFPATAN(inst)
 	case x86asm.FPREM:
-		return d.emitInstFPREM(f, inst)
+		return f.emitInstFPREM(inst)
 	case x86asm.FPREM1:
-		return d.emitInstFPREM1(f, inst)
+		return f.emitInstFPREM1(inst)
 	case x86asm.FPTAN:
-		return d.emitInstFPTAN(f, inst)
+		return f.emitInstFPTAN(inst)
 	case x86asm.FRNDINT:
-		return d.emitInstFRNDINT(f, inst)
+		return f.emitInstFRNDINT(inst)
 	case x86asm.FRSTOR:
-		return d.emitInstFRSTOR(f, inst)
+		return f.emitInstFRSTOR(inst)
 	case x86asm.FSCALE:
-		return d.emitInstFSCALE(f, inst)
+		return f.emitInstFSCALE(inst)
 	case x86asm.FSIN:
-		return d.emitInstFSIN(f, inst)
+		return f.emitInstFSIN(inst)
 	case x86asm.FSINCOS:
-		return d.emitInstFSINCOS(f, inst)
+		return f.emitInstFSINCOS(inst)
 	case x86asm.FSQRT:
-		return d.emitInstFSQRT(f, inst)
+		return f.emitInstFSQRT(inst)
 	case x86asm.FST:
-		return d.emitInstFST(f, inst)
+		return f.emitInstFST(inst)
 	case x86asm.FSTP:
-		return d.emitInstFSTP(f, inst)
+		return f.emitInstFSTP(inst)
 	case x86asm.FSUB:
-		return d.emitInstFSUB(f, inst)
+		return f.emitInstFSUB(inst)
 	case x86asm.FSUBP:
-		return d.emitInstFSUBP(f, inst)
+		return f.emitInstFSUBP(inst)
 	case x86asm.FSUBR:
-		return d.emitInstFSUBR(f, inst)
+		return f.emitInstFSUBR(inst)
 	case x86asm.FSUBRP:
-		return d.emitInstFSUBRP(f, inst)
+		return f.emitInstFSUBRP(inst)
 	case x86asm.FTST:
-		return d.emitInstFTST(f, inst)
+		return f.emitInstFTST(inst)
 	case x86asm.FUCOM:
-		return d.emitInstFUCOM(f, inst)
+		return f.emitInstFUCOM(inst)
 	case x86asm.FUCOMI:
-		return d.emitInstFUCOMI(f, inst)
+		return f.emitInstFUCOMI(inst)
 	case x86asm.FUCOMIP:
-		return d.emitInstFUCOMIP(f, inst)
+		return f.emitInstFUCOMIP(inst)
 	case x86asm.FUCOMP:
-		return d.emitInstFUCOMP(f, inst)
+		return f.emitInstFUCOMP(inst)
 	case x86asm.FUCOMPP:
-		return d.emitInstFUCOMPP(f, inst)
+		return f.emitInstFUCOMPP(inst)
 	case x86asm.FWAIT:
-		return d.emitInstFWAIT(f, inst)
+		return f.emitInstFWAIT(inst)
 	case x86asm.FXAM:
-		return d.emitInstFXAM(f, inst)
+		return f.emitInstFXAM(inst)
 	case x86asm.FXCH:
-		return d.emitInstFXCH(f, inst)
+		return f.emitInstFXCH(inst)
 	case x86asm.FXRSTOR:
-		return d.emitInstFXRSTOR(f, inst)
+		return f.emitInstFXRSTOR(inst)
 	case x86asm.FXRSTOR64:
-		return d.emitInstFXRSTOR64(f, inst)
+		return f.emitInstFXRSTOR64(inst)
 	case x86asm.FXSAVE:
-		return d.emitInstFXSAVE(f, inst)
+		return f.emitInstFXSAVE(inst)
 	case x86asm.FXSAVE64:
-		return d.emitInstFXSAVE64(f, inst)
+		return f.emitInstFXSAVE64(inst)
 	case x86asm.FXTRACT:
-		return d.emitInstFXTRACT(f, inst)
+		return f.emitInstFXTRACT(inst)
 	case x86asm.FYL2X:
-		return d.emitInstFYL2X(f, inst)
+		return f.emitInstFYL2X(inst)
 	case x86asm.FYL2XP1:
-		return d.emitInstFYL2XP1(f, inst)
+		return f.emitInstFYL2XP1(inst)
 	case x86asm.HADDPD:
-		return d.emitInstHADDPD(f, inst)
+		return f.emitInstHADDPD(inst)
 	case x86asm.HADDPS:
-		return d.emitInstHADDPS(f, inst)
+		return f.emitInstHADDPS(inst)
 	case x86asm.HLT:
-		return d.emitInstHLT(f, inst)
+		return f.emitInstHLT(inst)
 	case x86asm.HSUBPD:
-		return d.emitInstHSUBPD(f, inst)
+		return f.emitInstHSUBPD(inst)
 	case x86asm.HSUBPS:
-		return d.emitInstHSUBPS(f, inst)
+		return f.emitInstHSUBPS(inst)
 	case x86asm.ICEBP:
-		return d.emitInstICEBP(f, inst)
+		return f.emitInstICEBP(inst)
 	case x86asm.IDIV:
-		return d.emitInstIDIV(f, inst)
+		return f.emitInstIDIV(inst)
 	case x86asm.IMUL:
-		return d.emitInstIMUL(f, inst)
+		return f.emitInstIMUL(inst)
 	case x86asm.IN:
-		return d.emitInstIN(f, inst)
+		return f.emitInstIN(inst)
 	case x86asm.INC:
-		return d.emitInstINC(f, inst)
+		return f.emitInstINC(inst)
 	case x86asm.INSB:
-		return d.emitInstINSB(f, inst)
+		return f.emitInstINSB(inst)
 	case x86asm.INSD:
-		return d.emitInstINSD(f, inst)
+		return f.emitInstINSD(inst)
 	case x86asm.INSERTPS:
-		return d.emitInstINSERTPS(f, inst)
+		return f.emitInstINSERTPS(inst)
 	case x86asm.INSW:
-		return d.emitInstINSW(f, inst)
+		return f.emitInstINSW(inst)
 	case x86asm.INT:
-		return d.emitInstINT(f, inst)
+		return f.emitInstINT(inst)
 	case x86asm.INTO:
-		return d.emitInstINTO(f, inst)
+		return f.emitInstINTO(inst)
 	case x86asm.INVD:
-		return d.emitInstINVD(f, inst)
+		return f.emitInstINVD(inst)
 	case x86asm.INVLPG:
-		return d.emitInstINVLPG(f, inst)
+		return f.emitInstINVLPG(inst)
 	case x86asm.INVPCID:
-		return d.emitInstINVPCID(f, inst)
+		return f.emitInstINVPCID(inst)
 	case x86asm.IRET:
-		return d.emitInstIRET(f, inst)
+		return f.emitInstIRET(inst)
 	case x86asm.IRETD:
-		return d.emitInstIRETD(f, inst)
+		return f.emitInstIRETD(inst)
 	case x86asm.IRETQ:
-		return d.emitInstIRETQ(f, inst)
+		return f.emitInstIRETQ(inst)
 	case x86asm.JA:
-		return d.emitInstJA(f, inst)
+		return f.emitInstJA(inst)
 	case x86asm.JAE:
-		return d.emitInstJAE(f, inst)
+		return f.emitInstJAE(inst)
 	case x86asm.JB:
-		return d.emitInstJB(f, inst)
+		return f.emitInstJB(inst)
 	case x86asm.JBE:
-		return d.emitInstJBE(f, inst)
+		return f.emitInstJBE(inst)
 	case x86asm.JCXZ:
-		return d.emitInstJCXZ(f, inst)
+		return f.emitInstJCXZ(inst)
 	case x86asm.JE:
-		return d.emitInstJE(f, inst)
+		return f.emitInstJE(inst)
 	case x86asm.JECXZ:
-		return d.emitInstJECXZ(f, inst)
+		return f.emitInstJECXZ(inst)
 	case x86asm.JG:
-		return d.emitInstJG(f, inst)
+		return f.emitInstJG(inst)
 	case x86asm.JGE:
-		return d.emitInstJGE(f, inst)
+		return f.emitInstJGE(inst)
 	case x86asm.JL:
-		return d.emitInstJL(f, inst)
+		return f.emitInstJL(inst)
 	case x86asm.JLE:
-		return d.emitInstJLE(f, inst)
+		return f.emitInstJLE(inst)
 	case x86asm.JMP:
-		return d.emitInstJMP(f, inst)
+		return f.emitInstJMP(inst)
 	case x86asm.JNE:
-		return d.emitInstJNE(f, inst)
+		return f.emitInstJNE(inst)
 	case x86asm.JNO:
-		return d.emitInstJNO(f, inst)
+		return f.emitInstJNO(inst)
 	case x86asm.JNP:
-		return d.emitInstJNP(f, inst)
+		return f.emitInstJNP(inst)
 	case x86asm.JNS:
-		return d.emitInstJNS(f, inst)
+		return f.emitInstJNS(inst)
 	case x86asm.JO:
-		return d.emitInstJO(f, inst)
+		return f.emitInstJO(inst)
 	case x86asm.JP:
-		return d.emitInstJP(f, inst)
+		return f.emitInstJP(inst)
 	case x86asm.JRCXZ:
-		return d.emitInstJRCXZ(f, inst)
+		return f.emitInstJRCXZ(inst)
 	case x86asm.JS:
-		return d.emitInstJS(f, inst)
+		return f.emitInstJS(inst)
 	case x86asm.LAHF:
-		return d.emitInstLAHF(f, inst)
+		return f.emitInstLAHF(inst)
 	case x86asm.LAR:
-		return d.emitInstLAR(f, inst)
+		return f.emitInstLAR(inst)
 	case x86asm.LCALL:
-		return d.emitInstLCALL(f, inst)
+		return f.emitInstLCALL(inst)
 	case x86asm.LDDQU:
-		return d.emitInstLDDQU(f, inst)
+		return f.emitInstLDDQU(inst)
 	case x86asm.LDMXCSR:
-		return d.emitInstLDMXCSR(f, inst)
+		return f.emitInstLDMXCSR(inst)
 	case x86asm.LDS:
-		return d.emitInstLDS(f, inst)
+		return f.emitInstLDS(inst)
 	case x86asm.LEA:
-		return d.emitInstLEA(f, inst)
+		return f.emitInstLEA(inst)
 	case x86asm.LEAVE:
-		return d.emitInstLEAVE(f, inst)
+		return f.emitInstLEAVE(inst)
 	case x86asm.LES:
-		return d.emitInstLES(f, inst)
+		return f.emitInstLES(inst)
 	case x86asm.LFENCE:
-		return d.emitInstLFENCE(f, inst)
+		return f.emitInstLFENCE(inst)
 	case x86asm.LFS:
-		return d.emitInstLFS(f, inst)
+		return f.emitInstLFS(inst)
 	case x86asm.LGDT:
-		return d.emitInstLGDT(f, inst)
+		return f.emitInstLGDT(inst)
 	case x86asm.LGS:
-		return d.emitInstLGS(f, inst)
+		return f.emitInstLGS(inst)
 	case x86asm.LIDT:
-		return d.emitInstLIDT(f, inst)
+		return f.emitInstLIDT(inst)
 	case x86asm.LJMP:
-		return d.emitInstLJMP(f, inst)
+		return f.emitInstLJMP(inst)
 	case x86asm.LLDT:
-		return d.emitInstLLDT(f, inst)
+		return f.emitInstLLDT(inst)
 	case x86asm.LMSW:
-		return d.emitInstLMSW(f, inst)
+		return f.emitInstLMSW(inst)
 	case x86asm.LODSB:
-		return d.emitInstLODSB(f, inst)
+		return f.emitInstLODSB(inst)
 	case x86asm.LODSD:
-		return d.emitInstLODSD(f, inst)
+		return f.emitInstLODSD(inst)
 	case x86asm.LODSQ:
-		return d.emitInstLODSQ(f, inst)
+		return f.emitInstLODSQ(inst)
 	case x86asm.LODSW:
-		return d.emitInstLODSW(f, inst)
+		return f.emitInstLODSW(inst)
 	case x86asm.LOOP:
-		return d.emitInstLOOP(f, inst)
+		return f.emitInstLOOP(inst)
 	case x86asm.LOOPE:
-		return d.emitInstLOOPE(f, inst)
+		return f.emitInstLOOPE(inst)
 	case x86asm.LOOPNE:
-		return d.emitInstLOOPNE(f, inst)
+		return f.emitInstLOOPNE(inst)
 	case x86asm.LRET:
-		return d.emitInstLRET(f, inst)
+		return f.emitInstLRET(inst)
 	case x86asm.LSL:
-		return d.emitInstLSL(f, inst)
+		return f.emitInstLSL(inst)
 	case x86asm.LSS:
-		return d.emitInstLSS(f, inst)
+		return f.emitInstLSS(inst)
 	case x86asm.LTR:
-		return d.emitInstLTR(f, inst)
+		return f.emitInstLTR(inst)
 	case x86asm.LZCNT:
-		return d.emitInstLZCNT(f, inst)
+		return f.emitInstLZCNT(inst)
 	case x86asm.MASKMOVDQU:
-		return d.emitInstMASKMOVDQU(f, inst)
+		return f.emitInstMASKMOVDQU(inst)
 	case x86asm.MASKMOVQ:
-		return d.emitInstMASKMOVQ(f, inst)
+		return f.emitInstMASKMOVQ(inst)
 	case x86asm.MAXPD:
-		return d.emitInstMAXPD(f, inst)
+		return f.emitInstMAXPD(inst)
 	case x86asm.MAXPS:
-		return d.emitInstMAXPS(f, inst)
+		return f.emitInstMAXPS(inst)
 	case x86asm.MAXSD:
-		return d.emitInstMAXSD(f, inst)
+		return f.emitInstMAXSD(inst)
 	case x86asm.MAXSS:
-		return d.emitInstMAXSS(f, inst)
+		return f.emitInstMAXSS(inst)
 	case x86asm.MFENCE:
-		return d.emitInstMFENCE(f, inst)
+		return f.emitInstMFENCE(inst)
 	case x86asm.MINPD:
-		return d.emitInstMINPD(f, inst)
+		return f.emitInstMINPD(inst)
 	case x86asm.MINPS:
-		return d.emitInstMINPS(f, inst)
+		return f.emitInstMINPS(inst)
 	case x86asm.MINSD:
-		return d.emitInstMINSD(f, inst)
+		return f.emitInstMINSD(inst)
 	case x86asm.MINSS:
-		return d.emitInstMINSS(f, inst)
+		return f.emitInstMINSS(inst)
 	case x86asm.MONITOR:
-		return d.emitInstMONITOR(f, inst)
+		return f.emitInstMONITOR(inst)
 	case x86asm.MOV:
-		return d.emitInstMOV(f, inst)
+		return f.emitInstMOV(inst)
 	case x86asm.MOVAPD:
-		return d.emitInstMOVAPD(f, inst)
+		return f.emitInstMOVAPD(inst)
 	case x86asm.MOVAPS:
-		return d.emitInstMOVAPS(f, inst)
+		return f.emitInstMOVAPS(inst)
 	case x86asm.MOVBE:
-		return d.emitInstMOVBE(f, inst)
+		return f.emitInstMOVBE(inst)
 	case x86asm.MOVD:
-		return d.emitInstMOVD(f, inst)
+		return f.emitInstMOVD(inst)
 	case x86asm.MOVDDUP:
-		return d.emitInstMOVDDUP(f, inst)
+		return f.emitInstMOVDDUP(inst)
 	case x86asm.MOVDQ2Q:
-		return d.emitInstMOVDQ2Q(f, inst)
+		return f.emitInstMOVDQ2Q(inst)
 	case x86asm.MOVDQA:
-		return d.emitInstMOVDQA(f, inst)
+		return f.emitInstMOVDQA(inst)
 	case x86asm.MOVDQU:
-		return d.emitInstMOVDQU(f, inst)
+		return f.emitInstMOVDQU(inst)
 	case x86asm.MOVHLPS:
-		return d.emitInstMOVHLPS(f, inst)
+		return f.emitInstMOVHLPS(inst)
 	case x86asm.MOVHPD:
-		return d.emitInstMOVHPD(f, inst)
+		return f.emitInstMOVHPD(inst)
 	case x86asm.MOVHPS:
-		return d.emitInstMOVHPS(f, inst)
+		return f.emitInstMOVHPS(inst)
 	case x86asm.MOVLHPS:
-		return d.emitInstMOVLHPS(f, inst)
+		return f.emitInstMOVLHPS(inst)
 	case x86asm.MOVLPD:
-		return d.emitInstMOVLPD(f, inst)
+		return f.emitInstMOVLPD(inst)
 	case x86asm.MOVLPS:
-		return d.emitInstMOVLPS(f, inst)
+		return f.emitInstMOVLPS(inst)
 	case x86asm.MOVMSKPD:
-		return d.emitInstMOVMSKPD(f, inst)
+		return f.emitInstMOVMSKPD(inst)
 	case x86asm.MOVMSKPS:
-		return d.emitInstMOVMSKPS(f, inst)
+		return f.emitInstMOVMSKPS(inst)
 	case x86asm.MOVNTDQ:
-		return d.emitInstMOVNTDQ(f, inst)
+		return f.emitInstMOVNTDQ(inst)
 	case x86asm.MOVNTDQA:
-		return d.emitInstMOVNTDQA(f, inst)
+		return f.emitInstMOVNTDQA(inst)
 	case x86asm.MOVNTI:
-		return d.emitInstMOVNTI(f, inst)
+		return f.emitInstMOVNTI(inst)
 	case x86asm.MOVNTPD:
-		return d.emitInstMOVNTPD(f, inst)
+		return f.emitInstMOVNTPD(inst)
 	case x86asm.MOVNTPS:
-		return d.emitInstMOVNTPS(f, inst)
+		return f.emitInstMOVNTPS(inst)
 	case x86asm.MOVNTQ:
-		return d.emitInstMOVNTQ(f, inst)
+		return f.emitInstMOVNTQ(inst)
 	case x86asm.MOVNTSD:
-		return d.emitInstMOVNTSD(f, inst)
+		return f.emitInstMOVNTSD(inst)
 	case x86asm.MOVNTSS:
-		return d.emitInstMOVNTSS(f, inst)
+		return f.emitInstMOVNTSS(inst)
 	case x86asm.MOVQ:
-		return d.emitInstMOVQ(f, inst)
+		return f.emitInstMOVQ(inst)
 	case x86asm.MOVQ2DQ:
-		return d.emitInstMOVQ2DQ(f, inst)
+		return f.emitInstMOVQ2DQ(inst)
 	case x86asm.MOVSB:
-		return d.emitInstMOVSB(f, inst)
+		return f.emitInstMOVSB(inst)
 	case x86asm.MOVSD:
-		return d.emitInstMOVSD(f, inst)
+		return f.emitInstMOVSD(inst)
 	case x86asm.MOVSD_XMM:
-		return d.emitInstMOVSD_XMM(f, inst)
+		return f.emitInstMOVSD_XMM(inst)
 	case x86asm.MOVSHDUP:
-		return d.emitInstMOVSHDUP(f, inst)
+		return f.emitInstMOVSHDUP(inst)
 	case x86asm.MOVSLDUP:
-		return d.emitInstMOVSLDUP(f, inst)
+		return f.emitInstMOVSLDUP(inst)
 	case x86asm.MOVSQ:
-		return d.emitInstMOVSQ(f, inst)
+		return f.emitInstMOVSQ(inst)
 	case x86asm.MOVSS:
-		return d.emitInstMOVSS(f, inst)
+		return f.emitInstMOVSS(inst)
 	case x86asm.MOVSW:
-		return d.emitInstMOVSW(f, inst)
+		return f.emitInstMOVSW(inst)
 	case x86asm.MOVSX:
-		return d.emitInstMOVSX(f, inst)
+		return f.emitInstMOVSX(inst)
 	case x86asm.MOVSXD:
-		return d.emitInstMOVSXD(f, inst)
+		return f.emitInstMOVSXD(inst)
 	case x86asm.MOVUPD:
-		return d.emitInstMOVUPD(f, inst)
+		return f.emitInstMOVUPD(inst)
 	case x86asm.MOVUPS:
-		return d.emitInstMOVUPS(f, inst)
+		return f.emitInstMOVUPS(inst)
 	case x86asm.MOVZX:
-		return d.emitInstMOVZX(f, inst)
+		return f.emitInstMOVZX(inst)
 	case x86asm.MPSADBW:
-		return d.emitInstMPSADBW(f, inst)
+		return f.emitInstMPSADBW(inst)
 	case x86asm.MUL:
-		return d.emitInstMUL(f, inst)
+		return f.emitInstMUL(inst)
 	case x86asm.MULPD:
-		return d.emitInstMULPD(f, inst)
+		return f.emitInstMULPD(inst)
 	case x86asm.MULPS:
-		return d.emitInstMULPS(f, inst)
+		return f.emitInstMULPS(inst)
 	case x86asm.MULSD:
-		return d.emitInstMULSD(f, inst)
+		return f.emitInstMULSD(inst)
 	case x86asm.MULSS:
-		return d.emitInstMULSS(f, inst)
+		return f.emitInstMULSS(inst)
 	case x86asm.MWAIT:
-		return d.emitInstMWAIT(f, inst)
+		return f.emitInstMWAIT(inst)
 	case x86asm.NEG:
-		return d.emitInstNEG(f, inst)
+		return f.emitInstNEG(inst)
 	case x86asm.NOP:
-		return d.emitInstNOP(f, inst)
+		return f.emitInstNOP(inst)
 	case x86asm.NOT:
-		return d.emitInstNOT(f, inst)
+		return f.emitInstNOT(inst)
 	case x86asm.OR:
-		return d.emitInstOR(f, inst)
+		return f.emitInstOR(inst)
 	case x86asm.ORPD:
-		return d.emitInstORPD(f, inst)
+		return f.emitInstORPD(inst)
 	case x86asm.ORPS:
-		return d.emitInstORPS(f, inst)
+		return f.emitInstORPS(inst)
 	case x86asm.OUT:
-		return d.emitInstOUT(f, inst)
+		return f.emitInstOUT(inst)
 	case x86asm.OUTSB:
-		return d.emitInstOUTSB(f, inst)
+		return f.emitInstOUTSB(inst)
 	case x86asm.OUTSD:
-		return d.emitInstOUTSD(f, inst)
+		return f.emitInstOUTSD(inst)
 	case x86asm.OUTSW:
-		return d.emitInstOUTSW(f, inst)
+		return f.emitInstOUTSW(inst)
 	case x86asm.PABSB:
-		return d.emitInstPABSB(f, inst)
+		return f.emitInstPABSB(inst)
 	case x86asm.PABSD:
-		return d.emitInstPABSD(f, inst)
+		return f.emitInstPABSD(inst)
 	case x86asm.PABSW:
-		return d.emitInstPABSW(f, inst)
+		return f.emitInstPABSW(inst)
 	case x86asm.PACKSSDW:
-		return d.emitInstPACKSSDW(f, inst)
+		return f.emitInstPACKSSDW(inst)
 	case x86asm.PACKSSWB:
-		return d.emitInstPACKSSWB(f, inst)
+		return f.emitInstPACKSSWB(inst)
 	case x86asm.PACKUSDW:
-		return d.emitInstPACKUSDW(f, inst)
+		return f.emitInstPACKUSDW(inst)
 	case x86asm.PACKUSWB:
-		return d.emitInstPACKUSWB(f, inst)
+		return f.emitInstPACKUSWB(inst)
 	case x86asm.PADDB:
-		return d.emitInstPADDB(f, inst)
+		return f.emitInstPADDB(inst)
 	case x86asm.PADDD:
-		return d.emitInstPADDD(f, inst)
+		return f.emitInstPADDD(inst)
 	case x86asm.PADDQ:
-		return d.emitInstPADDQ(f, inst)
+		return f.emitInstPADDQ(inst)
 	case x86asm.PADDSB:
-		return d.emitInstPADDSB(f, inst)
+		return f.emitInstPADDSB(inst)
 	case x86asm.PADDSW:
-		return d.emitInstPADDSW(f, inst)
+		return f.emitInstPADDSW(inst)
 	case x86asm.PADDUSB:
-		return d.emitInstPADDUSB(f, inst)
+		return f.emitInstPADDUSB(inst)
 	case x86asm.PADDUSW:
-		return d.emitInstPADDUSW(f, inst)
+		return f.emitInstPADDUSW(inst)
 	case x86asm.PADDW:
-		return d.emitInstPADDW(f, inst)
+		return f.emitInstPADDW(inst)
 	case x86asm.PALIGNR:
-		return d.emitInstPALIGNR(f, inst)
+		return f.emitInstPALIGNR(inst)
 	case x86asm.PAND:
-		return d.emitInstPAND(f, inst)
+		return f.emitInstPAND(inst)
 	case x86asm.PANDN:
-		return d.emitInstPANDN(f, inst)
+		return f.emitInstPANDN(inst)
 	case x86asm.PAUSE:
-		return d.emitInstPAUSE(f, inst)
+		return f.emitInstPAUSE(inst)
 	case x86asm.PAVGB:
-		return d.emitInstPAVGB(f, inst)
+		return f.emitInstPAVGB(inst)
 	case x86asm.PAVGW:
-		return d.emitInstPAVGW(f, inst)
+		return f.emitInstPAVGW(inst)
 	case x86asm.PBLENDVB:
-		return d.emitInstPBLENDVB(f, inst)
+		return f.emitInstPBLENDVB(inst)
 	case x86asm.PBLENDW:
-		return d.emitInstPBLENDW(f, inst)
+		return f.emitInstPBLENDW(inst)
 	case x86asm.PCLMULQDQ:
-		return d.emitInstPCLMULQDQ(f, inst)
+		return f.emitInstPCLMULQDQ(inst)
 	case x86asm.PCMPEQB:
-		return d.emitInstPCMPEQB(f, inst)
+		return f.emitInstPCMPEQB(inst)
 	case x86asm.PCMPEQD:
-		return d.emitInstPCMPEQD(f, inst)
+		return f.emitInstPCMPEQD(inst)
 	case x86asm.PCMPEQQ:
-		return d.emitInstPCMPEQQ(f, inst)
+		return f.emitInstPCMPEQQ(inst)
 	case x86asm.PCMPEQW:
-		return d.emitInstPCMPEQW(f, inst)
+		return f.emitInstPCMPEQW(inst)
 	case x86asm.PCMPESTRI:
-		return d.emitInstPCMPESTRI(f, inst)
+		return f.emitInstPCMPESTRI(inst)
 	case x86asm.PCMPESTRM:
-		return d.emitInstPCMPESTRM(f, inst)
+		return f.emitInstPCMPESTRM(inst)
 	case x86asm.PCMPGTB:
-		return d.emitInstPCMPGTB(f, inst)
+		return f.emitInstPCMPGTB(inst)
 	case x86asm.PCMPGTD:
-		return d.emitInstPCMPGTD(f, inst)
+		return f.emitInstPCMPGTD(inst)
 	case x86asm.PCMPGTQ:
-		return d.emitInstPCMPGTQ(f, inst)
+		return f.emitInstPCMPGTQ(inst)
 	case x86asm.PCMPGTW:
-		return d.emitInstPCMPGTW(f, inst)
+		return f.emitInstPCMPGTW(inst)
 	case x86asm.PCMPISTRI:
-		return d.emitInstPCMPISTRI(f, inst)
+		return f.emitInstPCMPISTRI(inst)
 	case x86asm.PCMPISTRM:
-		return d.emitInstPCMPISTRM(f, inst)
+		return f.emitInstPCMPISTRM(inst)
 	case x86asm.PEXTRB:
-		return d.emitInstPEXTRB(f, inst)
+		return f.emitInstPEXTRB(inst)
 	case x86asm.PEXTRD:
-		return d.emitInstPEXTRD(f, inst)
+		return f.emitInstPEXTRD(inst)
 	case x86asm.PEXTRQ:
-		return d.emitInstPEXTRQ(f, inst)
+		return f.emitInstPEXTRQ(inst)
 	case x86asm.PEXTRW:
-		return d.emitInstPEXTRW(f, inst)
+		return f.emitInstPEXTRW(inst)
 	case x86asm.PHADDD:
-		return d.emitInstPHADDD(f, inst)
+		return f.emitInstPHADDD(inst)
 	case x86asm.PHADDSW:
-		return d.emitInstPHADDSW(f, inst)
+		return f.emitInstPHADDSW(inst)
 	case x86asm.PHADDW:
-		return d.emitInstPHADDW(f, inst)
+		return f.emitInstPHADDW(inst)
 	case x86asm.PHMINPOSUW:
-		return d.emitInstPHMINPOSUW(f, inst)
+		return f.emitInstPHMINPOSUW(inst)
 	case x86asm.PHSUBD:
-		return d.emitInstPHSUBD(f, inst)
+		return f.emitInstPHSUBD(inst)
 	case x86asm.PHSUBSW:
-		return d.emitInstPHSUBSW(f, inst)
+		return f.emitInstPHSUBSW(inst)
 	case x86asm.PHSUBW:
-		return d.emitInstPHSUBW(f, inst)
+		return f.emitInstPHSUBW(inst)
 	case x86asm.PINSRB:
-		return d.emitInstPINSRB(f, inst)
+		return f.emitInstPINSRB(inst)
 	case x86asm.PINSRD:
-		return d.emitInstPINSRD(f, inst)
+		return f.emitInstPINSRD(inst)
 	case x86asm.PINSRQ:
-		return d.emitInstPINSRQ(f, inst)
+		return f.emitInstPINSRQ(inst)
 	case x86asm.PINSRW:
-		return d.emitInstPINSRW(f, inst)
+		return f.emitInstPINSRW(inst)
 	case x86asm.PMADDUBSW:
-		return d.emitInstPMADDUBSW(f, inst)
+		return f.emitInstPMADDUBSW(inst)
 	case x86asm.PMADDWD:
-		return d.emitInstPMADDWD(f, inst)
+		return f.emitInstPMADDWD(inst)
 	case x86asm.PMAXSB:
-		return d.emitInstPMAXSB(f, inst)
+		return f.emitInstPMAXSB(inst)
 	case x86asm.PMAXSD:
-		return d.emitInstPMAXSD(f, inst)
+		return f.emitInstPMAXSD(inst)
 	case x86asm.PMAXSW:
-		return d.emitInstPMAXSW(f, inst)
+		return f.emitInstPMAXSW(inst)
 	case x86asm.PMAXUB:
-		return d.emitInstPMAXUB(f, inst)
+		return f.emitInstPMAXUB(inst)
 	case x86asm.PMAXUD:
-		return d.emitInstPMAXUD(f, inst)
+		return f.emitInstPMAXUD(inst)
 	case x86asm.PMAXUW:
-		return d.emitInstPMAXUW(f, inst)
+		return f.emitInstPMAXUW(inst)
 	case x86asm.PMINSB:
-		return d.emitInstPMINSB(f, inst)
+		return f.emitInstPMINSB(inst)
 	case x86asm.PMINSD:
-		return d.emitInstPMINSD(f, inst)
+		return f.emitInstPMINSD(inst)
 	case x86asm.PMINSW:
-		return d.emitInstPMINSW(f, inst)
+		return f.emitInstPMINSW(inst)
 	case x86asm.PMINUB:
-		return d.emitInstPMINUB(f, inst)
+		return f.emitInstPMINUB(inst)
 	case x86asm.PMINUD:
-		return d.emitInstPMINUD(f, inst)
+		return f.emitInstPMINUD(inst)
 	case x86asm.PMINUW:
-		return d.emitInstPMINUW(f, inst)
+		return f.emitInstPMINUW(inst)
 	case x86asm.PMOVMSKB:
-		return d.emitInstPMOVMSKB(f, inst)
+		return f.emitInstPMOVMSKB(inst)
 	case x86asm.PMOVSXBD:
-		return d.emitInstPMOVSXBD(f, inst)
+		return f.emitInstPMOVSXBD(inst)
 	case x86asm.PMOVSXBQ:
-		return d.emitInstPMOVSXBQ(f, inst)
+		return f.emitInstPMOVSXBQ(inst)
 	case x86asm.PMOVSXBW:
-		return d.emitInstPMOVSXBW(f, inst)
+		return f.emitInstPMOVSXBW(inst)
 	case x86asm.PMOVSXDQ:
-		return d.emitInstPMOVSXDQ(f, inst)
+		return f.emitInstPMOVSXDQ(inst)
 	case x86asm.PMOVSXWD:
-		return d.emitInstPMOVSXWD(f, inst)
+		return f.emitInstPMOVSXWD(inst)
 	case x86asm.PMOVSXWQ:
-		return d.emitInstPMOVSXWQ(f, inst)
+		return f.emitInstPMOVSXWQ(inst)
 	case x86asm.PMOVZXBD:
-		return d.emitInstPMOVZXBD(f, inst)
+		return f.emitInstPMOVZXBD(inst)
 	case x86asm.PMOVZXBQ:
-		return d.emitInstPMOVZXBQ(f, inst)
+		return f.emitInstPMOVZXBQ(inst)
 	case x86asm.PMOVZXBW:
-		return d.emitInstPMOVZXBW(f, inst)
+		return f.emitInstPMOVZXBW(inst)
 	case x86asm.PMOVZXDQ:
-		return d.emitInstPMOVZXDQ(f, inst)
+		return f.emitInstPMOVZXDQ(inst)
 	case x86asm.PMOVZXWD:
-		return d.emitInstPMOVZXWD(f, inst)
+		return f.emitInstPMOVZXWD(inst)
 	case x86asm.PMOVZXWQ:
-		return d.emitInstPMOVZXWQ(f, inst)
+		return f.emitInstPMOVZXWQ(inst)
 	case x86asm.PMULDQ:
-		return d.emitInstPMULDQ(f, inst)
+		return f.emitInstPMULDQ(inst)
 	case x86asm.PMULHRSW:
-		return d.emitInstPMULHRSW(f, inst)
+		return f.emitInstPMULHRSW(inst)
 	case x86asm.PMULHUW:
-		return d.emitInstPMULHUW(f, inst)
+		return f.emitInstPMULHUW(inst)
 	case x86asm.PMULHW:
-		return d.emitInstPMULHW(f, inst)
+		return f.emitInstPMULHW(inst)
 	case x86asm.PMULLD:
-		return d.emitInstPMULLD(f, inst)
+		return f.emitInstPMULLD(inst)
 	case x86asm.PMULLW:
-		return d.emitInstPMULLW(f, inst)
+		return f.emitInstPMULLW(inst)
 	case x86asm.PMULUDQ:
-		return d.emitInstPMULUDQ(f, inst)
+		return f.emitInstPMULUDQ(inst)
 	case x86asm.POP:
-		return d.emitInstPOP(f, inst)
+		return f.emitInstPOP(inst)
 	case x86asm.POPA:
-		return d.emitInstPOPA(f, inst)
+		return f.emitInstPOPA(inst)
 	case x86asm.POPAD:
-		return d.emitInstPOPAD(f, inst)
+		return f.emitInstPOPAD(inst)
 	case x86asm.POPCNT:
-		return d.emitInstPOPCNT(f, inst)
+		return f.emitInstPOPCNT(inst)
 	case x86asm.POPF:
-		return d.emitInstPOPF(f, inst)
+		return f.emitInstPOPF(inst)
 	case x86asm.POPFD:
-		return d.emitInstPOPFD(f, inst)
+		return f.emitInstPOPFD(inst)
 	case x86asm.POPFQ:
-		return d.emitInstPOPFQ(f, inst)
+		return f.emitInstPOPFQ(inst)
 	case x86asm.POR:
-		return d.emitInstPOR(f, inst)
+		return f.emitInstPOR(inst)
 	case x86asm.PREFETCHNTA:
-		return d.emitInstPREFETCHNTA(f, inst)
+		return f.emitInstPREFETCHNTA(inst)
 	case x86asm.PREFETCHT0:
-		return d.emitInstPREFETCHT0(f, inst)
+		return f.emitInstPREFETCHT0(inst)
 	case x86asm.PREFETCHT1:
-		return d.emitInstPREFETCHT1(f, inst)
+		return f.emitInstPREFETCHT1(inst)
 	case x86asm.PREFETCHT2:
-		return d.emitInstPREFETCHT2(f, inst)
+		return f.emitInstPREFETCHT2(inst)
 	case x86asm.PREFETCHW:
-		return d.emitInstPREFETCHW(f, inst)
+		return f.emitInstPREFETCHW(inst)
 	case x86asm.PSADBW:
-		return d.emitInstPSADBW(f, inst)
+		return f.emitInstPSADBW(inst)
 	case x86asm.PSHUFB:
-		return d.emitInstPSHUFB(f, inst)
+		return f.emitInstPSHUFB(inst)
 	case x86asm.PSHUFD:
-		return d.emitInstPSHUFD(f, inst)
+		return f.emitInstPSHUFD(inst)
 	case x86asm.PSHUFHW:
-		return d.emitInstPSHUFHW(f, inst)
+		return f.emitInstPSHUFHW(inst)
 	case x86asm.PSHUFLW:
-		return d.emitInstPSHUFLW(f, inst)
+		return f.emitInstPSHUFLW(inst)
 	case x86asm.PSHUFW:
-		return d.emitInstPSHUFW(f, inst)
+		return f.emitInstPSHUFW(inst)
 	case x86asm.PSIGNB:
-		return d.emitInstPSIGNB(f, inst)
+		return f.emitInstPSIGNB(inst)
 	case x86asm.PSIGND:
-		return d.emitInstPSIGND(f, inst)
+		return f.emitInstPSIGND(inst)
 	case x86asm.PSIGNW:
-		return d.emitInstPSIGNW(f, inst)
+		return f.emitInstPSIGNW(inst)
 	case x86asm.PSLLD:
-		return d.emitInstPSLLD(f, inst)
+		return f.emitInstPSLLD(inst)
 	case x86asm.PSLLDQ:
-		return d.emitInstPSLLDQ(f, inst)
+		return f.emitInstPSLLDQ(inst)
 	case x86asm.PSLLQ:
-		return d.emitInstPSLLQ(f, inst)
+		return f.emitInstPSLLQ(inst)
 	case x86asm.PSLLW:
-		return d.emitInstPSLLW(f, inst)
+		return f.emitInstPSLLW(inst)
 	case x86asm.PSRAD:
-		return d.emitInstPSRAD(f, inst)
+		return f.emitInstPSRAD(inst)
 	case x86asm.PSRAW:
-		return d.emitInstPSRAW(f, inst)
+		return f.emitInstPSRAW(inst)
 	case x86asm.PSRLD:
-		return d.emitInstPSRLD(f, inst)
+		return f.emitInstPSRLD(inst)
 	case x86asm.PSRLDQ:
-		return d.emitInstPSRLDQ(f, inst)
+		return f.emitInstPSRLDQ(inst)
 	case x86asm.PSRLQ:
-		return d.emitInstPSRLQ(f, inst)
+		return f.emitInstPSRLQ(inst)
 	case x86asm.PSRLW:
-		return d.emitInstPSRLW(f, inst)
+		return f.emitInstPSRLW(inst)
 	case x86asm.PSUBB:
-		return d.emitInstPSUBB(f, inst)
+		return f.emitInstPSUBB(inst)
 	case x86asm.PSUBD:
-		return d.emitInstPSUBD(f, inst)
+		return f.emitInstPSUBD(inst)
 	case x86asm.PSUBQ:
-		return d.emitInstPSUBQ(f, inst)
+		return f.emitInstPSUBQ(inst)
 	case x86asm.PSUBSB:
-		return d.emitInstPSUBSB(f, inst)
+		return f.emitInstPSUBSB(inst)
 	case x86asm.PSUBSW:
-		return d.emitInstPSUBSW(f, inst)
+		return f.emitInstPSUBSW(inst)
 	case x86asm.PSUBUSB:
-		return d.emitInstPSUBUSB(f, inst)
+		return f.emitInstPSUBUSB(inst)
 	case x86asm.PSUBUSW:
-		return d.emitInstPSUBUSW(f, inst)
+		return f.emitInstPSUBUSW(inst)
 	case x86asm.PSUBW:
-		return d.emitInstPSUBW(f, inst)
+		return f.emitInstPSUBW(inst)
 	case x86asm.PTEST:
-		return d.emitInstPTEST(f, inst)
+		return f.emitInstPTEST(inst)
 	case x86asm.PUNPCKHBW:
-		return d.emitInstPUNPCKHBW(f, inst)
+		return f.emitInstPUNPCKHBW(inst)
 	case x86asm.PUNPCKHDQ:
-		return d.emitInstPUNPCKHDQ(f, inst)
+		return f.emitInstPUNPCKHDQ(inst)
 	case x86asm.PUNPCKHQDQ:
-		return d.emitInstPUNPCKHQDQ(f, inst)
+		return f.emitInstPUNPCKHQDQ(inst)
 	case x86asm.PUNPCKHWD:
-		return d.emitInstPUNPCKHWD(f, inst)
+		return f.emitInstPUNPCKHWD(inst)
 	case x86asm.PUNPCKLBW:
-		return d.emitInstPUNPCKLBW(f, inst)
+		return f.emitInstPUNPCKLBW(inst)
 	case x86asm.PUNPCKLDQ:
-		return d.emitInstPUNPCKLDQ(f, inst)
+		return f.emitInstPUNPCKLDQ(inst)
 	case x86asm.PUNPCKLQDQ:
-		return d.emitInstPUNPCKLQDQ(f, inst)
+		return f.emitInstPUNPCKLQDQ(inst)
 	case x86asm.PUNPCKLWD:
-		return d.emitInstPUNPCKLWD(f, inst)
+		return f.emitInstPUNPCKLWD(inst)
 	case x86asm.PUSH:
-		return d.emitInstPUSH(f, inst)
+		return f.emitInstPUSH(inst)
 	case x86asm.PUSHA:
-		return d.emitInstPUSHA(f, inst)
+		return f.emitInstPUSHA(inst)
 	case x86asm.PUSHAD:
-		return d.emitInstPUSHAD(f, inst)
+		return f.emitInstPUSHAD(inst)
 	case x86asm.PUSHF:
-		return d.emitInstPUSHF(f, inst)
+		return f.emitInstPUSHF(inst)
 	case x86asm.PUSHFD:
-		return d.emitInstPUSHFD(f, inst)
+		return f.emitInstPUSHFD(inst)
 	case x86asm.PUSHFQ:
-		return d.emitInstPUSHFQ(f, inst)
+		return f.emitInstPUSHFQ(inst)
 	case x86asm.PXOR:
-		return d.emitInstPXOR(f, inst)
+		return f.emitInstPXOR(inst)
 	case x86asm.RCL:
-		return d.emitInstRCL(f, inst)
+		return f.emitInstRCL(inst)
 	case x86asm.RCPPS:
-		return d.emitInstRCPPS(f, inst)
+		return f.emitInstRCPPS(inst)
 	case x86asm.RCPSS:
-		return d.emitInstRCPSS(f, inst)
+		return f.emitInstRCPSS(inst)
 	case x86asm.RCR:
-		return d.emitInstRCR(f, inst)
+		return f.emitInstRCR(inst)
 	case x86asm.RDFSBASE:
-		return d.emitInstRDFSBASE(f, inst)
+		return f.emitInstRDFSBASE(inst)
 	case x86asm.RDGSBASE:
-		return d.emitInstRDGSBASE(f, inst)
+		return f.emitInstRDGSBASE(inst)
 	case x86asm.RDMSR:
-		return d.emitInstRDMSR(f, inst)
+		return f.emitInstRDMSR(inst)
 	case x86asm.RDPMC:
-		return d.emitInstRDPMC(f, inst)
+		return f.emitInstRDPMC(inst)
 	case x86asm.RDRAND:
-		return d.emitInstRDRAND(f, inst)
+		return f.emitInstRDRAND(inst)
 	case x86asm.RDTSC:
-		return d.emitInstRDTSC(f, inst)
+		return f.emitInstRDTSC(inst)
 	case x86asm.RDTSCP:
-		return d.emitInstRDTSCP(f, inst)
+		return f.emitInstRDTSCP(inst)
 	case x86asm.RET:
-		return d.emitInstRET(f, inst)
+		return f.emitInstRET(inst)
 	case x86asm.ROL:
-		return d.emitInstROL(f, inst)
+		return f.emitInstROL(inst)
 	case x86asm.ROR:
-		return d.emitInstROR(f, inst)
+		return f.emitInstROR(inst)
 	case x86asm.ROUNDPD:
-		return d.emitInstROUNDPD(f, inst)
+		return f.emitInstROUNDPD(inst)
 	case x86asm.ROUNDPS:
-		return d.emitInstROUNDPS(f, inst)
+		return f.emitInstROUNDPS(inst)
 	case x86asm.ROUNDSD:
-		return d.emitInstROUNDSD(f, inst)
+		return f.emitInstROUNDSD(inst)
 	case x86asm.ROUNDSS:
-		return d.emitInstROUNDSS(f, inst)
+		return f.emitInstROUNDSS(inst)
 	case x86asm.RSM:
-		return d.emitInstRSM(f, inst)
+		return f.emitInstRSM(inst)
 	case x86asm.RSQRTPS:
-		return d.emitInstRSQRTPS(f, inst)
+		return f.emitInstRSQRTPS(inst)
 	case x86asm.RSQRTSS:
-		return d.emitInstRSQRTSS(f, inst)
+		return f.emitInstRSQRTSS(inst)
 	case x86asm.SAHF:
-		return d.emitInstSAHF(f, inst)
+		return f.emitInstSAHF(inst)
 	case x86asm.SAR:
-		return d.emitInstSAR(f, inst)
+		return f.emitInstSAR(inst)
 	case x86asm.SBB:
-		return d.emitInstSBB(f, inst)
+		return f.emitInstSBB(inst)
 	case x86asm.SCASB:
-		return d.emitInstSCASB(f, inst)
+		return f.emitInstSCASB(inst)
 	case x86asm.SCASD:
-		return d.emitInstSCASD(f, inst)
+		return f.emitInstSCASD(inst)
 	case x86asm.SCASQ:
-		return d.emitInstSCASQ(f, inst)
+		return f.emitInstSCASQ(inst)
 	case x86asm.SCASW:
-		return d.emitInstSCASW(f, inst)
+		return f.emitInstSCASW(inst)
 	case x86asm.SETA:
-		return d.emitInstSETA(f, inst)
+		return f.emitInstSETA(inst)
 	case x86asm.SETAE:
-		return d.emitInstSETAE(f, inst)
+		return f.emitInstSETAE(inst)
 	case x86asm.SETB:
-		return d.emitInstSETB(f, inst)
+		return f.emitInstSETB(inst)
 	case x86asm.SETBE:
-		return d.emitInstSETBE(f, inst)
+		return f.emitInstSETBE(inst)
 	case x86asm.SETE:
-		return d.emitInstSETE(f, inst)
+		return f.emitInstSETE(inst)
 	case x86asm.SETG:
-		return d.emitInstSETG(f, inst)
+		return f.emitInstSETG(inst)
 	case x86asm.SETGE:
-		return d.emitInstSETGE(f, inst)
+		return f.emitInstSETGE(inst)
 	case x86asm.SETL:
-		return d.emitInstSETL(f, inst)
+		return f.emitInstSETL(inst)
 	case x86asm.SETLE:
-		return d.emitInstSETLE(f, inst)
+		return f.emitInstSETLE(inst)
 	case x86asm.SETNE:
-		return d.emitInstSETNE(f, inst)
+		return f.emitInstSETNE(inst)
 	case x86asm.SETNO:
-		return d.emitInstSETNO(f, inst)
+		return f.emitInstSETNO(inst)
 	case x86asm.SETNP:
-		return d.emitInstSETNP(f, inst)
+		return f.emitInstSETNP(inst)
 	case x86asm.SETNS:
-		return d.emitInstSETNS(f, inst)
+		return f.emitInstSETNS(inst)
 	case x86asm.SETO:
-		return d.emitInstSETO(f, inst)
+		return f.emitInstSETO(inst)
 	case x86asm.SETP:
-		return d.emitInstSETP(f, inst)
+		return f.emitInstSETP(inst)
 	case x86asm.SETS:
-		return d.emitInstSETS(f, inst)
+		return f.emitInstSETS(inst)
 	case x86asm.SFENCE:
-		return d.emitInstSFENCE(f, inst)
+		return f.emitInstSFENCE(inst)
 	case x86asm.SGDT:
-		return d.emitInstSGDT(f, inst)
+		return f.emitInstSGDT(inst)
 	case x86asm.SHL:
-		return d.emitInstSHL(f, inst)
+		return f.emitInstSHL(inst)
 	case x86asm.SHLD:
-		return d.emitInstSHLD(f, inst)
+		return f.emitInstSHLD(inst)
 	case x86asm.SHR:
-		return d.emitInstSHR(f, inst)
+		return f.emitInstSHR(inst)
 	case x86asm.SHRD:
-		return d.emitInstSHRD(f, inst)
+		return f.emitInstSHRD(inst)
 	case x86asm.SHUFPD:
-		return d.emitInstSHUFPD(f, inst)
+		return f.emitInstSHUFPD(inst)
 	case x86asm.SHUFPS:
-		return d.emitInstSHUFPS(f, inst)
+		return f.emitInstSHUFPS(inst)
 	case x86asm.SIDT:
-		return d.emitInstSIDT(f, inst)
+		return f.emitInstSIDT(inst)
 	case x86asm.SLDT:
-		return d.emitInstSLDT(f, inst)
+		return f.emitInstSLDT(inst)
 	case x86asm.SMSW:
-		return d.emitInstSMSW(f, inst)
+		return f.emitInstSMSW(inst)
 	case x86asm.SQRTPD:
-		return d.emitInstSQRTPD(f, inst)
+		return f.emitInstSQRTPD(inst)
 	case x86asm.SQRTPS:
-		return d.emitInstSQRTPS(f, inst)
+		return f.emitInstSQRTPS(inst)
 	case x86asm.SQRTSD:
-		return d.emitInstSQRTSD(f, inst)
+		return f.emitInstSQRTSD(inst)
 	case x86asm.SQRTSS:
-		return d.emitInstSQRTSS(f, inst)
+		return f.emitInstSQRTSS(inst)
 	case x86asm.STC:
-		return d.emitInstSTC(f, inst)
+		return f.emitInstSTC(inst)
 	case x86asm.STD:
-		return d.emitInstSTD(f, inst)
+		return f.emitInstSTD(inst)
 	case x86asm.STI:
-		return d.emitInstSTI(f, inst)
+		return f.emitInstSTI(inst)
 	case x86asm.STMXCSR:
-		return d.emitInstSTMXCSR(f, inst)
+		return f.emitInstSTMXCSR(inst)
 	case x86asm.STOSB:
-		return d.emitInstSTOSB(f, inst)
+		return f.emitInstSTOSB(inst)
 	case x86asm.STOSD:
-		return d.emitInstSTOSD(f, inst)
+		return f.emitInstSTOSD(inst)
 	case x86asm.STOSQ:
-		return d.emitInstSTOSQ(f, inst)
+		return f.emitInstSTOSQ(inst)
 	case x86asm.STOSW:
-		return d.emitInstSTOSW(f, inst)
+		return f.emitInstSTOSW(inst)
 	case x86asm.STR:
-		return d.emitInstSTR(f, inst)
+		return f.emitInstSTR(inst)
 	case x86asm.SUB:
-		return d.emitInstSUB(f, inst)
+		return f.emitInstSUB(inst)
 	case x86asm.SUBPD:
-		return d.emitInstSUBPD(f, inst)
+		return f.emitInstSUBPD(inst)
 	case x86asm.SUBPS:
-		return d.emitInstSUBPS(f, inst)
+		return f.emitInstSUBPS(inst)
 	case x86asm.SUBSD:
-		return d.emitInstSUBSD(f, inst)
+		return f.emitInstSUBSD(inst)
 	case x86asm.SUBSS:
-		return d.emitInstSUBSS(f, inst)
+		return f.emitInstSUBSS(inst)
 	case x86asm.SWAPGS:
-		return d.emitInstSWAPGS(f, inst)
+		return f.emitInstSWAPGS(inst)
 	case x86asm.SYSCALL:
-		return d.emitInstSYSCALL(f, inst)
+		return f.emitInstSYSCALL(inst)
 	case x86asm.SYSENTER:
-		return d.emitInstSYSENTER(f, inst)
+		return f.emitInstSYSENTER(inst)
 	case x86asm.SYSEXIT:
-		return d.emitInstSYSEXIT(f, inst)
+		return f.emitInstSYSEXIT(inst)
 	case x86asm.SYSRET:
-		return d.emitInstSYSRET(f, inst)
+		return f.emitInstSYSRET(inst)
 	case x86asm.TEST:
-		return d.emitInstTEST(f, inst)
+		return f.emitInstTEST(inst)
 	case x86asm.TZCNT:
-		return d.emitInstTZCNT(f, inst)
+		return f.emitInstTZCNT(inst)
 	case x86asm.UCOMISD:
-		return d.emitInstUCOMISD(f, inst)
+		return f.emitInstUCOMISD(inst)
 	case x86asm.UCOMISS:
-		return d.emitInstUCOMISS(f, inst)
+		return f.emitInstUCOMISS(inst)
 	case x86asm.UD1:
-		return d.emitInstUD1(f, inst)
+		return f.emitInstUD1(inst)
 	case x86asm.UD2:
-		return d.emitInstUD2(f, inst)
+		return f.emitInstUD2(inst)
 	case x86asm.UNPCKHPD:
-		return d.emitInstUNPCKHPD(f, inst)
+		return f.emitInstUNPCKHPD(inst)
 	case x86asm.UNPCKHPS:
-		return d.emitInstUNPCKHPS(f, inst)
+		return f.emitInstUNPCKHPS(inst)
 	case x86asm.UNPCKLPD:
-		return d.emitInstUNPCKLPD(f, inst)
+		return f.emitInstUNPCKLPD(inst)
 	case x86asm.UNPCKLPS:
-		return d.emitInstUNPCKLPS(f, inst)
+		return f.emitInstUNPCKLPS(inst)
 	case x86asm.VERR:
-		return d.emitInstVERR(f, inst)
+		return f.emitInstVERR(inst)
 	case x86asm.VERW:
-		return d.emitInstVERW(f, inst)
+		return f.emitInstVERW(inst)
 	case x86asm.VMOVDQA:
-		return d.emitInstVMOVDQA(f, inst)
+		return f.emitInstVMOVDQA(inst)
 	case x86asm.VMOVDQU:
-		return d.emitInstVMOVDQU(f, inst)
+		return f.emitInstVMOVDQU(inst)
 	case x86asm.VMOVNTDQ:
-		return d.emitInstVMOVNTDQ(f, inst)
+		return f.emitInstVMOVNTDQ(inst)
 	case x86asm.VMOVNTDQA:
-		return d.emitInstVMOVNTDQA(f, inst)
+		return f.emitInstVMOVNTDQA(inst)
 	case x86asm.VZEROUPPER:
-		return d.emitInstVZEROUPPER(f, inst)
+		return f.emitInstVZEROUPPER(inst)
 	case x86asm.WBINVD:
-		return d.emitInstWBINVD(f, inst)
+		return f.emitInstWBINVD(inst)
 	case x86asm.WRFSBASE:
-		return d.emitInstWRFSBASE(f, inst)
+		return f.emitInstWRFSBASE(inst)
 	case x86asm.WRGSBASE:
-		return d.emitInstWRGSBASE(f, inst)
+		return f.emitInstWRGSBASE(inst)
 	case x86asm.WRMSR:
-		return d.emitInstWRMSR(f, inst)
+		return f.emitInstWRMSR(inst)
 	case x86asm.XABORT:
-		return d.emitInstXABORT(f, inst)
+		return f.emitInstXABORT(inst)
 	case x86asm.XADD:
-		return d.emitInstXADD(f, inst)
+		return f.emitInstXADD(inst)
 	case x86asm.XBEGIN:
-		return d.emitInstXBEGIN(f, inst)
+		return f.emitInstXBEGIN(inst)
 	case x86asm.XCHG:
-		return d.emitInstXCHG(f, inst)
+		return f.emitInstXCHG(inst)
 	case x86asm.XEND:
-		return d.emitInstXEND(f, inst)
+		return f.emitInstXEND(inst)
 	case x86asm.XGETBV:
-		return d.emitInstXGETBV(f, inst)
+		return f.emitInstXGETBV(inst)
 	case x86asm.XLATB:
-		return d.emitInstXLATB(f, inst)
+		return f.emitInstXLATB(inst)
 	case x86asm.XOR:
-		return d.emitInstXOR(f, inst)
+		return f.emitInstXOR(inst)
 	case x86asm.XORPD:
-		return d.emitInstXORPD(f, inst)
+		return f.emitInstXORPD(inst)
 	case x86asm.XORPS:
-		return d.emitInstXORPS(f, inst)
+		return f.emitInstXORPS(inst)
 	case x86asm.XRSTOR:
-		return d.emitInstXRSTOR(f, inst)
+		return f.emitInstXRSTOR(inst)
 	case x86asm.XRSTOR64:
-		return d.emitInstXRSTOR64(f, inst)
+		return f.emitInstXRSTOR64(inst)
 	case x86asm.XRSTORS:
-		return d.emitInstXRSTORS(f, inst)
+		return f.emitInstXRSTORS(inst)
 	case x86asm.XRSTORS64:
-		return d.emitInstXRSTORS64(f, inst)
+		return f.emitInstXRSTORS64(inst)
 	case x86asm.XSAVE:
-		return d.emitInstXSAVE(f, inst)
+		return f.emitInstXSAVE(inst)
 	case x86asm.XSAVE64:
-		return d.emitInstXSAVE64(f, inst)
+		return f.emitInstXSAVE64(inst)
 	case x86asm.XSAVEC:
-		return d.emitInstXSAVEC(f, inst)
+		return f.emitInstXSAVEC(inst)
 	case x86asm.XSAVEC64:
-		return d.emitInstXSAVEC64(f, inst)
+		return f.emitInstXSAVEC64(inst)
 	case x86asm.XSAVEOPT:
-		return d.emitInstXSAVEOPT(f, inst)
+		return f.emitInstXSAVEOPT(inst)
 	case x86asm.XSAVEOPT64:
-		return d.emitInstXSAVEOPT64(f, inst)
+		return f.emitInstXSAVEOPT64(inst)
 	case x86asm.XSAVES:
-		return d.emitInstXSAVES(f, inst)
+		return f.emitInstXSAVES(inst)
 	case x86asm.XSAVES64:
-		return d.emitInstXSAVES64(f, inst)
+		return f.emitInstXSAVES64(inst)
 	case x86asm.XSETBV:
-		return d.emitInstXSETBV(f, inst)
+		return f.emitInstXSETBV(inst)
 	case x86asm.XTEST:
-		return d.emitInstXTEST(f, inst)
+		return f.emitInstXTEST(inst)
 	default:
 		panic(fmt.Errorf("support for x86 instruction opcode %v not yet implemented", inst.Op))
 	}
@@ -1242,4894 +1251,4896 @@ func (d *disassembler) emitInst(f *function, inst *instruction) error {
 
 // emitInst translates the given x86 AAA instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstAAA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstAAA(inst *Inst) error {
+	panic("emitInstAAA: not yet implemented")
 }
 
 // --- [ AAD ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 AAD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstAAD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstAAD(inst *Inst) error {
+	panic("emitInstAAD: not yet implemented")
 }
 
 // --- [ AAM ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 AAM instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstAAM(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstAAM(inst *Inst) error {
+	panic("emitInstAAM: not yet implemented")
 }
 
 // --- [ AAS ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 AAS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstAAS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstAAS(inst *Inst) error {
+	panic("emitInstAAS: not yet implemented")
 }
 
 // --- [ ADC ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 ADC instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstADC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstADC(inst *Inst) error {
+	panic("emitInstADC: not yet implemented")
 }
 
 // --- [ ADD ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 ADD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstADD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstADD(inst *Inst) error {
+	panic("emitInstADD: not yet implemented")
 }
 
 // --- [ ADDPD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 ADDPD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstADDPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstADDPD(inst *Inst) error {
+	panic("emitInstADDPD: not yet implemented")
 }
 
 // --- [ ADDPS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 ADDPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstADDPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstADDPS(inst *Inst) error {
+	panic("emitInstADDPS: not yet implemented")
 }
 
 // --- [ ADDSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 ADDSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstADDSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstADDSD(inst *Inst) error {
+	panic("emitInstADDSD: not yet implemented")
 }
 
 // --- [ ADDSS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 ADDSS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstADDSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstADDSS(inst *Inst) error {
+	panic("emitInstADDSS: not yet implemented")
 }
 
 // --- [ ADDSUBPD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 ADDSUBPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstADDSUBPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstADDSUBPD(inst *Inst) error {
+	panic("emitInstADDSUBPD: not yet implemented")
 }
 
 // --- [ ADDSUBPS ] ------------------------------------------------------------
 
 // emitInst translates the given x86 ADDSUBPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstADDSUBPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstADDSUBPS(inst *Inst) error {
+	panic("emitInstADDSUBPS: not yet implemented")
 }
 
 // --- [ AESDEC ] --------------------------------------------------------------
 
 // emitInst translates the given x86 AESDEC instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstAESDEC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstAESDEC(inst *Inst) error {
+	panic("emitInstAESDEC: not yet implemented")
 }
 
 // --- [ AESDECLAST ] ----------------------------------------------------------
 
 // emitInst translates the given x86 AESDECLAST instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstAESDECLAST(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstAESDECLAST(inst *Inst) error {
+	panic("emitInstAESDECLAST: not yet implemented")
 }
 
 // --- [ AESENC ] --------------------------------------------------------------
 
 // emitInst translates the given x86 AESENC instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstAESENC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstAESENC(inst *Inst) error {
+	panic("emitInstAESENC: not yet implemented")
 }
 
 // --- [ AESENCLAST ] ----------------------------------------------------------
 
 // emitInst translates the given x86 AESENCLAST instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstAESENCLAST(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstAESENCLAST(inst *Inst) error {
+	panic("emitInstAESENCLAST: not yet implemented")
 }
 
 // --- [ AESIMC ] --------------------------------------------------------------
 
 // emitInst translates the given x86 AESIMC instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstAESIMC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstAESIMC(inst *Inst) error {
+	panic("emitInstAESIMC: not yet implemented")
 }
 
 // --- [ AESKEYGENASSIST ] -----------------------------------------------------
 
 // emitInst translates the given x86 AESKEYGENASSIST instruction to LLVM IR,
 // emitting code to f.
-func (d *disassembler) emitInstAESKEYGENASSIST(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstAESKEYGENASSIST(inst *Inst) error {
+	panic("emitInstAESKEYGENASSIST: not yet implemented")
 }
 
 // --- [ AND ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 AND instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstAND(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstAND(inst *Inst) error {
+	panic("emitInstAND: not yet implemented")
 }
 
 // --- [ ANDNPD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 ANDNPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstANDNPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstANDNPD(inst *Inst) error {
+	panic("emitInstANDNPD: not yet implemented")
 }
 
 // --- [ ANDNPS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 ANDNPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstANDNPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstANDNPS(inst *Inst) error {
+	panic("emitInstANDNPS: not yet implemented")
 }
 
 // --- [ ANDPD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 ANDPD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstANDPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstANDPD(inst *Inst) error {
+	panic("emitInstANDPD: not yet implemented")
 }
 
 // --- [ ANDPS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 ANDPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstANDPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstANDPS(inst *Inst) error {
+	panic("emitInstANDPS: not yet implemented")
 }
 
 // --- [ ARPL ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 ARPL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstARPL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstARPL(inst *Inst) error {
+	panic("emitInstARPL: not yet implemented")
 }
 
 // --- [ BLENDPD ] -------------------------------------------------------------
 
 // emitInst translates the given x86 BLENDPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstBLENDPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBLENDPD(inst *Inst) error {
+	panic("emitInstBLENDPD: not yet implemented")
 }
 
 // --- [ BLENDPS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 BLENDPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstBLENDPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBLENDPS(inst *Inst) error {
+	panic("emitInstBLENDPS: not yet implemented")
 }
 
 // --- [ BLENDVPD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 BLENDVPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstBLENDVPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBLENDVPD(inst *Inst) error {
+	panic("emitInstBLENDVPD: not yet implemented")
 }
 
 // --- [ BLENDVPS ] ------------------------------------------------------------
 
 // emitInst translates the given x86 BLENDVPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstBLENDVPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBLENDVPS(inst *Inst) error {
+	panic("emitInstBLENDVPS: not yet implemented")
 }
 
 // --- [ BOUND ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 BOUND instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstBOUND(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBOUND(inst *Inst) error {
+	panic("emitInstBOUND: not yet implemented")
 }
 
 // --- [ BSF ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 BSF instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstBSF(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBSF(inst *Inst) error {
+	panic("emitInstBSF: not yet implemented")
 }
 
 // --- [ BSR ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 BSR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstBSR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBSR(inst *Inst) error {
+	panic("emitInstBSR: not yet implemented")
 }
 
 // --- [ BSWAP ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 BSWAP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstBSWAP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBSWAP(inst *Inst) error {
+	panic("emitInstBSWAP: not yet implemented")
 }
 
 // --- [ BT ] ------------------------------------------------------------------
 
 // emitInst translates the given x86 BT instruction to LLVM IR, emitting code to
 // f.
-func (d *disassembler) emitInstBT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBT(inst *Inst) error {
+	panic("emitInstBT: not yet implemented")
 }
 
 // --- [ BTC ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 BTC instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstBTC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBTC(inst *Inst) error {
+	panic("emitInstBTC: not yet implemented")
 }
 
 // --- [ BTR ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 BTR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstBTR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBTR(inst *Inst) error {
+	panic("emitInstBTR: not yet implemented")
 }
 
 // --- [ BTS ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 BTS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstBTS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstBTS(inst *Inst) error {
+	panic("emitInstBTS: not yet implemented")
 }
 
 // --- [ CALL ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 CALL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCALL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCALL(inst *Inst) error {
+	panic("emitInstCALL: not yet implemented")
 }
 
 // --- [ CBW ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 CBW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCBW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCBW(inst *Inst) error {
+	panic("emitInstCBW: not yet implemented")
 }
 
 // --- [ CDQ ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 CDQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCDQ(inst *Inst) error {
+	panic("emitInstCDQ: not yet implemented")
 }
 
 // --- [ CDQE ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 CDQE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCDQE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCDQE(inst *Inst) error {
+	panic("emitInstCDQE: not yet implemented")
 }
 
 // --- [ CLC ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 CLC instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCLC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCLC(inst *Inst) error {
+	panic("emitInstCLC: not yet implemented")
 }
 
 // --- [ CLD ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 CLD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCLD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCLD(inst *Inst) error {
+	panic("emitInstCLD: not yet implemented")
 }
 
 // --- [ CLFLUSH ] -------------------------------------------------------------
 
 // emitInst translates the given x86 CLFLUSH instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCLFLUSH(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCLFLUSH(inst *Inst) error {
+	panic("emitInstCLFLUSH: not yet implemented")
 }
 
 // --- [ CLI ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 CLI instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCLI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCLI(inst *Inst) error {
+	panic("emitInstCLI: not yet implemented")
 }
 
 // --- [ CLTS ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 CLTS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCLTS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCLTS(inst *Inst) error {
+	panic("emitInstCLTS: not yet implemented")
 }
 
 // --- [ CMC ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 CMC instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMC(inst *Inst) error {
+	panic("emitInstCMC: not yet implemented")
 }
 
 // --- [ CMOVA ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVA instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMOVA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVA(inst *Inst) error {
+	panic("emitInstCMOVA: not yet implemented")
 }
 
 // --- [ CMOVAE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVAE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMOVAE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVAE(inst *Inst) error {
+	panic("emitInstCMOVAE: not yet implemented")
 }
 
 // --- [ CMOVB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMOVB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVB(inst *Inst) error {
+	panic("emitInstCMOVB: not yet implemented")
 }
 
 // --- [ CMOVBE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVBE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMOVBE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVBE(inst *Inst) error {
+	panic("emitInstCMOVBE: not yet implemented")
 }
 
 // --- [ CMOVE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMOVE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVE(inst *Inst) error {
+	panic("emitInstCMOVE: not yet implemented")
 }
 
 // --- [ CMOVG ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVG instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMOVG(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVG(inst *Inst) error {
+	panic("emitInstCMOVG: not yet implemented")
 }
 
 // --- [ CMOVGE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVGE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMOVGE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVGE(inst *Inst) error {
+	panic("emitInstCMOVGE: not yet implemented")
 }
 
 // --- [ CMOVL ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMOVL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVL(inst *Inst) error {
+	panic("emitInstCMOVL: not yet implemented")
 }
 
 // --- [ CMOVLE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVLE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMOVLE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVLE(inst *Inst) error {
+	panic("emitInstCMOVLE: not yet implemented")
 }
 
 // --- [ CMOVNE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVNE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMOVNE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVNE(inst *Inst) error {
+	panic("emitInstCMOVNE: not yet implemented")
 }
 
 // --- [ CMOVNO ] --------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVNO instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMOVNO(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVNO(inst *Inst) error {
+	panic("emitInstCMOVNO: not yet implemented")
 }
 
 // --- [ CMOVNP ] --------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVNP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMOVNP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVNP(inst *Inst) error {
+	panic("emitInstCMOVNP: not yet implemented")
 }
 
 // --- [ CMOVNS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVNS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMOVNS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVNS(inst *Inst) error {
+	panic("emitInstCMOVNS: not yet implemented")
 }
 
 // --- [ CMOVO ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVO instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMOVO(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVO(inst *Inst) error {
+	panic("emitInstCMOVO: not yet implemented")
 }
 
 // --- [ CMOVP ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMOVP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVP(inst *Inst) error {
+	panic("emitInstCMOVP: not yet implemented")
 }
 
 // --- [ CMOVS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMOVS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMOVS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMOVS(inst *Inst) error {
+	panic("emitInstCMOVS: not yet implemented")
 }
 
 // --- [ CMP ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 CMP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMP(inst *Inst) error {
+	panic("emitInstCMP: not yet implemented")
 }
 
 // --- [ CMPPD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMPPD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMPPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMPPD(inst *Inst) error {
+	panic("emitInstCMPPD: not yet implemented")
 }
 
 // --- [ CMPPS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMPPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMPPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMPPS(inst *Inst) error {
+	panic("emitInstCMPPS: not yet implemented")
 }
 
 // --- [ CMPSB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMPSB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMPSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMPSB(inst *Inst) error {
+	panic("emitInstCMPSB: not yet implemented")
 }
 
 // --- [ CMPSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMPSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMPSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMPSD(inst *Inst) error {
+	panic("emitInstCMPSD: not yet implemented")
 }
 
 // --- [ CMPSD_XMM ] -----------------------------------------------------------
 
 // emitInst translates the given x86 CMPSD_XMM instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMPSD_XMM(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMPSD_XMM(inst *Inst) error {
+	panic("emitInstCMPSD_XMM: not yet implemented")
 }
 
 // --- [ CMPSQ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMPSQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMPSQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMPSQ(inst *Inst) error {
+	panic("emitInstCMPSQ: not yet implemented")
 }
 
 // --- [ CMPSS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMPSS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMPSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMPSS(inst *Inst) error {
+	panic("emitInstCMPSS: not yet implemented")
 }
 
 // --- [ CMPSW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CMPSW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCMPSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMPSW(inst *Inst) error {
+	panic("emitInstCMPSW: not yet implemented")
 }
 
 // --- [ CMPXCHG ] -------------------------------------------------------------
 
 // emitInst translates the given x86 CMPXCHG instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMPXCHG(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMPXCHG(inst *Inst) error {
+	panic("emitInstCMPXCHG: not yet implemented")
 }
 
 // --- [ CMPXCHG16B ] ----------------------------------------------------------
 
 // emitInst translates the given x86 CMPXCHG16B instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMPXCHG16B(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMPXCHG16B(inst *Inst) error {
+	panic("emitInstCMPXCHG16B: not yet implemented")
 }
 
 // --- [ CMPXCHG8B ] -----------------------------------------------------------
 
 // emitInst translates the given x86 CMPXCHG8B instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCMPXCHG8B(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCMPXCHG8B(inst *Inst) error {
+	panic("emitInstCMPXCHG8B: not yet implemented")
 }
 
 // --- [ COMISD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 COMISD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCOMISD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCOMISD(inst *Inst) error {
+	panic("emitInstCOMISD: not yet implemented")
 }
 
 // --- [ COMISS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 COMISS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCOMISS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCOMISS(inst *Inst) error {
+	panic("emitInstCOMISS: not yet implemented")
 }
 
 // --- [ CPUID ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CPUID instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCPUID(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCPUID(inst *Inst) error {
+	panic("emitInstCPUID: not yet implemented")
 }
 
 // --- [ CQO ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 CQO instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCQO(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCQO(inst *Inst) error {
+	panic("emitInstCQO: not yet implemented")
 }
 
 // --- [ CRC32 ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 CRC32 instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCRC32(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCRC32(inst *Inst) error {
+	panic("emitInstCRC32: not yet implemented")
 }
 
 // --- [ CVTDQ2PD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTDQ2PD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTDQ2PD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTDQ2PD(inst *Inst) error {
+	panic("emitInstCVTDQ2PD: not yet implemented")
 }
 
 // --- [ CVTDQ2PS ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTDQ2PS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTDQ2PS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTDQ2PS(inst *Inst) error {
+	panic("emitInstCVTDQ2PS: not yet implemented")
 }
 
 // --- [ CVTPD2DQ ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTPD2DQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTPD2DQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTPD2DQ(inst *Inst) error {
+	panic("emitInstCVTPD2DQ: not yet implemented")
 }
 
 // --- [ CVTPD2PI ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTPD2PI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTPD2PI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTPD2PI(inst *Inst) error {
+	panic("emitInstCVTPD2PI: not yet implemented")
 }
 
 // --- [ CVTPD2PS ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTPD2PS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTPD2PS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTPD2PS(inst *Inst) error {
+	panic("emitInstCVTPD2PS: not yet implemented")
 }
 
 // --- [ CVTPI2PD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTPI2PD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTPI2PD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTPI2PD(inst *Inst) error {
+	panic("emitInstCVTPI2PD: not yet implemented")
 }
 
 // --- [ CVTPI2PS ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTPI2PS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTPI2PS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTPI2PS(inst *Inst) error {
+	panic("emitInstCVTPI2PS: not yet implemented")
 }
 
 // --- [ CVTPS2DQ ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTPS2DQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTPS2DQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTPS2DQ(inst *Inst) error {
+	panic("emitInstCVTPS2DQ: not yet implemented")
 }
 
 // --- [ CVTPS2PD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTPS2PD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTPS2PD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTPS2PD(inst *Inst) error {
+	panic("emitInstCVTPS2PD: not yet implemented")
 }
 
 // --- [ CVTPS2PI ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTPS2PI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTPS2PI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTPS2PI(inst *Inst) error {
+	panic("emitInstCVTPS2PI: not yet implemented")
 }
 
 // --- [ CVTSD2SI ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTSD2SI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTSD2SI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTSD2SI(inst *Inst) error {
+	panic("emitInstCVTSD2SI: not yet implemented")
 }
 
 // --- [ CVTSD2SS ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTSD2SS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTSD2SS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTSD2SS(inst *Inst) error {
+	panic("emitInstCVTSD2SS: not yet implemented")
 }
 
 // --- [ CVTSI2SD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTSI2SD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTSI2SD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTSI2SD(inst *Inst) error {
+	panic("emitInstCVTSI2SD: not yet implemented")
 }
 
 // --- [ CVTSI2SS ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTSI2SS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTSI2SS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTSI2SS(inst *Inst) error {
+	panic("emitInstCVTSI2SS: not yet implemented")
 }
 
 // --- [ CVTSS2SD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTSS2SD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTSS2SD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTSS2SD(inst *Inst) error {
+	panic("emitInstCVTSS2SD: not yet implemented")
 }
 
 // --- [ CVTSS2SI ] ------------------------------------------------------------
 
 // emitInst translates the given x86 CVTSS2SI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTSS2SI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTSS2SI(inst *Inst) error {
+	panic("emitInstCVTSS2SI: not yet implemented")
 }
 
 // --- [ CVTTPD2DQ ] -----------------------------------------------------------
 
 // emitInst translates the given x86 CVTTPD2DQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTTPD2DQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTTPD2DQ(inst *Inst) error {
+	panic("emitInstCVTTPD2DQ: not yet implemented")
 }
 
 // --- [ CVTTPD2PI ] -----------------------------------------------------------
 
 // emitInst translates the given x86 CVTTPD2PI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTTPD2PI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTTPD2PI(inst *Inst) error {
+	panic("emitInstCVTTPD2PI: not yet implemented")
 }
 
 // --- [ CVTTPS2DQ ] -----------------------------------------------------------
 
 // emitInst translates the given x86 CVTTPS2DQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTTPS2DQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTTPS2DQ(inst *Inst) error {
+	panic("emitInstCVTTPS2DQ: not yet implemented")
 }
 
 // --- [ CVTTPS2PI ] -----------------------------------------------------------
 
 // emitInst translates the given x86 CVTTPS2PI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTTPS2PI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTTPS2PI(inst *Inst) error {
+	panic("emitInstCVTTPS2PI: not yet implemented")
 }
 
 // --- [ CVTTSD2SI ] -----------------------------------------------------------
 
 // emitInst translates the given x86 CVTTSD2SI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTTSD2SI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTTSD2SI(inst *Inst) error {
+	panic("emitInstCVTTSD2SI: not yet implemented")
 }
 
 // --- [ CVTTSS2SI ] -----------------------------------------------------------
 
 // emitInst translates the given x86 CVTTSS2SI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstCVTTSS2SI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCVTTSS2SI(inst *Inst) error {
+	panic("emitInstCVTTSS2SI: not yet implemented")
 }
 
 // --- [ CWD ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 CWD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCWD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCWD(inst *Inst) error {
+	panic("emitInstCWD: not yet implemented")
 }
 
 // --- [ CWDE ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 CWDE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstCWDE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstCWDE(inst *Inst) error {
+	panic("emitInstCWDE: not yet implemented")
 }
 
 // --- [ DAA ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 DAA instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstDAA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstDAA(inst *Inst) error {
+	panic("emitInstDAA: not yet implemented")
 }
 
 // --- [ DAS ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 DAS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstDAS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstDAS(inst *Inst) error {
+	panic("emitInstDAS: not yet implemented")
 }
 
 // --- [ DEC ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 DEC instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstDEC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstDEC(inst *Inst) error {
+	panic("emitInstDEC: not yet implemented")
 }
 
 // --- [ DIV ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 DIV instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstDIV(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstDIV(inst *Inst) error {
+	panic("emitInstDIV: not yet implemented")
 }
 
 // --- [ DIVPD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 DIVPD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstDIVPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstDIVPD(inst *Inst) error {
+	panic("emitInstDIVPD: not yet implemented")
 }
 
 // --- [ DIVPS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 DIVPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstDIVPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstDIVPS(inst *Inst) error {
+	panic("emitInstDIVPS: not yet implemented")
 }
 
 // --- [ DIVSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 DIVSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstDIVSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstDIVSD(inst *Inst) error {
+	panic("emitInstDIVSD: not yet implemented")
 }
 
 // --- [ DIVSS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 DIVSS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstDIVSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstDIVSS(inst *Inst) error {
+	panic("emitInstDIVSS: not yet implemented")
 }
 
 // --- [ DPPD ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 DPPD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstDPPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstDPPD(inst *Inst) error {
+	panic("emitInstDPPD: not yet implemented")
 }
 
 // --- [ DPPS ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 DPPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstDPPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstDPPS(inst *Inst) error {
+	panic("emitInstDPPS: not yet implemented")
 }
 
 // --- [ EMMS ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 EMMS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstEMMS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstEMMS(inst *Inst) error {
+	panic("emitInstEMMS: not yet implemented")
 }
 
 // --- [ ENTER ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 ENTER instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstENTER(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstENTER(inst *Inst) error {
+	panic("emitInstENTER: not yet implemented")
 }
 
 // --- [ EXTRACTPS ] -----------------------------------------------------------
 
 // emitInst translates the given x86 EXTRACTPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstEXTRACTPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstEXTRACTPS(inst *Inst) error {
+	panic("emitInstEXTRACTPS: not yet implemented")
 }
 
 // --- [ F2XM1 ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 F2XM1 instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstF2XM1(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstF2XM1(inst *Inst) error {
+	panic("emitInstF2XM1: not yet implemented")
 }
 
 // --- [ FABS ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FABS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFABS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFABS(inst *Inst) error {
+	panic("emitInstFABS: not yet implemented")
 }
 
 // --- [ FADD ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FADD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFADD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFADD(inst *Inst) error {
+	panic("emitInstFADD: not yet implemented")
 }
 
 // --- [ FADDP ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FADDP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFADDP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFADDP(inst *Inst) error {
+	panic("emitInstFADDP: not yet implemented")
 }
 
 // --- [ FBLD ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FBLD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFBLD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFBLD(inst *Inst) error {
+	panic("emitInstFBLD: not yet implemented")
 }
 
 // --- [ FBSTP ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FBSTP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFBSTP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFBSTP(inst *Inst) error {
+	panic("emitInstFBSTP: not yet implemented")
 }
 
 // --- [ FCHS ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FCHS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFCHS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCHS(inst *Inst) error {
+	panic("emitInstFCHS: not yet implemented")
 }
 
 // --- [ FCMOVB ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FCMOVB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFCMOVB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCMOVB(inst *Inst) error {
+	panic("emitInstFCMOVB: not yet implemented")
 }
 
 // --- [ FCMOVBE ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FCMOVBE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFCMOVBE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCMOVBE(inst *Inst) error {
+	panic("emitInstFCMOVBE: not yet implemented")
 }
 
 // --- [ FCMOVE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FCMOVE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFCMOVE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCMOVE(inst *Inst) error {
+	panic("emitInstFCMOVE: not yet implemented")
 }
 
 // --- [ FCMOVNB ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FCMOVNB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFCMOVNB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCMOVNB(inst *Inst) error {
+	panic("emitInstFCMOVNB: not yet implemented")
 }
 
 // --- [ FCMOVNBE ] ------------------------------------------------------------
 
 // emitInst translates the given x86 FCMOVNBE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFCMOVNBE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCMOVNBE(inst *Inst) error {
+	panic("emitInstFCMOVNBE: not yet implemented")
 }
 
 // --- [ FCMOVNE ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FCMOVNE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFCMOVNE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCMOVNE(inst *Inst) error {
+	panic("emitInstFCMOVNE: not yet implemented")
 }
 
 // --- [ FCMOVNU ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FCMOVNU instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFCMOVNU(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCMOVNU(inst *Inst) error {
+	panic("emitInstFCMOVNU: not yet implemented")
 }
 
 // --- [ FCMOVU ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FCMOVU instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFCMOVU(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCMOVU(inst *Inst) error {
+	panic("emitInstFCMOVU: not yet implemented")
 }
 
 // --- [ FCOM ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FCOM instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFCOM(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCOM(inst *Inst) error {
+	panic("emitInstFCOM: not yet implemented")
 }
 
 // --- [ FCOMI ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FCOMI instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFCOMI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCOMI(inst *Inst) error {
+	panic("emitInstFCOMI: not yet implemented")
 }
 
 // --- [ FCOMIP ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FCOMIP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFCOMIP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCOMIP(inst *Inst) error {
+	panic("emitInstFCOMIP: not yet implemented")
 }
 
 // --- [ FCOMP ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FCOMP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFCOMP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCOMP(inst *Inst) error {
+	panic("emitInstFCOMP: not yet implemented")
 }
 
 // --- [ FCOMPP ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FCOMPP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFCOMPP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCOMPP(inst *Inst) error {
+	panic("emitInstFCOMPP: not yet implemented")
 }
 
 // --- [ FCOS ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FCOS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFCOS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFCOS(inst *Inst) error {
+	panic("emitInstFCOS: not yet implemented")
 }
 
 // --- [ FDECSTP ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FDECSTP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFDECSTP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFDECSTP(inst *Inst) error {
+	panic("emitInstFDECSTP: not yet implemented")
 }
 
 // --- [ FDIV ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FDIV instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFDIV(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFDIV(inst *Inst) error {
+	panic("emitInstFDIV: not yet implemented")
 }
 
 // --- [ FDIVP ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FDIVP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFDIVP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFDIVP(inst *Inst) error {
+	panic("emitInstFDIVP: not yet implemented")
 }
 
 // --- [ FDIVR ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FDIVR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFDIVR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFDIVR(inst *Inst) error {
+	panic("emitInstFDIVR: not yet implemented")
 }
 
 // --- [ FDIVRP ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FDIVRP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFDIVRP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFDIVRP(inst *Inst) error {
+	panic("emitInstFDIVRP: not yet implemented")
 }
 
 // --- [ FFREE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FFREE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFFREE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFFREE(inst *Inst) error {
+	panic("emitInstFFREE: not yet implemented")
 }
 
 // --- [ FFREEP ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FFREEP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFFREEP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFFREEP(inst *Inst) error {
+	panic("emitInstFFREEP: not yet implemented")
 }
 
 // --- [ FIADD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FIADD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFIADD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFIADD(inst *Inst) error {
+	panic("emitInstFIADD: not yet implemented")
 }
 
 // --- [ FICOM ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FICOM instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFICOM(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFICOM(inst *Inst) error {
+	panic("emitInstFICOM: not yet implemented")
 }
 
 // --- [ FICOMP ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FICOMP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFICOMP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFICOMP(inst *Inst) error {
+	panic("emitInstFICOMP: not yet implemented")
 }
 
 // --- [ FIDIV ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FIDIV instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFIDIV(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFIDIV(inst *Inst) error {
+	panic("emitInstFIDIV: not yet implemented")
 }
 
 // --- [ FIDIVR ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FIDIVR instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFIDIVR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFIDIVR(inst *Inst) error {
+	panic("emitInstFIDIVR: not yet implemented")
 }
 
 // --- [ FILD ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FILD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFILD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFILD(inst *Inst) error {
+	panic("emitInstFILD: not yet implemented")
 }
 
 // --- [ FIMUL ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FIMUL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFIMUL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFIMUL(inst *Inst) error {
+	panic("emitInstFIMUL: not yet implemented")
 }
 
 // --- [ FINCSTP ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FINCSTP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFINCSTP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFINCSTP(inst *Inst) error {
+	panic("emitInstFINCSTP: not yet implemented")
 }
 
 // --- [ FIST ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FIST instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFIST(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFIST(inst *Inst) error {
+	panic("emitInstFIST: not yet implemented")
 }
 
 // --- [ FISTP ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FISTP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFISTP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFISTP(inst *Inst) error {
+	panic("emitInstFISTP: not yet implemented")
 }
 
 // --- [ FISTTP ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FISTTP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFISTTP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFISTTP(inst *Inst) error {
+	panic("emitInstFISTTP: not yet implemented")
 }
 
 // --- [ FISUB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FISUB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFISUB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFISUB(inst *Inst) error {
+	panic("emitInstFISUB: not yet implemented")
 }
 
 // --- [ FISUBR ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FISUBR instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFISUBR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFISUBR(inst *Inst) error {
+	panic("emitInstFISUBR: not yet implemented")
 }
 
 // --- [ FLD ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 FLD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFLD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFLD(inst *Inst) error {
+	panic("emitInstFLD: not yet implemented")
 }
 
 // --- [ FLD1 ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FLD1 instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFLD1(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFLD1(inst *Inst) error {
+	panic("emitInstFLD1: not yet implemented")
 }
 
 // --- [ FLDCW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FLDCW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFLDCW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFLDCW(inst *Inst) error {
+	panic("emitInstFLDCW: not yet implemented")
 }
 
 // --- [ FLDENV ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FLDENV instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFLDENV(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFLDENV(inst *Inst) error {
+	panic("emitInstFLDENV: not yet implemented")
 }
 
 // --- [ FLDL2E ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FLDL2E instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFLDL2E(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFLDL2E(inst *Inst) error {
+	panic("emitInstFLDL2E: not yet implemented")
 }
 
 // --- [ FLDL2T ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FLDL2T instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFLDL2T(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFLDL2T(inst *Inst) error {
+	panic("emitInstFLDL2T: not yet implemented")
 }
 
 // --- [ FLDLG2 ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FLDLG2 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFLDLG2(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFLDLG2(inst *Inst) error {
+	panic("emitInstFLDLG2: not yet implemented")
 }
 
 // --- [ FLDLN2 ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FLDLN2 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFLDLN2(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFLDLN2(inst *Inst) error {
+	panic("emitInstFLDLN2: not yet implemented")
 }
 
 // --- [ FLDPI ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FLDPI instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFLDPI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFLDPI(inst *Inst) error {
+	panic("emitInstFLDPI: not yet implemented")
 }
 
 // --- [ FLDZ ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FLDZ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFLDZ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFLDZ(inst *Inst) error {
+	panic("emitInstFLDZ: not yet implemented")
 }
 
 // --- [ FMUL ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FMUL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFMUL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFMUL(inst *Inst) error {
+	panic("emitInstFMUL: not yet implemented")
 }
 
 // --- [ FMULP ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FMULP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFMULP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFMULP(inst *Inst) error {
+	panic("emitInstFMULP: not yet implemented")
 }
 
 // --- [ FNCLEX ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FNCLEX instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFNCLEX(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFNCLEX(inst *Inst) error {
+	panic("emitInstFNCLEX: not yet implemented")
 }
 
 // --- [ FNINIT ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FNINIT instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFNINIT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFNINIT(inst *Inst) error {
+	panic("emitInstFNINIT: not yet implemented")
 }
 
 // --- [ FNOP ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FNOP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFNOP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFNOP(inst *Inst) error {
+	panic("emitInstFNOP: not yet implemented")
 }
 
 // --- [ FNSAVE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FNSAVE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFNSAVE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFNSAVE(inst *Inst) error {
+	panic("emitInstFNSAVE: not yet implemented")
 }
 
 // --- [ FNSTCW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FNSTCW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFNSTCW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFNSTCW(inst *Inst) error {
+	panic("emitInstFNSTCW: not yet implemented")
 }
 
 // --- [ FNSTENV ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FNSTENV instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFNSTENV(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFNSTENV(inst *Inst) error {
+	panic("emitInstFNSTENV: not yet implemented")
 }
 
 // --- [ FNSTSW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FNSTSW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFNSTSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFNSTSW(inst *Inst) error {
+	panic("emitInstFNSTSW: not yet implemented")
 }
 
 // --- [ FPATAN ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FPATAN instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFPATAN(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFPATAN(inst *Inst) error {
+	panic("emitInstFPATAN: not yet implemented")
 }
 
 // --- [ FPREM ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FPREM instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFPREM(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFPREM(inst *Inst) error {
+	panic("emitInstFPREM: not yet implemented")
 }
 
 // --- [ FPREM1 ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FPREM1 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFPREM1(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFPREM1(inst *Inst) error {
+	panic("emitInstFPREM1: not yet implemented")
 }
 
 // --- [ FPTAN ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FPTAN instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFPTAN(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFPTAN(inst *Inst) error {
+	panic("emitInstFPTAN: not yet implemented")
 }
 
 // --- [ FRNDINT ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FRNDINT instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFRNDINT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFRNDINT(inst *Inst) error {
+	panic("emitInstFRNDINT: not yet implemented")
 }
 
 // --- [ FRSTOR ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FRSTOR instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFRSTOR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFRSTOR(inst *Inst) error {
+	panic("emitInstFRSTOR: not yet implemented")
 }
 
 // --- [ FSCALE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FSCALE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFSCALE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFSCALE(inst *Inst) error {
+	panic("emitInstFSCALE: not yet implemented")
 }
 
 // --- [ FSIN ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FSIN instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFSIN(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFSIN(inst *Inst) error {
+	panic("emitInstFSIN: not yet implemented")
 }
 
 // --- [ FSINCOS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FSINCOS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFSINCOS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFSINCOS(inst *Inst) error {
+	panic("emitInstFSINCOS: not yet implemented")
 }
 
 // --- [ FSQRT ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FSQRT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFSQRT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFSQRT(inst *Inst) error {
+	panic("emitInstFSQRT: not yet implemented")
 }
 
 // --- [ FST ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 FST instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFST(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFST(inst *Inst) error {
+	panic("emitInstFST: not yet implemented")
 }
 
 // --- [ FSTP ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FSTP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFSTP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFSTP(inst *Inst) error {
+	panic("emitInstFSTP: not yet implemented")
 }
 
 // --- [ FSUB ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FSUB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFSUB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFSUB(inst *Inst) error {
+	panic("emitInstFSUB: not yet implemented")
 }
 
 // --- [ FSUBP ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FSUBP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFSUBP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFSUBP(inst *Inst) error {
+	panic("emitInstFSUBP: not yet implemented")
 }
 
 // --- [ FSUBR ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FSUBR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFSUBR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFSUBR(inst *Inst) error {
+	panic("emitInstFSUBR: not yet implemented")
 }
 
 // --- [ FSUBRP ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FSUBRP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFSUBRP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFSUBRP(inst *Inst) error {
+	panic("emitInstFSUBRP: not yet implemented")
 }
 
 // --- [ FTST ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FTST instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFTST(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFTST(inst *Inst) error {
+	panic("emitInstFTST: not yet implemented")
 }
 
 // --- [ FUCOM ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FUCOM instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFUCOM(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFUCOM(inst *Inst) error {
+	panic("emitInstFUCOM: not yet implemented")
 }
 
 // --- [ FUCOMI ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FUCOMI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFUCOMI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFUCOMI(inst *Inst) error {
+	panic("emitInstFUCOMI: not yet implemented")
 }
 
 // --- [ FUCOMIP ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FUCOMIP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFUCOMIP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFUCOMIP(inst *Inst) error {
+	panic("emitInstFUCOMIP: not yet implemented")
 }
 
 // --- [ FUCOMP ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FUCOMP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFUCOMP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFUCOMP(inst *Inst) error {
+	panic("emitInstFUCOMP: not yet implemented")
 }
 
 // --- [ FUCOMPP ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FUCOMPP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFUCOMPP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFUCOMPP(inst *Inst) error {
+	panic("emitInstFUCOMPP: not yet implemented")
 }
 
 // --- [ FWAIT ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FWAIT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFWAIT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFWAIT(inst *Inst) error {
+	panic("emitInstFWAIT: not yet implemented")
 }
 
 // --- [ FXAM ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FXAM instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFXAM(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFXAM(inst *Inst) error {
+	panic("emitInstFXAM: not yet implemented")
 }
 
 // --- [ FXCH ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 FXCH instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFXCH(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFXCH(inst *Inst) error {
+	panic("emitInstFXCH: not yet implemented")
 }
 
 // --- [ FXRSTOR ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FXRSTOR instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFXRSTOR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFXRSTOR(inst *Inst) error {
+	panic("emitInstFXRSTOR: not yet implemented")
 }
 
 // --- [ FXRSTOR64 ] -----------------------------------------------------------
 
 // emitInst translates the given x86 FXRSTOR64 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFXRSTOR64(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFXRSTOR64(inst *Inst) error {
+	panic("emitInstFXRSTOR64: not yet implemented")
 }
 
 // --- [ FXSAVE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 FXSAVE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFXSAVE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFXSAVE(inst *Inst) error {
+	panic("emitInstFXSAVE: not yet implemented")
 }
 
 // --- [ FXSAVE64 ] ------------------------------------------------------------
 
 // emitInst translates the given x86 FXSAVE64 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFXSAVE64(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFXSAVE64(inst *Inst) error {
+	panic("emitInstFXSAVE64: not yet implemented")
 }
 
 // --- [ FXTRACT ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FXTRACT instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFXTRACT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFXTRACT(inst *Inst) error {
+	panic("emitInstFXTRACT: not yet implemented")
 }
 
 // --- [ FYL2X ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 FYL2X instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstFYL2X(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFYL2X(inst *Inst) error {
+	panic("emitInstFYL2X: not yet implemented")
 }
 
 // --- [ FYL2XP1 ] -------------------------------------------------------------
 
 // emitInst translates the given x86 FYL2XP1 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstFYL2XP1(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstFYL2XP1(inst *Inst) error {
+	panic("emitInstFYL2XP1: not yet implemented")
 }
 
 // --- [ HADDPD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 HADDPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstHADDPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstHADDPD(inst *Inst) error {
+	panic("emitInstHADDPD: not yet implemented")
 }
 
 // --- [ HADDPS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 HADDPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstHADDPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstHADDPS(inst *Inst) error {
+	panic("emitInstHADDPS: not yet implemented")
 }
 
 // --- [ HLT ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 HLT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstHLT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstHLT(inst *Inst) error {
+	panic("emitInstHLT: not yet implemented")
 }
 
 // --- [ HSUBPD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 HSUBPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstHSUBPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstHSUBPD(inst *Inst) error {
+	panic("emitInstHSUBPD: not yet implemented")
 }
 
 // --- [ HSUBPS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 HSUBPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstHSUBPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstHSUBPS(inst *Inst) error {
+	panic("emitInstHSUBPS: not yet implemented")
 }
 
 // --- [ ICEBP ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 ICEBP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstICEBP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstICEBP(inst *Inst) error {
+	panic("emitInstICEBP: not yet implemented")
 }
 
 // --- [ IDIV ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 IDIV instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstIDIV(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstIDIV(inst *Inst) error {
+	panic("emitInstIDIV: not yet implemented")
 }
 
 // --- [ IMUL ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 IMUL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstIMUL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstIMUL(inst *Inst) error {
+	panic("emitInstIMUL: not yet implemented")
 }
 
 // --- [ IN ] ------------------------------------------------------------------
 
 // emitInst translates the given x86 IN instruction to LLVM IR, emitting code to
 // f.
-func (d *disassembler) emitInstIN(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstIN(inst *Inst) error {
+	panic("emitInstIN: not yet implemented")
 }
 
 // --- [ INC ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 INC instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstINC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstINC(inst *Inst) error {
+	panic("emitInstINC: not yet implemented")
 }
 
 // --- [ INSB ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 INSB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstINSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstINSB(inst *Inst) error {
+	panic("emitInstINSB: not yet implemented")
 }
 
 // --- [ INSD ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 INSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstINSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstINSD(inst *Inst) error {
+	panic("emitInstINSD: not yet implemented")
 }
 
 // --- [ INSERTPS ] ------------------------------------------------------------
 
 // emitInst translates the given x86 INSERTPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstINSERTPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstINSERTPS(inst *Inst) error {
+	panic("emitInstINSERTPS: not yet implemented")
 }
 
 // --- [ INSW ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 INSW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstINSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstINSW(inst *Inst) error {
+	panic("emitInstINSW: not yet implemented")
 }
 
 // --- [ INT ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 INT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstINT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstINT(inst *Inst) error {
+	panic("emitInstINT: not yet implemented")
 }
 
 // --- [ INTO ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 INTO instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstINTO(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstINTO(inst *Inst) error {
+	panic("emitInstINTO: not yet implemented")
 }
 
 // --- [ INVD ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 INVD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstINVD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstINVD(inst *Inst) error {
+	panic("emitInstINVD: not yet implemented")
 }
 
 // --- [ INVLPG ] --------------------------------------------------------------
 
 // emitInst translates the given x86 INVLPG instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstINVLPG(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstINVLPG(inst *Inst) error {
+	panic("emitInstINVLPG: not yet implemented")
 }
 
 // --- [ INVPCID ] -------------------------------------------------------------
 
 // emitInst translates the given x86 INVPCID instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstINVPCID(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstINVPCID(inst *Inst) error {
+	panic("emitInstINVPCID: not yet implemented")
 }
 
 // --- [ IRET ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 IRET instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstIRET(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstIRET(inst *Inst) error {
+	panic("emitInstIRET: not yet implemented")
 }
 
 // --- [ IRETD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 IRETD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstIRETD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstIRETD(inst *Inst) error {
+	panic("emitInstIRETD: not yet implemented")
 }
 
 // --- [ IRETQ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 IRETQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstIRETQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstIRETQ(inst *Inst) error {
+	panic("emitInstIRETQ: not yet implemented")
 }
 
 // --- [ JA ] ------------------------------------------------------------------
 
 // emitInst translates the given x86 JA instruction to LLVM IR, emitting code to
 // f.
-func (d *disassembler) emitInstJA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJA(inst *Inst) error {
+	panic("emitInstJA: not yet implemented")
 }
 
 // --- [ JAE ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 JAE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJAE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJAE(inst *Inst) error {
+	panic("emitInstJAE: not yet implemented")
 }
 
 // --- [ JB ] ------------------------------------------------------------------
 
 // emitInst translates the given x86 JB instruction to LLVM IR, emitting code to
 // f.
-func (d *disassembler) emitInstJB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJB(inst *Inst) error {
+	panic("emitInstJB: not yet implemented")
 }
 
 // --- [ JBE ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 JBE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJBE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJBE(inst *Inst) error {
+	panic("emitInstJBE: not yet implemented")
 }
 
 // --- [ JCXZ ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 JCXZ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJCXZ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJCXZ(inst *Inst) error {
+	panic("emitInstJCXZ: not yet implemented")
 }
 
 // --- [ JE ] ------------------------------------------------------------------
 
 // emitInst translates the given x86 JE instruction to LLVM IR, emitting code to
 // f.
-func (d *disassembler) emitInstJE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJE(inst *Inst) error {
+	panic("emitInstJE: not yet implemented")
 }
 
 // --- [ JECXZ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 JECXZ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJECXZ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJECXZ(inst *Inst) error {
+	panic("emitInstJECXZ: not yet implemented")
 }
 
 // --- [ JG ] ------------------------------------------------------------------
 
 // emitInst translates the given x86 JG instruction to LLVM IR, emitting code to
 // f.
-func (d *disassembler) emitInstJG(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJG(inst *Inst) error {
+	panic("emitInstJG: not yet implemented")
 }
 
 // --- [ JGE ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 JGE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJGE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJGE(inst *Inst) error {
+	panic("emitInstJGE: not yet implemented")
 }
 
 // --- [ JL ] ------------------------------------------------------------------
 
 // emitInst translates the given x86 JL instruction to LLVM IR, emitting code to
 // f.
-func (d *disassembler) emitInstJL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJL(inst *Inst) error {
+	panic("emitInstJL: not yet implemented")
 }
 
 // --- [ JLE ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 JLE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJLE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJLE(inst *Inst) error {
+	panic("emitInstJLE: not yet implemented")
 }
 
 // --- [ JMP ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 JMP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJMP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJMP(inst *Inst) error {
+	panic("emitInstJMP: not yet implemented")
 }
 
 // --- [ JNE ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 JNE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJNE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJNE(inst *Inst) error {
+	panic("emitInstJNE: not yet implemented")
 }
 
 // --- [ JNO ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 JNO instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJNO(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJNO(inst *Inst) error {
+	panic("emitInstJNO: not yet implemented")
 }
 
 // --- [ JNP ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 JNP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJNP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJNP(inst *Inst) error {
+	panic("emitInstJNP: not yet implemented")
 }
 
 // --- [ JNS ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 JNS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJNS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJNS(inst *Inst) error {
+	panic("emitInstJNS: not yet implemented")
 }
 
 // --- [ JO ] ------------------------------------------------------------------
 
 // emitInst translates the given x86 JO instruction to LLVM IR, emitting code to
 // f.
-func (d *disassembler) emitInstJO(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJO(inst *Inst) error {
+	panic("emitInstJO: not yet implemented")
 }
 
 // --- [ JP ] ------------------------------------------------------------------
 
 // emitInst translates the given x86 JP instruction to LLVM IR, emitting code to
 // f.
-func (d *disassembler) emitInstJP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJP(inst *Inst) error {
+	panic("emitInstJP: not yet implemented")
 }
 
 // --- [ JRCXZ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 JRCXZ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstJRCXZ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJRCXZ(inst *Inst) error {
+	panic("emitInstJRCXZ: not yet implemented")
 }
 
 // --- [ JS ] ------------------------------------------------------------------
 
 // emitInst translates the given x86 JS instruction to LLVM IR, emitting code to
 // f.
-func (d *disassembler) emitInstJS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstJS(inst *Inst) error {
+	panic("emitInstJS: not yet implemented")
 }
 
 // --- [ LAHF ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 LAHF instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLAHF(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLAHF(inst *Inst) error {
+	panic("emitInstLAHF: not yet implemented")
 }
 
 // --- [ LAR ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 LAR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLAR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLAR(inst *Inst) error {
+	panic("emitInstLAR: not yet implemented")
 }
 
 // --- [ LCALL ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 LCALL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLCALL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLCALL(inst *Inst) error {
+	panic("emitInstLCALL: not yet implemented")
 }
 
 // --- [ LDDQU ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 LDDQU instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLDDQU(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLDDQU(inst *Inst) error {
+	panic("emitInstLDDQU: not yet implemented")
 }
 
 // --- [ LDMXCSR ] -------------------------------------------------------------
 
 // emitInst translates the given x86 LDMXCSR instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstLDMXCSR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLDMXCSR(inst *Inst) error {
+	panic("emitInstLDMXCSR: not yet implemented")
 }
 
 // --- [ LDS ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 LDS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLDS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLDS(inst *Inst) error {
+	panic("emitInstLDS: not yet implemented")
 }
 
 // --- [ LEA ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 LEA instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLEA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLEA(inst *Inst) error {
+	panic("emitInstLEA: not yet implemented")
 }
 
 // --- [ LEAVE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 LEAVE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLEAVE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLEAVE(inst *Inst) error {
+	panic("emitInstLEAVE: not yet implemented")
 }
 
 // --- [ LES ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 LES instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLES(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLES(inst *Inst) error {
+	panic("emitInstLES: not yet implemented")
 }
 
 // --- [ LFENCE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 LFENCE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstLFENCE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLFENCE(inst *Inst) error {
+	panic("emitInstLFENCE: not yet implemented")
 }
 
 // --- [ LFS ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 LFS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLFS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLFS(inst *Inst) error {
+	panic("emitInstLFS: not yet implemented")
 }
 
 // --- [ LGDT ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 LGDT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLGDT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLGDT(inst *Inst) error {
+	panic("emitInstLGDT: not yet implemented")
 }
 
 // --- [ LGS ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 LGS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLGS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLGS(inst *Inst) error {
+	panic("emitInstLGS: not yet implemented")
 }
 
 // --- [ LIDT ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 LIDT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLIDT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLIDT(inst *Inst) error {
+	panic("emitInstLIDT: not yet implemented")
 }
 
 // --- [ LJMP ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 LJMP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLJMP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLJMP(inst *Inst) error {
+	panic("emitInstLJMP: not yet implemented")
 }
 
 // --- [ LLDT ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 LLDT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLLDT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLLDT(inst *Inst) error {
+	panic("emitInstLLDT: not yet implemented")
 }
 
 // --- [ LMSW ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 LMSW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLMSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLMSW(inst *Inst) error {
+	panic("emitInstLMSW: not yet implemented")
 }
 
 // --- [ LODSB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 LODSB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLODSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLODSB(inst *Inst) error {
+	panic("emitInstLODSB: not yet implemented")
 }
 
 // --- [ LODSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 LODSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLODSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLODSD(inst *Inst) error {
+	panic("emitInstLODSD: not yet implemented")
 }
 
 // --- [ LODSQ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 LODSQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLODSQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLODSQ(inst *Inst) error {
+	panic("emitInstLODSQ: not yet implemented")
 }
 
 // --- [ LODSW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 LODSW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLODSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLODSW(inst *Inst) error {
+	panic("emitInstLODSW: not yet implemented")
 }
 
 // --- [ LOOP ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 LOOP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLOOP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLOOP(inst *Inst) error {
+	panic("emitInstLOOP: not yet implemented")
 }
 
 // --- [ LOOPE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 LOOPE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLOOPE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLOOPE(inst *Inst) error {
+	panic("emitInstLOOPE: not yet implemented")
 }
 
 // --- [ LOOPNE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 LOOPNE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstLOOPNE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLOOPNE(inst *Inst) error {
+	panic("emitInstLOOPNE: not yet implemented")
 }
 
 // --- [ LRET ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 LRET instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLRET(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLRET(inst *Inst) error {
+	panic("emitInstLRET: not yet implemented")
 }
 
 // --- [ LSL ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 LSL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLSL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLSL(inst *Inst) error {
+	panic("emitInstLSL: not yet implemented")
 }
 
 // --- [ LSS ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 LSS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLSS(inst *Inst) error {
+	panic("emitInstLSS: not yet implemented")
 }
 
 // --- [ LTR ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 LTR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLTR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLTR(inst *Inst) error {
+	panic("emitInstLTR: not yet implemented")
 }
 
 // --- [ LZCNT ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 LZCNT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstLZCNT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstLZCNT(inst *Inst) error {
+	panic("emitInstLZCNT: not yet implemented")
 }
 
 // --- [ MASKMOVDQU ] ----------------------------------------------------------
 
 // emitInst translates the given x86 MASKMOVDQU instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMASKMOVDQU(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMASKMOVDQU(inst *Inst) error {
+	panic("emitInstMASKMOVDQU: not yet implemented")
 }
 
 // --- [ MASKMOVQ ] ------------------------------------------------------------
 
 // emitInst translates the given x86 MASKMOVQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMASKMOVQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMASKMOVQ(inst *Inst) error {
+	panic("emitInstMASKMOVQ: not yet implemented")
 }
 
 // --- [ MAXPD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MAXPD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMAXPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMAXPD(inst *Inst) error {
+	panic("emitInstMAXPD: not yet implemented")
 }
 
 // --- [ MAXPS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MAXPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMAXPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMAXPS(inst *Inst) error {
+	panic("emitInstMAXPS: not yet implemented")
 }
 
 // --- [ MAXSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MAXSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMAXSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMAXSD(inst *Inst) error {
+	panic("emitInstMAXSD: not yet implemented")
 }
 
 // --- [ MAXSS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MAXSS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMAXSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMAXSS(inst *Inst) error {
+	panic("emitInstMAXSS: not yet implemented")
 }
 
 // --- [ MFENCE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MFENCE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMFENCE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMFENCE(inst *Inst) error {
+	panic("emitInstMFENCE: not yet implemented")
 }
 
 // --- [ MINPD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MINPD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMINPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMINPD(inst *Inst) error {
+	panic("emitInstMINPD: not yet implemented")
 }
 
 // --- [ MINPS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MINPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMINPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMINPS(inst *Inst) error {
+	panic("emitInstMINPS: not yet implemented")
 }
 
 // --- [ MINSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MINSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMINSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMINSD(inst *Inst) error {
+	panic("emitInstMINSD: not yet implemented")
 }
 
 // --- [ MINSS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MINSS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMINSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMINSS(inst *Inst) error {
+	panic("emitInstMINSS: not yet implemented")
 }
 
 // --- [ MONITOR ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MONITOR instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMONITOR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMONITOR(inst *Inst) error {
+	panic("emitInstMONITOR: not yet implemented")
 }
 
 // --- [ MOV ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 MOV instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMOV(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOV(inst *Inst) error {
+	src := f.useArg(inst.Arg(1))
+	f.defArg(inst.Arg(0), src)
+	return nil
 }
 
 // --- [ MOVAPD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVAPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVAPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVAPD(inst *Inst) error {
+	panic("emitInstMOVAPD: not yet implemented")
 }
 
 // --- [ MOVAPS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVAPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVAPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVAPS(inst *Inst) error {
+	panic("emitInstMOVAPS: not yet implemented")
 }
 
 // --- [ MOVBE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MOVBE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMOVBE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVBE(inst *Inst) error {
+	panic("emitInstMOVBE: not yet implemented")
 }
 
 // --- [ MOVD ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 MOVD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMOVD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVD(inst *Inst) error {
+	panic("emitInstMOVD: not yet implemented")
 }
 
 // --- [ MOVDDUP ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MOVDDUP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVDDUP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVDDUP(inst *Inst) error {
+	panic("emitInstMOVDDUP: not yet implemented")
 }
 
 // --- [ MOVDQ2Q ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MOVDQ2Q instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVDQ2Q(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVDQ2Q(inst *Inst) error {
+	panic("emitInstMOVDQ2Q: not yet implemented")
 }
 
 // --- [ MOVDQA ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVDQA instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVDQA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVDQA(inst *Inst) error {
+	panic("emitInstMOVDQA: not yet implemented")
 }
 
 // --- [ MOVDQU ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVDQU instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVDQU(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVDQU(inst *Inst) error {
+	panic("emitInstMOVDQU: not yet implemented")
 }
 
 // --- [ MOVHLPS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MOVHLPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVHLPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVHLPS(inst *Inst) error {
+	panic("emitInstMOVHLPS: not yet implemented")
 }
 
 // --- [ MOVHPD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVHPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVHPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVHPD(inst *Inst) error {
+	panic("emitInstMOVHPD: not yet implemented")
 }
 
 // --- [ MOVHPS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVHPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVHPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVHPS(inst *Inst) error {
+	panic("emitInstMOVHPS: not yet implemented")
 }
 
 // --- [ MOVLHPS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MOVLHPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVLHPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVLHPS(inst *Inst) error {
+	panic("emitInstMOVLHPS: not yet implemented")
 }
 
 // --- [ MOVLPD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVLPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVLPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVLPD(inst *Inst) error {
+	panic("emitInstMOVLPD: not yet implemented")
 }
 
 // --- [ MOVLPS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVLPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVLPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVLPS(inst *Inst) error {
+	panic("emitInstMOVLPS: not yet implemented")
 }
 
 // --- [ MOVMSKPD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 MOVMSKPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVMSKPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVMSKPD(inst *Inst) error {
+	panic("emitInstMOVMSKPD: not yet implemented")
 }
 
 // --- [ MOVMSKPS ] ------------------------------------------------------------
 
 // emitInst translates the given x86 MOVMSKPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVMSKPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVMSKPS(inst *Inst) error {
+	panic("emitInstMOVMSKPS: not yet implemented")
 }
 
 // --- [ MOVNTDQ ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MOVNTDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVNTDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVNTDQ(inst *Inst) error {
+	panic("emitInstMOVNTDQ: not yet implemented")
 }
 
 // --- [ MOVNTDQA ] ------------------------------------------------------------
 
 // emitInst translates the given x86 MOVNTDQA instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVNTDQA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVNTDQA(inst *Inst) error {
+	panic("emitInstMOVNTDQA: not yet implemented")
 }
 
 // --- [ MOVNTI ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVNTI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVNTI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVNTI(inst *Inst) error {
+	panic("emitInstMOVNTI: not yet implemented")
 }
 
 // --- [ MOVNTPD ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MOVNTPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVNTPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVNTPD(inst *Inst) error {
+	panic("emitInstMOVNTPD: not yet implemented")
 }
 
 // --- [ MOVNTPS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MOVNTPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVNTPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVNTPS(inst *Inst) error {
+	panic("emitInstMOVNTPS: not yet implemented")
 }
 
 // --- [ MOVNTQ ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVNTQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVNTQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVNTQ(inst *Inst) error {
+	panic("emitInstMOVNTQ: not yet implemented")
 }
 
 // --- [ MOVNTSD ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MOVNTSD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVNTSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVNTSD(inst *Inst) error {
+	panic("emitInstMOVNTSD: not yet implemented")
 }
 
 // --- [ MOVNTSS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MOVNTSS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVNTSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVNTSS(inst *Inst) error {
+	panic("emitInstMOVNTSS: not yet implemented")
 }
 
 // --- [ MOVQ ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 MOVQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMOVQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVQ(inst *Inst) error {
+	panic("emitInstMOVQ: not yet implemented")
 }
 
 // --- [ MOVQ2DQ ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MOVQ2DQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVQ2DQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVQ2DQ(inst *Inst) error {
+	panic("emitInstMOVQ2DQ: not yet implemented")
 }
 
 // --- [ MOVSB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MOVSB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMOVSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVSB(inst *Inst) error {
+	panic("emitInstMOVSB: not yet implemented")
 }
 
 // --- [ MOVSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MOVSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMOVSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVSD(inst *Inst) error {
+	panic("emitInstMOVSD: not yet implemented")
 }
 
 // --- [ MOVSD_XMM ] -----------------------------------------------------------
 
 // emitInst translates the given x86 MOVSD_XMM instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVSD_XMM(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVSD_XMM(inst *Inst) error {
+	panic("emitInstMOVSD_XMM: not yet implemented")
 }
 
 // --- [ MOVSHDUP ] ------------------------------------------------------------
 
 // emitInst translates the given x86 MOVSHDUP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVSHDUP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVSHDUP(inst *Inst) error {
+	panic("emitInstMOVSHDUP: not yet implemented")
 }
 
 // --- [ MOVSLDUP ] ------------------------------------------------------------
 
 // emitInst translates the given x86 MOVSLDUP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVSLDUP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVSLDUP(inst *Inst) error {
+	panic("emitInstMOVSLDUP: not yet implemented")
 }
 
 // --- [ MOVSQ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MOVSQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMOVSQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVSQ(inst *Inst) error {
+	panic("emitInstMOVSQ: not yet implemented")
 }
 
 // --- [ MOVSS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MOVSS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMOVSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVSS(inst *Inst) error {
+	panic("emitInstMOVSS: not yet implemented")
 }
 
 // --- [ MOVSW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MOVSW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMOVSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVSW(inst *Inst) error {
+	panic("emitInstMOVSW: not yet implemented")
 }
 
 // --- [ MOVSX ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MOVSX instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMOVSX(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVSX(inst *Inst) error {
+	panic("emitInstMOVSX: not yet implemented")
 }
 
 // --- [ MOVSXD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVSXD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVSXD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVSXD(inst *Inst) error {
+	panic("emitInstMOVSXD: not yet implemented")
 }
 
 // --- [ MOVUPD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVUPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVUPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVUPD(inst *Inst) error {
+	panic("emitInstMOVUPD: not yet implemented")
 }
 
 // --- [ MOVUPS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 MOVUPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMOVUPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVUPS(inst *Inst) error {
+	panic("emitInstMOVUPS: not yet implemented")
 }
 
 // --- [ MOVZX ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MOVZX instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMOVZX(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMOVZX(inst *Inst) error {
+	panic("emitInstMOVZX: not yet implemented")
 }
 
 // --- [ MPSADBW ] -------------------------------------------------------------
 
 // emitInst translates the given x86 MPSADBW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstMPSADBW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMPSADBW(inst *Inst) error {
+	panic("emitInstMPSADBW: not yet implemented")
 }
 
 // --- [ MUL ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 MUL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMUL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMUL(inst *Inst) error {
+	panic("emitInstMUL: not yet implemented")
 }
 
 // --- [ MULPD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MULPD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMULPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMULPD(inst *Inst) error {
+	panic("emitInstMULPD: not yet implemented")
 }
 
 // --- [ MULPS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MULPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMULPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMULPS(inst *Inst) error {
+	panic("emitInstMULPS: not yet implemented")
 }
 
 // --- [ MULSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MULSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMULSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMULSD(inst *Inst) error {
+	panic("emitInstMULSD: not yet implemented")
 }
 
 // --- [ MULSS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MULSS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMULSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMULSS(inst *Inst) error {
+	panic("emitInstMULSS: not yet implemented")
 }
 
 // --- [ MWAIT ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 MWAIT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstMWAIT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstMWAIT(inst *Inst) error {
+	panic("emitInstMWAIT: not yet implemented")
 }
 
 // --- [ NEG ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 NEG instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstNEG(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstNEG(inst *Inst) error {
+	panic("emitInstNEG: not yet implemented")
 }
 
 // --- [ NOP ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 NOP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstNOP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstNOP(inst *Inst) error {
+	panic("emitInstNOP: not yet implemented")
 }
 
 // --- [ NOT ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 NOT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstNOT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstNOT(inst *Inst) error {
+	panic("emitInstNOT: not yet implemented")
 }
 
 // --- [ OR ] ------------------------------------------------------------------
 
 // emitInst translates the given x86 OR instruction to LLVM IR, emitting code to
 // f.
-func (d *disassembler) emitInstOR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstOR(inst *Inst) error {
+	panic("emitInstOR: not yet implemented")
 }
 
 // --- [ ORPD ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 ORPD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstORPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstORPD(inst *Inst) error {
+	panic("emitInstORPD: not yet implemented")
 }
 
 // --- [ ORPS ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 ORPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstORPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstORPS(inst *Inst) error {
+	panic("emitInstORPS: not yet implemented")
 }
 
 // --- [ OUT ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 OUT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstOUT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstOUT(inst *Inst) error {
+	panic("emitInstOUT: not yet implemented")
 }
 
 // --- [ OUTSB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 OUTSB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstOUTSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstOUTSB(inst *Inst) error {
+	panic("emitInstOUTSB: not yet implemented")
 }
 
 // --- [ OUTSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 OUTSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstOUTSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstOUTSD(inst *Inst) error {
+	panic("emitInstOUTSD: not yet implemented")
 }
 
 // --- [ OUTSW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 OUTSW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstOUTSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstOUTSW(inst *Inst) error {
+	panic("emitInstOUTSW: not yet implemented")
 }
 
 // --- [ PABSB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PABSB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPABSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPABSB(inst *Inst) error {
+	panic("emitInstPABSB: not yet implemented")
 }
 
 // --- [ PABSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PABSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPABSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPABSD(inst *Inst) error {
+	panic("emitInstPABSD: not yet implemented")
 }
 
 // --- [ PABSW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PABSW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPABSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPABSW(inst *Inst) error {
+	panic("emitInstPABSW: not yet implemented")
 }
 
 // --- [ PACKSSDW ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PACKSSDW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPACKSSDW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPACKSSDW(inst *Inst) error {
+	panic("emitInstPACKSSDW: not yet implemented")
 }
 
 // --- [ PACKSSWB ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PACKSSWB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPACKSSWB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPACKSSWB(inst *Inst) error {
+	panic("emitInstPACKSSWB: not yet implemented")
 }
 
 // --- [ PACKUSDW ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PACKUSDW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPACKUSDW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPACKUSDW(inst *Inst) error {
+	panic("emitInstPACKUSDW: not yet implemented")
 }
 
 // --- [ PACKUSWB ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PACKUSWB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPACKUSWB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPACKUSWB(inst *Inst) error {
+	panic("emitInstPACKUSWB: not yet implemented")
 }
 
 // --- [ PADDB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PADDB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPADDB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPADDB(inst *Inst) error {
+	panic("emitInstPADDB: not yet implemented")
 }
 
 // --- [ PADDD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PADDD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPADDD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPADDD(inst *Inst) error {
+	panic("emitInstPADDD: not yet implemented")
 }
 
 // --- [ PADDQ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PADDQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPADDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPADDQ(inst *Inst) error {
+	panic("emitInstPADDQ: not yet implemented")
 }
 
 // --- [ PADDSB ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PADDSB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPADDSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPADDSB(inst *Inst) error {
+	panic("emitInstPADDSB: not yet implemented")
 }
 
 // --- [ PADDSW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PADDSW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPADDSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPADDSW(inst *Inst) error {
+	panic("emitInstPADDSW: not yet implemented")
 }
 
 // --- [ PADDUSB ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PADDUSB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPADDUSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPADDUSB(inst *Inst) error {
+	panic("emitInstPADDUSB: not yet implemented")
 }
 
 // --- [ PADDUSW ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PADDUSW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPADDUSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPADDUSW(inst *Inst) error {
+	panic("emitInstPADDUSW: not yet implemented")
 }
 
 // --- [ PADDW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PADDW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPADDW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPADDW(inst *Inst) error {
+	panic("emitInstPADDW: not yet implemented")
 }
 
 // --- [ PALIGNR ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PALIGNR instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPALIGNR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPALIGNR(inst *Inst) error {
+	panic("emitInstPALIGNR: not yet implemented")
 }
 
 // --- [ PAND ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 PAND instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPAND(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPAND(inst *Inst) error {
+	panic("emitInstPAND: not yet implemented")
 }
 
 // --- [ PANDN ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PANDN instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPANDN(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPANDN(inst *Inst) error {
+	panic("emitInstPANDN: not yet implemented")
 }
 
 // --- [ PAUSE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PAUSE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPAUSE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPAUSE(inst *Inst) error {
+	panic("emitInstPAUSE: not yet implemented")
 }
 
 // --- [ PAVGB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PAVGB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPAVGB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPAVGB(inst *Inst) error {
+	panic("emitInstPAVGB: not yet implemented")
 }
 
 // --- [ PAVGW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PAVGW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPAVGW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPAVGW(inst *Inst) error {
+	panic("emitInstPAVGW: not yet implemented")
 }
 
 // --- [ PBLENDVB ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PBLENDVB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPBLENDVB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPBLENDVB(inst *Inst) error {
+	panic("emitInstPBLENDVB: not yet implemented")
 }
 
 // --- [ PBLENDW ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PBLENDW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPBLENDW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPBLENDW(inst *Inst) error {
+	panic("emitInstPBLENDW: not yet implemented")
 }
 
 // --- [ PCLMULQDQ ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PCLMULQDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCLMULQDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCLMULQDQ(inst *Inst) error {
+	panic("emitInstPCLMULQDQ: not yet implemented")
 }
 
 // --- [ PCMPEQB ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PCMPEQB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPEQB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPEQB(inst *Inst) error {
+	panic("emitInstPCMPEQB: not yet implemented")
 }
 
 // --- [ PCMPEQD ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PCMPEQD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPEQD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPEQD(inst *Inst) error {
+	panic("emitInstPCMPEQD: not yet implemented")
 }
 
 // --- [ PCMPEQQ ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PCMPEQQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPEQQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPEQQ(inst *Inst) error {
+	panic("emitInstPCMPEQQ: not yet implemented")
 }
 
 // --- [ PCMPEQW ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PCMPEQW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPEQW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPEQW(inst *Inst) error {
+	panic("emitInstPCMPEQW: not yet implemented")
 }
 
 // --- [ PCMPESTRI ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PCMPESTRI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPESTRI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPESTRI(inst *Inst) error {
+	panic("emitInstPCMPESTRI: not yet implemented")
 }
 
 // --- [ PCMPESTRM ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PCMPESTRM instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPESTRM(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPESTRM(inst *Inst) error {
+	panic("emitInstPCMPESTRM: not yet implemented")
 }
 
 // --- [ PCMPGTB ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PCMPGTB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPGTB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPGTB(inst *Inst) error {
+	panic("emitInstPCMPGTB: not yet implemented")
 }
 
 // --- [ PCMPGTD ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PCMPGTD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPGTD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPGTD(inst *Inst) error {
+	panic("emitInstPCMPGTD: not yet implemented")
 }
 
 // --- [ PCMPGTQ ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PCMPGTQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPGTQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPGTQ(inst *Inst) error {
+	panic("emitInstPCMPGTQ: not yet implemented")
 }
 
 // --- [ PCMPGTW ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PCMPGTW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPGTW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPGTW(inst *Inst) error {
+	panic("emitInstPCMPGTW: not yet implemented")
 }
 
 // --- [ PCMPISTRI ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PCMPISTRI instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPISTRI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPISTRI(inst *Inst) error {
+	panic("emitInstPCMPISTRI: not yet implemented")
 }
 
 // --- [ PCMPISTRM ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PCMPISTRM instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPCMPISTRM(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPCMPISTRM(inst *Inst) error {
+	panic("emitInstPCMPISTRM: not yet implemented")
 }
 
 // --- [ PEXTRB ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PEXTRB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPEXTRB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPEXTRB(inst *Inst) error {
+	panic("emitInstPEXTRB: not yet implemented")
 }
 
 // --- [ PEXTRD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PEXTRD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPEXTRD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPEXTRD(inst *Inst) error {
+	panic("emitInstPEXTRD: not yet implemented")
 }
 
 // --- [ PEXTRQ ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PEXTRQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPEXTRQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPEXTRQ(inst *Inst) error {
+	panic("emitInstPEXTRQ: not yet implemented")
 }
 
 // --- [ PEXTRW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PEXTRW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPEXTRW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPEXTRW(inst *Inst) error {
+	panic("emitInstPEXTRW: not yet implemented")
 }
 
 // --- [ PHADDD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PHADDD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPHADDD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPHADDD(inst *Inst) error {
+	panic("emitInstPHADDD: not yet implemented")
 }
 
 // --- [ PHADDSW ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PHADDSW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPHADDSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPHADDSW(inst *Inst) error {
+	panic("emitInstPHADDSW: not yet implemented")
 }
 
 // --- [ PHADDW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PHADDW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPHADDW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPHADDW(inst *Inst) error {
+	panic("emitInstPHADDW: not yet implemented")
 }
 
 // --- [ PHMINPOSUW ] ----------------------------------------------------------
 
 // emitInst translates the given x86 PHMINPOSUW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPHMINPOSUW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPHMINPOSUW(inst *Inst) error {
+	panic("emitInstPHMINPOSUW: not yet implemented")
 }
 
 // --- [ PHSUBD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PHSUBD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPHSUBD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPHSUBD(inst *Inst) error {
+	panic("emitInstPHSUBD: not yet implemented")
 }
 
 // --- [ PHSUBSW ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PHSUBSW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPHSUBSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPHSUBSW(inst *Inst) error {
+	panic("emitInstPHSUBSW: not yet implemented")
 }
 
 // --- [ PHSUBW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PHSUBW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPHSUBW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPHSUBW(inst *Inst) error {
+	panic("emitInstPHSUBW: not yet implemented")
 }
 
 // --- [ PINSRB ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PINSRB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPINSRB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPINSRB(inst *Inst) error {
+	panic("emitInstPINSRB: not yet implemented")
 }
 
 // --- [ PINSRD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PINSRD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPINSRD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPINSRD(inst *Inst) error {
+	panic("emitInstPINSRD: not yet implemented")
 }
 
 // --- [ PINSRQ ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PINSRQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPINSRQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPINSRQ(inst *Inst) error {
+	panic("emitInstPINSRQ: not yet implemented")
 }
 
 // --- [ PINSRW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PINSRW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPINSRW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPINSRW(inst *Inst) error {
+	panic("emitInstPINSRW: not yet implemented")
 }
 
 // --- [ PMADDUBSW ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PMADDUBSW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMADDUBSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMADDUBSW(inst *Inst) error {
+	panic("emitInstPMADDUBSW: not yet implemented")
 }
 
 // --- [ PMADDWD ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PMADDWD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMADDWD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMADDWD(inst *Inst) error {
+	panic("emitInstPMADDWD: not yet implemented")
 }
 
 // --- [ PMAXSB ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMAXSB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMAXSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMAXSB(inst *Inst) error {
+	panic("emitInstPMAXSB: not yet implemented")
 }
 
 // --- [ PMAXSD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMAXSD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMAXSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMAXSD(inst *Inst) error {
+	panic("emitInstPMAXSD: not yet implemented")
 }
 
 // --- [ PMAXSW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMAXSW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMAXSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMAXSW(inst *Inst) error {
+	panic("emitInstPMAXSW: not yet implemented")
 }
 
 // --- [ PMAXUB ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMAXUB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMAXUB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMAXUB(inst *Inst) error {
+	panic("emitInstPMAXUB: not yet implemented")
 }
 
 // --- [ PMAXUD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMAXUD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMAXUD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMAXUD(inst *Inst) error {
+	panic("emitInstPMAXUD: not yet implemented")
 }
 
 // --- [ PMAXUW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMAXUW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMAXUW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMAXUW(inst *Inst) error {
+	panic("emitInstPMAXUW: not yet implemented")
 }
 
 // --- [ PMINSB ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMINSB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMINSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMINSB(inst *Inst) error {
+	panic("emitInstPMINSB: not yet implemented")
 }
 
 // --- [ PMINSD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMINSD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMINSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMINSD(inst *Inst) error {
+	panic("emitInstPMINSD: not yet implemented")
 }
 
 // --- [ PMINSW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMINSW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMINSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMINSW(inst *Inst) error {
+	panic("emitInstPMINSW: not yet implemented")
 }
 
 // --- [ PMINUB ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMINUB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMINUB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMINUB(inst *Inst) error {
+	panic("emitInstPMINUB: not yet implemented")
 }
 
 // --- [ PMINUD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMINUD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMINUD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMINUD(inst *Inst) error {
+	panic("emitInstPMINUD: not yet implemented")
 }
 
 // --- [ PMINUW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMINUW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMINUW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMINUW(inst *Inst) error {
+	panic("emitInstPMINUW: not yet implemented")
 }
 
 // --- [ PMOVMSKB ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVMSKB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVMSKB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVMSKB(inst *Inst) error {
+	panic("emitInstPMOVMSKB: not yet implemented")
 }
 
 // --- [ PMOVSXBD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVSXBD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVSXBD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVSXBD(inst *Inst) error {
+	panic("emitInstPMOVSXBD: not yet implemented")
 }
 
 // --- [ PMOVSXBQ ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVSXBQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVSXBQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVSXBQ(inst *Inst) error {
+	panic("emitInstPMOVSXBQ: not yet implemented")
 }
 
 // --- [ PMOVSXBW ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVSXBW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVSXBW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVSXBW(inst *Inst) error {
+	panic("emitInstPMOVSXBW: not yet implemented")
 }
 
 // --- [ PMOVSXDQ ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVSXDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVSXDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVSXDQ(inst *Inst) error {
+	panic("emitInstPMOVSXDQ: not yet implemented")
 }
 
 // --- [ PMOVSXWD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVSXWD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVSXWD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVSXWD(inst *Inst) error {
+	panic("emitInstPMOVSXWD: not yet implemented")
 }
 
 // --- [ PMOVSXWQ ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVSXWQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVSXWQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVSXWQ(inst *Inst) error {
+	panic("emitInstPMOVSXWQ: not yet implemented")
 }
 
 // --- [ PMOVZXBD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVZXBD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVZXBD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVZXBD(inst *Inst) error {
+	panic("emitInstPMOVZXBD: not yet implemented")
 }
 
 // --- [ PMOVZXBQ ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVZXBQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVZXBQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVZXBQ(inst *Inst) error {
+	panic("emitInstPMOVZXBQ: not yet implemented")
 }
 
 // --- [ PMOVZXBW ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVZXBW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVZXBW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVZXBW(inst *Inst) error {
+	panic("emitInstPMOVZXBW: not yet implemented")
 }
 
 // --- [ PMOVZXDQ ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVZXDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVZXDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVZXDQ(inst *Inst) error {
+	panic("emitInstPMOVZXDQ: not yet implemented")
 }
 
 // --- [ PMOVZXWD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVZXWD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVZXWD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVZXWD(inst *Inst) error {
+	panic("emitInstPMOVZXWD: not yet implemented")
 }
 
 // --- [ PMOVZXWQ ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMOVZXWQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMOVZXWQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMOVZXWQ(inst *Inst) error {
+	panic("emitInstPMOVZXWQ: not yet implemented")
 }
 
 // --- [ PMULDQ ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMULDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMULDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMULDQ(inst *Inst) error {
+	panic("emitInstPMULDQ: not yet implemented")
 }
 
 // --- [ PMULHRSW ] ------------------------------------------------------------
 
 // emitInst translates the given x86 PMULHRSW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMULHRSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMULHRSW(inst *Inst) error {
+	panic("emitInstPMULHRSW: not yet implemented")
 }
 
 // --- [ PMULHUW ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PMULHUW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMULHUW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMULHUW(inst *Inst) error {
+	panic("emitInstPMULHUW: not yet implemented")
 }
 
 // --- [ PMULHW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMULHW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMULHW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMULHW(inst *Inst) error {
+	panic("emitInstPMULHW: not yet implemented")
 }
 
 // --- [ PMULLD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMULLD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMULLD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMULLD(inst *Inst) error {
+	panic("emitInstPMULLD: not yet implemented")
 }
 
 // --- [ PMULLW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PMULLW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMULLW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMULLW(inst *Inst) error {
+	panic("emitInstPMULLW: not yet implemented")
 }
 
 // --- [ PMULUDQ ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PMULUDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPMULUDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPMULUDQ(inst *Inst) error {
+	panic("emitInstPMULUDQ: not yet implemented")
 }
 
 // --- [ POP ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 POP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPOP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPOP(inst *Inst) error {
+	panic("emitInstPOP: not yet implemented")
 }
 
 // --- [ POPA ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 POPA instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPOPA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPOPA(inst *Inst) error {
+	panic("emitInstPOPA: not yet implemented")
 }
 
 // --- [ POPAD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 POPAD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPOPAD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPOPAD(inst *Inst) error {
+	panic("emitInstPOPAD: not yet implemented")
 }
 
 // --- [ POPCNT ] --------------------------------------------------------------
 
 // emitInst translates the given x86 POPCNT instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPOPCNT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPOPCNT(inst *Inst) error {
+	panic("emitInstPOPCNT: not yet implemented")
 }
 
 // --- [ POPF ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 POPF instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPOPF(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPOPF(inst *Inst) error {
+	panic("emitInstPOPF: not yet implemented")
 }
 
 // --- [ POPFD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 POPFD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPOPFD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPOPFD(inst *Inst) error {
+	panic("emitInstPOPFD: not yet implemented")
 }
 
 // --- [ POPFQ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 POPFQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPOPFQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPOPFQ(inst *Inst) error {
+	panic("emitInstPOPFQ: not yet implemented")
 }
 
 // --- [ POR ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 POR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPOR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPOR(inst *Inst) error {
+	panic("emitInstPOR: not yet implemented")
 }
 
 // --- [ PREFETCHNTA ] ---------------------------------------------------------
 
 // emitInst translates the given x86 PREFETCHNTA instruction to LLVM IR,
 // emitting code to f.
-func (d *disassembler) emitInstPREFETCHNTA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPREFETCHNTA(inst *Inst) error {
+	panic("emitInstPREFETCHNTA: not yet implemented")
 }
 
 // --- [ PREFETCHT0 ] ----------------------------------------------------------
 
 // emitInst translates the given x86 PREFETCHT0 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPREFETCHT0(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPREFETCHT0(inst *Inst) error {
+	panic("emitInstPREFETCHT0: not yet implemented")
 }
 
 // --- [ PREFETCHT1 ] ----------------------------------------------------------
 
 // emitInst translates the given x86 PREFETCHT1 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPREFETCHT1(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPREFETCHT1(inst *Inst) error {
+	panic("emitInstPREFETCHT1: not yet implemented")
 }
 
 // --- [ PREFETCHT2 ] ----------------------------------------------------------
 
 // emitInst translates the given x86 PREFETCHT2 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPREFETCHT2(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPREFETCHT2(inst *Inst) error {
+	panic("emitInstPREFETCHT2: not yet implemented")
 }
 
 // --- [ PREFETCHW ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PREFETCHW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPREFETCHW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPREFETCHW(inst *Inst) error {
+	panic("emitInstPREFETCHW: not yet implemented")
 }
 
 // --- [ PSADBW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PSADBW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSADBW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSADBW(inst *Inst) error {
+	panic("emitInstPSADBW: not yet implemented")
 }
 
 // --- [ PSHUFB ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PSHUFB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSHUFB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSHUFB(inst *Inst) error {
+	panic("emitInstPSHUFB: not yet implemented")
 }
 
 // --- [ PSHUFD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PSHUFD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSHUFD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSHUFD(inst *Inst) error {
+	panic("emitInstPSHUFD: not yet implemented")
 }
 
 // --- [ PSHUFHW ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PSHUFHW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSHUFHW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSHUFHW(inst *Inst) error {
+	panic("emitInstPSHUFHW: not yet implemented")
 }
 
 // --- [ PSHUFLW ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PSHUFLW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSHUFLW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSHUFLW(inst *Inst) error {
+	panic("emitInstPSHUFLW: not yet implemented")
 }
 
 // --- [ PSHUFW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PSHUFW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSHUFW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSHUFW(inst *Inst) error {
+	panic("emitInstPSHUFW: not yet implemented")
 }
 
 // --- [ PSIGNB ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PSIGNB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSIGNB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSIGNB(inst *Inst) error {
+	panic("emitInstPSIGNB: not yet implemented")
 }
 
 // --- [ PSIGND ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PSIGND instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSIGND(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSIGND(inst *Inst) error {
+	panic("emitInstPSIGND: not yet implemented")
 }
 
 // --- [ PSIGNW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PSIGNW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSIGNW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSIGNW(inst *Inst) error {
+	panic("emitInstPSIGNW: not yet implemented")
 }
 
 // --- [ PSLLD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSLLD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSLLD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSLLD(inst *Inst) error {
+	panic("emitInstPSLLD: not yet implemented")
 }
 
 // --- [ PSLLDQ ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PSLLDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSLLDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSLLDQ(inst *Inst) error {
+	panic("emitInstPSLLDQ: not yet implemented")
 }
 
 // --- [ PSLLQ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSLLQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSLLQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSLLQ(inst *Inst) error {
+	panic("emitInstPSLLQ: not yet implemented")
 }
 
 // --- [ PSLLW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSLLW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSLLW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSLLW(inst *Inst) error {
+	panic("emitInstPSLLW: not yet implemented")
 }
 
 // --- [ PSRAD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSRAD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSRAD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSRAD(inst *Inst) error {
+	panic("emitInstPSRAD: not yet implemented")
 }
 
 // --- [ PSRAW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSRAW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSRAW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSRAW(inst *Inst) error {
+	panic("emitInstPSRAW: not yet implemented")
 }
 
 // --- [ PSRLD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSRLD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSRLD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSRLD(inst *Inst) error {
+	panic("emitInstPSRLD: not yet implemented")
 }
 
 // --- [ PSRLDQ ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PSRLDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSRLDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSRLDQ(inst *Inst) error {
+	panic("emitInstPSRLDQ: not yet implemented")
 }
 
 // --- [ PSRLQ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSRLQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSRLQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSRLQ(inst *Inst) error {
+	panic("emitInstPSRLQ: not yet implemented")
 }
 
 // --- [ PSRLW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSRLW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSRLW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSRLW(inst *Inst) error {
+	panic("emitInstPSRLW: not yet implemented")
 }
 
 // --- [ PSUBB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSUBB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSUBB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSUBB(inst *Inst) error {
+	panic("emitInstPSUBB: not yet implemented")
 }
 
 // --- [ PSUBD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSUBD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSUBD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSUBD(inst *Inst) error {
+	panic("emitInstPSUBD: not yet implemented")
 }
 
 // --- [ PSUBQ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSUBQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSUBQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSUBQ(inst *Inst) error {
+	panic("emitInstPSUBQ: not yet implemented")
 }
 
 // --- [ PSUBSB ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PSUBSB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSUBSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSUBSB(inst *Inst) error {
+	panic("emitInstPSUBSB: not yet implemented")
 }
 
 // --- [ PSUBSW ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PSUBSW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSUBSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSUBSW(inst *Inst) error {
+	panic("emitInstPSUBSW: not yet implemented")
 }
 
 // --- [ PSUBUSB ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PSUBUSB instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSUBUSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSUBUSB(inst *Inst) error {
+	panic("emitInstPSUBUSB: not yet implemented")
 }
 
 // --- [ PSUBUSW ] -------------------------------------------------------------
 
 // emitInst translates the given x86 PSUBUSW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPSUBUSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSUBUSW(inst *Inst) error {
+	panic("emitInstPSUBUSW: not yet implemented")
 }
 
 // --- [ PSUBW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PSUBW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPSUBW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPSUBW(inst *Inst) error {
+	panic("emitInstPSUBW: not yet implemented")
 }
 
 // --- [ PTEST ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PTEST instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPTEST(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPTEST(inst *Inst) error {
+	panic("emitInstPTEST: not yet implemented")
 }
 
 // --- [ PUNPCKHBW ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PUNPCKHBW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPUNPCKHBW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUNPCKHBW(inst *Inst) error {
+	panic("emitInstPUNPCKHBW: not yet implemented")
 }
 
 // --- [ PUNPCKHDQ ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PUNPCKHDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPUNPCKHDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUNPCKHDQ(inst *Inst) error {
+	panic("emitInstPUNPCKHDQ: not yet implemented")
 }
 
 // --- [ PUNPCKHQDQ ] ----------------------------------------------------------
 
 // emitInst translates the given x86 PUNPCKHQDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPUNPCKHQDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUNPCKHQDQ(inst *Inst) error {
+	panic("emitInstPUNPCKHQDQ: not yet implemented")
 }
 
 // --- [ PUNPCKHWD ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PUNPCKHWD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPUNPCKHWD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUNPCKHWD(inst *Inst) error {
+	panic("emitInstPUNPCKHWD: not yet implemented")
 }
 
 // --- [ PUNPCKLBW ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PUNPCKLBW instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPUNPCKLBW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUNPCKLBW(inst *Inst) error {
+	panic("emitInstPUNPCKLBW: not yet implemented")
 }
 
 // --- [ PUNPCKLDQ ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PUNPCKLDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPUNPCKLDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUNPCKLDQ(inst *Inst) error {
+	panic("emitInstPUNPCKLDQ: not yet implemented")
 }
 
 // --- [ PUNPCKLQDQ ] ----------------------------------------------------------
 
 // emitInst translates the given x86 PUNPCKLQDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPUNPCKLQDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUNPCKLQDQ(inst *Inst) error {
+	panic("emitInstPUNPCKLQDQ: not yet implemented")
 }
 
 // --- [ PUNPCKLWD ] -----------------------------------------------------------
 
 // emitInst translates the given x86 PUNPCKLWD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPUNPCKLWD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUNPCKLWD(inst *Inst) error {
+	panic("emitInstPUNPCKLWD: not yet implemented")
 }
 
 // --- [ PUSH ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 PUSH instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPUSH(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUSH(inst *Inst) error {
+	panic("emitInstPUSH: not yet implemented")
 }
 
 // --- [ PUSHA ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PUSHA instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPUSHA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUSHA(inst *Inst) error {
+	panic("emitInstPUSHA: not yet implemented")
 }
 
 // --- [ PUSHAD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PUSHAD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPUSHAD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUSHAD(inst *Inst) error {
+	panic("emitInstPUSHAD: not yet implemented")
 }
 
 // --- [ PUSHF ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 PUSHF instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPUSHF(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUSHF(inst *Inst) error {
+	panic("emitInstPUSHF: not yet implemented")
 }
 
 // --- [ PUSHFD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PUSHFD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPUSHFD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUSHFD(inst *Inst) error {
+	panic("emitInstPUSHFD: not yet implemented")
 }
 
 // --- [ PUSHFQ ] --------------------------------------------------------------
 
 // emitInst translates the given x86 PUSHFQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstPUSHFQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPUSHFQ(inst *Inst) error {
+	panic("emitInstPUSHFQ: not yet implemented")
 }
 
 // --- [ PXOR ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 PXOR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstPXOR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstPXOR(inst *Inst) error {
+	panic("emitInstPXOR: not yet implemented")
 }
 
 // --- [ RCL ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 RCL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstRCL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRCL(inst *Inst) error {
+	panic("emitInstRCL: not yet implemented")
 }
 
 // --- [ RCPPS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 RCPPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstRCPPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRCPPS(inst *Inst) error {
+	panic("emitInstRCPPS: not yet implemented")
 }
 
 // --- [ RCPSS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 RCPSS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstRCPSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRCPSS(inst *Inst) error {
+	panic("emitInstRCPSS: not yet implemented")
 }
 
 // --- [ RCR ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 RCR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstRCR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRCR(inst *Inst) error {
+	panic("emitInstRCR: not yet implemented")
 }
 
 // --- [ RDFSBASE ] ------------------------------------------------------------
 
 // emitInst translates the given x86 RDFSBASE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstRDFSBASE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRDFSBASE(inst *Inst) error {
+	panic("emitInstRDFSBASE: not yet implemented")
 }
 
 // --- [ RDGSBASE ] ------------------------------------------------------------
 
 // emitInst translates the given x86 RDGSBASE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstRDGSBASE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRDGSBASE(inst *Inst) error {
+	panic("emitInstRDGSBASE: not yet implemented")
 }
 
 // --- [ RDMSR ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 RDMSR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstRDMSR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRDMSR(inst *Inst) error {
+	panic("emitInstRDMSR: not yet implemented")
 }
 
 // --- [ RDPMC ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 RDPMC instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstRDPMC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRDPMC(inst *Inst) error {
+	panic("emitInstRDPMC: not yet implemented")
 }
 
 // --- [ RDRAND ] --------------------------------------------------------------
 
 // emitInst translates the given x86 RDRAND instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstRDRAND(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRDRAND(inst *Inst) error {
+	panic("emitInstRDRAND: not yet implemented")
 }
 
 // --- [ RDTSC ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 RDTSC instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstRDTSC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRDTSC(inst *Inst) error {
+	panic("emitInstRDTSC: not yet implemented")
 }
 
 // --- [ RDTSCP ] --------------------------------------------------------------
 
 // emitInst translates the given x86 RDTSCP instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstRDTSCP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRDTSCP(inst *Inst) error {
+	panic("emitInstRDTSCP: not yet implemented")
 }
 
 // --- [ RET ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 RET instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstRET(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRET(inst *Inst) error {
+	panic("emitInstRET: not yet implemented")
 }
 
 // --- [ ROL ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 ROL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstROL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstROL(inst *Inst) error {
+	panic("emitInstROL: not yet implemented")
 }
 
 // --- [ ROR ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 ROR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstROR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstROR(inst *Inst) error {
+	panic("emitInstROR: not yet implemented")
 }
 
 // --- [ ROUNDPD ] -------------------------------------------------------------
 
 // emitInst translates the given x86 ROUNDPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstROUNDPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstROUNDPD(inst *Inst) error {
+	panic("emitInstROUNDPD: not yet implemented")
 }
 
 // --- [ ROUNDPS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 ROUNDPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstROUNDPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstROUNDPS(inst *Inst) error {
+	panic("emitInstROUNDPS: not yet implemented")
 }
 
 // --- [ ROUNDSD ] -------------------------------------------------------------
 
 // emitInst translates the given x86 ROUNDSD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstROUNDSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstROUNDSD(inst *Inst) error {
+	panic("emitInstROUNDSD: not yet implemented")
 }
 
 // --- [ ROUNDSS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 ROUNDSS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstROUNDSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstROUNDSS(inst *Inst) error {
+	panic("emitInstROUNDSS: not yet implemented")
 }
 
 // --- [ RSM ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 RSM instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstRSM(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRSM(inst *Inst) error {
+	panic("emitInstRSM: not yet implemented")
 }
 
 // --- [ RSQRTPS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 RSQRTPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstRSQRTPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRSQRTPS(inst *Inst) error {
+	panic("emitInstRSQRTPS: not yet implemented")
 }
 
 // --- [ RSQRTSS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 RSQRTSS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstRSQRTSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstRSQRTSS(inst *Inst) error {
+	panic("emitInstRSQRTSS: not yet implemented")
 }
 
 // --- [ SAHF ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SAHF instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSAHF(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSAHF(inst *Inst) error {
+	panic("emitInstSAHF: not yet implemented")
 }
 
 // --- [ SAR ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 SAR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSAR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSAR(inst *Inst) error {
+	panic("emitInstSAR: not yet implemented")
 }
 
 // --- [ SBB ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 SBB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSBB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSBB(inst *Inst) error {
+	panic("emitInstSBB: not yet implemented")
 }
 
 // --- [ SCASB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SCASB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSCASB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSCASB(inst *Inst) error {
+	panic("emitInstSCASB: not yet implemented")
 }
 
 // --- [ SCASD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SCASD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSCASD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSCASD(inst *Inst) error {
+	panic("emitInstSCASD: not yet implemented")
 }
 
 // --- [ SCASQ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SCASQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSCASQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSCASQ(inst *Inst) error {
+	panic("emitInstSCASQ: not yet implemented")
 }
 
 // --- [ SCASW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SCASW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSCASW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSCASW(inst *Inst) error {
+	panic("emitInstSCASW: not yet implemented")
 }
 
 // --- [ SETA ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SETA instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETA(inst *Inst) error {
+	panic("emitInstSETA: not yet implemented")
 }
 
 // --- [ SETAE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SETAE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETAE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETAE(inst *Inst) error {
+	panic("emitInstSETAE: not yet implemented")
 }
 
 // --- [ SETB ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SETB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETB(inst *Inst) error {
+	panic("emitInstSETB: not yet implemented")
 }
 
 // --- [ SETBE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SETBE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETBE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETBE(inst *Inst) error {
+	panic("emitInstSETBE: not yet implemented")
 }
 
 // --- [ SETE ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SETE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETE(inst *Inst) error {
+	panic("emitInstSETE: not yet implemented")
 }
 
 // --- [ SETG ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SETG instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETG(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETG(inst *Inst) error {
+	panic("emitInstSETG: not yet implemented")
 }
 
 // --- [ SETGE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SETGE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETGE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETGE(inst *Inst) error {
+	panic("emitInstSETGE: not yet implemented")
 }
 
 // --- [ SETL ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SETL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETL(inst *Inst) error {
+	panic("emitInstSETL: not yet implemented")
 }
 
 // --- [ SETLE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SETLE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETLE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETLE(inst *Inst) error {
+	panic("emitInstSETLE: not yet implemented")
 }
 
 // --- [ SETNE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SETNE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETNE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETNE(inst *Inst) error {
+	panic("emitInstSETNE: not yet implemented")
 }
 
 // --- [ SETNO ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SETNO instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETNO(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETNO(inst *Inst) error {
+	panic("emitInstSETNO: not yet implemented")
 }
 
 // --- [ SETNP ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SETNP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETNP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETNP(inst *Inst) error {
+	panic("emitInstSETNP: not yet implemented")
 }
 
 // --- [ SETNS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SETNS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETNS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETNS(inst *Inst) error {
+	panic("emitInstSETNS: not yet implemented")
 }
 
 // --- [ SETO ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SETO instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETO(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETO(inst *Inst) error {
+	panic("emitInstSETO: not yet implemented")
 }
 
 // --- [ SETP ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SETP instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETP(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETP(inst *Inst) error {
+	panic("emitInstSETP: not yet implemented")
 }
 
 // --- [ SETS ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SETS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSETS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSETS(inst *Inst) error {
+	panic("emitInstSETS: not yet implemented")
 }
 
 // --- [ SFENCE ] --------------------------------------------------------------
 
 // emitInst translates the given x86 SFENCE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSFENCE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSFENCE(inst *Inst) error {
+	panic("emitInstSFENCE: not yet implemented")
 }
 
 // --- [ SGDT ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SGDT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSGDT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSGDT(inst *Inst) error {
+	panic("emitInstSGDT: not yet implemented")
 }
 
 // --- [ SHL ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 SHL instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSHL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSHL(inst *Inst) error {
+	panic("emitInstSHL: not yet implemented")
 }
 
 // --- [ SHLD ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SHLD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSHLD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSHLD(inst *Inst) error {
+	panic("emitInstSHLD: not yet implemented")
 }
 
 // --- [ SHR ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 SHR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSHR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSHR(inst *Inst) error {
+	panic("emitInstSHR: not yet implemented")
 }
 
 // --- [ SHRD ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SHRD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSHRD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSHRD(inst *Inst) error {
+	panic("emitInstSHRD: not yet implemented")
 }
 
 // --- [ SHUFPD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 SHUFPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSHUFPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSHUFPD(inst *Inst) error {
+	panic("emitInstSHUFPD: not yet implemented")
 }
 
 // --- [ SHUFPS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 SHUFPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSHUFPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSHUFPS(inst *Inst) error {
+	panic("emitInstSHUFPS: not yet implemented")
 }
 
 // --- [ SIDT ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SIDT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSIDT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSIDT(inst *Inst) error {
+	panic("emitInstSIDT: not yet implemented")
 }
 
 // --- [ SLDT ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SLDT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSLDT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSLDT(inst *Inst) error {
+	panic("emitInstSLDT: not yet implemented")
 }
 
 // --- [ SMSW ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 SMSW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSMSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSMSW(inst *Inst) error {
+	panic("emitInstSMSW: not yet implemented")
 }
 
 // --- [ SQRTPD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 SQRTPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSQRTPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSQRTPD(inst *Inst) error {
+	panic("emitInstSQRTPD: not yet implemented")
 }
 
 // --- [ SQRTPS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 SQRTPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSQRTPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSQRTPS(inst *Inst) error {
+	panic("emitInstSQRTPS: not yet implemented")
 }
 
 // --- [ SQRTSD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 SQRTSD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSQRTSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSQRTSD(inst *Inst) error {
+	panic("emitInstSQRTSD: not yet implemented")
 }
 
 // --- [ SQRTSS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 SQRTSS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSQRTSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSQRTSS(inst *Inst) error {
+	panic("emitInstSQRTSS: not yet implemented")
 }
 
 // --- [ STC ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 STC instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSTC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSTC(inst *Inst) error {
+	panic("emitInstSTC: not yet implemented")
 }
 
 // --- [ STD ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 STD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSTD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSTD(inst *Inst) error {
+	panic("emitInstSTD: not yet implemented")
 }
 
 // --- [ STI ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 STI instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSTI(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSTI(inst *Inst) error {
+	panic("emitInstSTI: not yet implemented")
 }
 
 // --- [ STMXCSR ] -------------------------------------------------------------
 
 // emitInst translates the given x86 STMXCSR instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSTMXCSR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSTMXCSR(inst *Inst) error {
+	panic("emitInstSTMXCSR: not yet implemented")
 }
 
 // --- [ STOSB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 STOSB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSTOSB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSTOSB(inst *Inst) error {
+	panic("emitInstSTOSB: not yet implemented")
 }
 
 // --- [ STOSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 STOSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSTOSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSTOSD(inst *Inst) error {
+	panic("emitInstSTOSD: not yet implemented")
 }
 
 // --- [ STOSQ ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 STOSQ instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSTOSQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSTOSQ(inst *Inst) error {
+	panic("emitInstSTOSQ: not yet implemented")
 }
 
 // --- [ STOSW ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 STOSW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSTOSW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSTOSW(inst *Inst) error {
+	panic("emitInstSTOSW: not yet implemented")
 }
 
 // --- [ STR ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 STR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSTR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSTR(inst *Inst) error {
+	panic("emitInstSTR: not yet implemented")
 }
 
 // --- [ SUB ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 SUB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSUB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSUB(inst *Inst) error {
+	panic("emitInstSUB: not yet implemented")
 }
 
 // --- [ SUBPD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SUBPD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSUBPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSUBPD(inst *Inst) error {
+	panic("emitInstSUBPD: not yet implemented")
 }
 
 // --- [ SUBPS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SUBPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSUBPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSUBPS(inst *Inst) error {
+	panic("emitInstSUBPS: not yet implemented")
 }
 
 // --- [ SUBSD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SUBSD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSUBSD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSUBSD(inst *Inst) error {
+	panic("emitInstSUBSD: not yet implemented")
 }
 
 // --- [ SUBSS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 SUBSS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstSUBSS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSUBSS(inst *Inst) error {
+	panic("emitInstSUBSS: not yet implemented")
 }
 
 // --- [ SWAPGS ] --------------------------------------------------------------
 
 // emitInst translates the given x86 SWAPGS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSWAPGS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSWAPGS(inst *Inst) error {
+	panic("emitInstSWAPGS: not yet implemented")
 }
 
 // --- [ SYSCALL ] -------------------------------------------------------------
 
 // emitInst translates the given x86 SYSCALL instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSYSCALL(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSYSCALL(inst *Inst) error {
+	panic("emitInstSYSCALL: not yet implemented")
 }
 
 // --- [ SYSENTER ] ------------------------------------------------------------
 
 // emitInst translates the given x86 SYSENTER instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSYSENTER(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSYSENTER(inst *Inst) error {
+	panic("emitInstSYSENTER: not yet implemented")
 }
 
 // --- [ SYSEXIT ] -------------------------------------------------------------
 
 // emitInst translates the given x86 SYSEXIT instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSYSEXIT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSYSEXIT(inst *Inst) error {
+	panic("emitInstSYSEXIT: not yet implemented")
 }
 
 // --- [ SYSRET ] --------------------------------------------------------------
 
 // emitInst translates the given x86 SYSRET instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstSYSRET(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstSYSRET(inst *Inst) error {
+	panic("emitInstSYSRET: not yet implemented")
 }
 
 // --- [ TEST ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 TEST instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstTEST(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstTEST(inst *Inst) error {
+	panic("emitInstTEST: not yet implemented")
 }
 
 // --- [ TZCNT ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 TZCNT instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstTZCNT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstTZCNT(inst *Inst) error {
+	panic("emitInstTZCNT: not yet implemented")
 }
 
 // --- [ UCOMISD ] -------------------------------------------------------------
 
 // emitInst translates the given x86 UCOMISD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstUCOMISD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstUCOMISD(inst *Inst) error {
+	panic("emitInstUCOMISD: not yet implemented")
 }
 
 // --- [ UCOMISS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 UCOMISS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstUCOMISS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstUCOMISS(inst *Inst) error {
+	panic("emitInstUCOMISS: not yet implemented")
 }
 
 // --- [ UD1 ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 UD1 instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstUD1(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstUD1(inst *Inst) error {
+	panic("emitInstUD1: not yet implemented")
 }
 
 // --- [ UD2 ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 UD2 instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstUD2(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstUD2(inst *Inst) error {
+	panic("emitInstUD2: not yet implemented")
 }
 
 // --- [ UNPCKHPD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 UNPCKHPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstUNPCKHPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstUNPCKHPD(inst *Inst) error {
+	panic("emitInstUNPCKHPD: not yet implemented")
 }
 
 // --- [ UNPCKHPS ] ------------------------------------------------------------
 
 // emitInst translates the given x86 UNPCKHPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstUNPCKHPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstUNPCKHPS(inst *Inst) error {
+	panic("emitInstUNPCKHPS: not yet implemented")
 }
 
 // --- [ UNPCKLPD ] ------------------------------------------------------------
 
 // emitInst translates the given x86 UNPCKLPD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstUNPCKLPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstUNPCKLPD(inst *Inst) error {
+	panic("emitInstUNPCKLPD: not yet implemented")
 }
 
 // --- [ UNPCKLPS ] ------------------------------------------------------------
 
 // emitInst translates the given x86 UNPCKLPS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstUNPCKLPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstUNPCKLPS(inst *Inst) error {
+	panic("emitInstUNPCKLPS: not yet implemented")
 }
 
 // --- [ VERR ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 VERR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstVERR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstVERR(inst *Inst) error {
+	panic("emitInstVERR: not yet implemented")
 }
 
 // --- [ VERW ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 VERW instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstVERW(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstVERW(inst *Inst) error {
+	panic("emitInstVERW: not yet implemented")
 }
 
 // --- [ VMOVDQA ] -------------------------------------------------------------
 
 // emitInst translates the given x86 VMOVDQA instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstVMOVDQA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstVMOVDQA(inst *Inst) error {
+	panic("emitInstVMOVDQA: not yet implemented")
 }
 
 // --- [ VMOVDQU ] -------------------------------------------------------------
 
 // emitInst translates the given x86 VMOVDQU instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstVMOVDQU(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstVMOVDQU(inst *Inst) error {
+	panic("emitInstVMOVDQU: not yet implemented")
 }
 
 // --- [ VMOVNTDQ ] ------------------------------------------------------------
 
 // emitInst translates the given x86 VMOVNTDQ instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstVMOVNTDQ(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstVMOVNTDQ(inst *Inst) error {
+	panic("emitInstVMOVNTDQ: not yet implemented")
 }
 
 // --- [ VMOVNTDQA ] -----------------------------------------------------------
 
 // emitInst translates the given x86 VMOVNTDQA instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstVMOVNTDQA(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstVMOVNTDQA(inst *Inst) error {
+	panic("emitInstVMOVNTDQA: not yet implemented")
 }
 
 // --- [ VZEROUPPER ] ----------------------------------------------------------
 
 // emitInst translates the given x86 VZEROUPPER instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstVZEROUPPER(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstVZEROUPPER(inst *Inst) error {
+	panic("emitInstVZEROUPPER: not yet implemented")
 }
 
 // --- [ WBINVD ] --------------------------------------------------------------
 
 // emitInst translates the given x86 WBINVD instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstWBINVD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstWBINVD(inst *Inst) error {
+	panic("emitInstWBINVD: not yet implemented")
 }
 
 // --- [ WRFSBASE ] ------------------------------------------------------------
 
 // emitInst translates the given x86 WRFSBASE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstWRFSBASE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstWRFSBASE(inst *Inst) error {
+	panic("emitInstWRFSBASE: not yet implemented")
 }
 
 // --- [ WRGSBASE ] ------------------------------------------------------------
 
 // emitInst translates the given x86 WRGSBASE instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstWRGSBASE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstWRGSBASE(inst *Inst) error {
+	panic("emitInstWRGSBASE: not yet implemented")
 }
 
 // --- [ WRMSR ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 WRMSR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstWRMSR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstWRMSR(inst *Inst) error {
+	panic("emitInstWRMSR: not yet implemented")
 }
 
 // --- [ XABORT ] --------------------------------------------------------------
 
 // emitInst translates the given x86 XABORT instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXABORT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXABORT(inst *Inst) error {
+	panic("emitInstXABORT: not yet implemented")
 }
 
 // --- [ XADD ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 XADD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstXADD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXADD(inst *Inst) error {
+	panic("emitInstXADD: not yet implemented")
 }
 
 // --- [ XBEGIN ] --------------------------------------------------------------
 
 // emitInst translates the given x86 XBEGIN instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXBEGIN(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXBEGIN(inst *Inst) error {
+	panic("emitInstXBEGIN: not yet implemented")
 }
 
 // --- [ XCHG ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 XCHG instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstXCHG(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXCHG(inst *Inst) error {
+	panic("emitInstXCHG: not yet implemented")
 }
 
 // --- [ XEND ] ----------------------------------------------------------------
 
 // emitInst translates the given x86 XEND instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstXEND(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXEND(inst *Inst) error {
+	panic("emitInstXEND: not yet implemented")
 }
 
 // --- [ XGETBV ] --------------------------------------------------------------
 
 // emitInst translates the given x86 XGETBV instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXGETBV(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXGETBV(inst *Inst) error {
+	panic("emitInstXGETBV: not yet implemented")
 }
 
 // --- [ XLATB ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 XLATB instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstXLATB(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXLATB(inst *Inst) error {
+	panic("emitInstXLATB: not yet implemented")
 }
 
 // --- [ XOR ] -----------------------------------------------------------------
 
 // emitInst translates the given x86 XOR instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstXOR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXOR(inst *Inst) error {
+	panic("emitInstXOR: not yet implemented")
 }
 
 // --- [ XORPD ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 XORPD instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstXORPD(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXORPD(inst *Inst) error {
+	panic("emitInstXORPD: not yet implemented")
 }
 
 // --- [ XORPS ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 XORPS instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstXORPS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXORPS(inst *Inst) error {
+	panic("emitInstXORPS: not yet implemented")
 }
 
 // --- [ XRSTOR ] --------------------------------------------------------------
 
 // emitInst translates the given x86 XRSTOR instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXRSTOR(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXRSTOR(inst *Inst) error {
+	panic("emitInstXRSTOR: not yet implemented")
 }
 
 // --- [ XRSTOR64 ] ------------------------------------------------------------
 
 // emitInst translates the given x86 XRSTOR64 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXRSTOR64(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXRSTOR64(inst *Inst) error {
+	panic("emitInstXRSTOR64: not yet implemented")
 }
 
 // --- [ XRSTORS ] -------------------------------------------------------------
 
 // emitInst translates the given x86 XRSTORS instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXRSTORS(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXRSTORS(inst *Inst) error {
+	panic("emitInstXRSTORS: not yet implemented")
 }
 
 // --- [ XRSTORS64 ] -----------------------------------------------------------
 
 // emitInst translates the given x86 XRSTORS64 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXRSTORS64(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXRSTORS64(inst *Inst) error {
+	panic("emitInstXRSTORS64: not yet implemented")
 }
 
 // --- [ XSAVE ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 XSAVE instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstXSAVE(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXSAVE(inst *Inst) error {
+	panic("emitInstXSAVE: not yet implemented")
 }
 
 // --- [ XSAVE64 ] -------------------------------------------------------------
 
 // emitInst translates the given x86 XSAVE64 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXSAVE64(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXSAVE64(inst *Inst) error {
+	panic("emitInstXSAVE64: not yet implemented")
 }
 
 // --- [ XSAVEC ] --------------------------------------------------------------
 
 // emitInst translates the given x86 XSAVEC instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXSAVEC(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXSAVEC(inst *Inst) error {
+	panic("emitInstXSAVEC: not yet implemented")
 }
 
 // --- [ XSAVEC64 ] ------------------------------------------------------------
 
 // emitInst translates the given x86 XSAVEC64 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXSAVEC64(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXSAVEC64(inst *Inst) error {
+	panic("emitInstXSAVEC64: not yet implemented")
 }
 
 // --- [ XSAVEOPT ] ------------------------------------------------------------
 
 // emitInst translates the given x86 XSAVEOPT instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXSAVEOPT(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXSAVEOPT(inst *Inst) error {
+	panic("emitInstXSAVEOPT: not yet implemented")
 }
 
 // --- [ XSAVEOPT64 ] ----------------------------------------------------------
 
 // emitInst translates the given x86 XSAVEOPT64 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXSAVEOPT64(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXSAVEOPT64(inst *Inst) error {
+	panic("emitInstXSAVEOPT64: not yet implemented")
 }
 
 // --- [ XSAVES ] --------------------------------------------------------------
 
 // emitInst translates the given x86 XSAVES instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXSAVES(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXSAVES(inst *Inst) error {
+	panic("emitInstXSAVES: not yet implemented")
 }
 
 // --- [ XSAVES64 ] ------------------------------------------------------------
 
 // emitInst translates the given x86 XSAVES64 instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXSAVES64(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXSAVES64(inst *Inst) error {
+	panic("emitInstXSAVES64: not yet implemented")
 }
 
 // --- [ XSETBV ] --------------------------------------------------------------
 
 // emitInst translates the given x86 XSETBV instruction to LLVM IR, emitting
 // code to f.
-func (d *disassembler) emitInstXSETBV(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXSETBV(inst *Inst) error {
+	panic("emitInstXSETBV: not yet implemented")
 }
 
 // --- [ XTEST ] ---------------------------------------------------------------
 
 // emitInst translates the given x86 XTEST instruction to LLVM IR, emitting code
 // to f.
-func (d *disassembler) emitInstXTEST(f *function, inst *instruction) error {
-	panic("not yet implemented")
+func (f *Func) emitInstXTEST(inst *Inst) error {
+	panic("emitInstXTEST: not yet implemented")
 }

@@ -11,56 +11,18 @@ import (
 	"golang.org/x/arch/x86/x86asm"
 )
 
-// function tracks the information required to translate a function from x86
-// machine code to LLVM IR assembly.
-type function struct {
-	// LLVM IR code for the function.
-	*ir.Function
-	// Entry address of the function.
-	entry bin.Address
-	// Current basic block being generated.
-	cur *ir.BasicBlock
-	// x86 basic blocks of the function.
-	bbs map[bin.Address]*basicBlock
-	// LLVM IR basic blocks of the function.
-	blocks map[bin.Address]*ir.BasicBlock
-	// Registers used within the function.
-	regs map[x86asm.Reg]*ir.InstAlloca
-	// Status flags used within the function.
-	status map[StatusFlag]*ir.InstAlloca
-}
-
-// basicBlock tracks the information required to translate a basic block from
-// x86 machine code to LLVM IR assembly.
-type basicBlock struct {
-	// Entry address of the basic block.
-	addr bin.Address
-	// Instructions of the basic block.
-	insts []*instruction
-	// Terminator of the basic block.
-	term *instruction
-}
-
-// instruction tracks the information required to translate an instruction from
-// x86 machine code to LLVM IR assembly.
-type instruction struct {
-	// Decoded x86 instruction.
-	x86asm.Inst
-	// Address of the instruction.
-	addr bin.Address
-}
-
 // decodeFunc decodes the x86 machine code of the function at the given address.
-func (d *disassembler) decodeFunc(entry bin.Address) (*function, error) {
+func (d *disassembler) decodeFunc(entry bin.Address) (*Func, error) {
 	dbg.Printf("decoding function at %v", entry)
 	f, ok := d.funcs[entry]
 	if !ok {
-		f = &function{
-			entry:  entry,
-			bbs:    make(map[bin.Address]*basicBlock),
+		f = &Func{
+			addr:   entry,
+			bbs:    make(map[bin.Address]*BasicBlock),
 			blocks: make(map[bin.Address]*ir.BasicBlock),
 			regs:   make(map[x86asm.Reg]*ir.InstAlloca),
 			status: make(map[StatusFlag]*ir.InstAlloca),
+			d:      d,
 		}
 	}
 	queue := newQueue()
@@ -88,7 +50,7 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*function, error) {
 
 // decodeBlock decodes the x86 machine code of the basic block at the given
 // address.
-func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
+func (d *disassembler) decodeBlock(addr bin.Address) (*BasicBlock, error) {
 	if d.decodedBlock[addr] {
 		panic(fmt.Errorf("decoded basic block at %v twice", addr))
 	}
@@ -105,7 +67,7 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
 	maxLen := d.getMaxBlockLen(addr)
 
 	// Decode instructions.
-	bb := &basicBlock{
+	bb := &BasicBlock{
 		addr: addr,
 	}
 	for j := int64(0); j < maxLen; {
@@ -116,7 +78,7 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
 			fmt.Println("addr:", addr)
 			return nil, errors.WithStack(err)
 		}
-		i := &instruction{
+		i := &Inst{
 			Inst: inst,
 			addr: addr,
 		}
@@ -140,7 +102,7 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
 
 		// dummy terminator denoted the zero value for x86asm.Inst and address of
 		// fallthrough basic block.
-		bb.term = &instruction{
+		bb.term = &Inst{
 			addr: lastInst.addr + bin.Address(lastInst.Len),
 		}
 	}
@@ -148,7 +110,7 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
 }
 
 // isTerm reports whether the given instruction is a terminating instruction.
-func (inst *instruction) isTerm() bool {
+func (inst *Inst) isTerm() bool {
 	switch inst.Op {
 	case x86asm.JA, x86asm.JAE, x86asm.JB, x86asm.JBE, x86asm.JCXZ, x86asm.JE, x86asm.JECXZ, x86asm.JG, x86asm.JGE, x86asm.JL, x86asm.JLE, x86asm.JMP, x86asm.JNE, x86asm.JNO, x86asm.JNP, x86asm.JNS, x86asm.JO, x86asm.JP, x86asm.JRCXZ, x86asm.JS:
 		return true
@@ -162,14 +124,14 @@ func (inst *instruction) isTerm() bool {
 // instruction. Dummy terminators are used when a basic block is missing a
 // terminator and falls through into the succeeding basic block, the address of
 // which is denoted by term.addr.
-func (inst *instruction) isDummyTerm() bool {
+func (inst *Inst) isDummyTerm() bool {
 	zero := x86asm.Inst{}
 	return inst.Inst == zero
 }
 
 // targets returns the target addresses of the given terminator. Entry specifies
 // the entry address of the function to which the terminator belongs.
-func (d *disassembler) targets(entry bin.Address, term *instruction) []bin.Address {
+func (d *disassembler) targets(entry bin.Address, term *Inst) []bin.Address {
 	// dummy terminator denoted with x86asm.Inst zero value.
 	if term.isDummyTerm() {
 		return []bin.Address{term.addr}
@@ -201,7 +163,7 @@ func (d *disassembler) targets(entry bin.Address, term *instruction) []bin.Addre
 }
 
 // isTailCall reports whether the given instruction is a tail call instruction.
-func (d *disassembler) isTailCall(funcEntry bin.Address, inst *instruction) bool {
+func (d *disassembler) isTailCall(funcEntry bin.Address, inst *Inst) bool {
 	funcEnd := d.getFuncEndAddr(funcEntry)
 	next := inst.addr + bin.Address(inst.Len)
 	switch arg := inst.Args[0].(type) {
@@ -383,7 +345,7 @@ func (q *queue) empty() bool {
 }
 
 // printFunc pretty-prints the given function.
-func printFunc(f *function) {
+func printFunc(f *Func) {
 	var blockAddrs []bin.Address
 	for blockAddr := range f.bbs {
 		blockAddrs = append(blockAddrs, blockAddr)
@@ -396,7 +358,7 @@ func printFunc(f *function) {
 }
 
 // printBlock pretty-prints the given basic block.
-func printBlock(bb *basicBlock) {
+func printBlock(bb *BasicBlock) {
 	for _, inst := range bb.insts {
 		fmt.Println(inst)
 	}

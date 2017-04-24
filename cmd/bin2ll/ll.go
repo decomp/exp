@@ -18,7 +18,7 @@ import (
 
 // translateFunc translates the given function from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) translateFunc(f *function) error {
+func (d *disassembler) translateFunc(f *Func) error {
 	for addr := range f.bbs {
 		label := fmt.Sprintf("block_%06X", uint64(addr))
 		block := &ir.BasicBlock{
@@ -30,7 +30,7 @@ func (d *disassembler) translateFunc(f *function) error {
 	if f.Function == nil {
 		// TODO: Add proper support for type signatures once type analysis has
 		// been conducted.
-		name := fmt.Sprintf("f_%06X", uint64(f.entry))
+		name := fmt.Sprintf("f_%06X", uint64(f.addr))
 		sig := types.NewFunc(types.Void)
 		typ := types.NewPointer(sig)
 		f.Function = &ir.Function{
@@ -39,12 +39,12 @@ func (d *disassembler) translateFunc(f *function) error {
 			Sig:  sig,
 			Metadata: map[string]*metadata.Metadata{
 				"addr": &metadata.Metadata{
-					Nodes: []metadata.Node{&metadata.String{Val: f.entry.String()}},
+					Nodes: []metadata.Node{&metadata.String{Val: f.addr.String()}},
 				},
 			},
 		}
 	}
-	dbg.Printf("translating function %q at %v", f.Name, f.entry)
+	dbg.Printf("translating function %q at %v", f.Name, f.addr)
 
 	var blockAddrs []bin.Address
 	for _, bb := range f.bbs {
@@ -103,7 +103,7 @@ func (d *disassembler) translateFunc(f *function) error {
 
 // translateBlock translates the given basic block from x86 machine code to LLVM
 // IR assembly.
-func (d *disassembler) translateBlock(f *function, bb *basicBlock) error {
+func (d *disassembler) translateBlock(f *Func, bb *BasicBlock) error {
 	block, ok := f.blocks[bb.addr]
 	if !ok {
 		return errors.Errorf("unable to locate LLVM IR basic block at %v", bb.addr)
@@ -112,7 +112,7 @@ func (d *disassembler) translateBlock(f *function, bb *basicBlock) error {
 	f.cur = block
 	dbg.Printf("translating basic block at %v", bb.addr)
 	for _, inst := range bb.insts {
-		if err := d.translateInst(f, bb, inst); err != nil {
+		if err := f.emitInst(inst); err != nil {
 			return errors.WithStack(err)
 		}
 	}
@@ -125,7 +125,7 @@ func (d *disassembler) translateBlock(f *function, bb *basicBlock) error {
 
 // translateInst translates the given instruction from x86 machine code to LLVM
 // IR assembly.
-func (d *disassembler) translateInst(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) translateInst(f *Func, bb *BasicBlock, inst *Inst) error {
 	fmt.Println("inst:", inst)
 	switch inst.Op {
 	case x86asm.ADD:
@@ -176,7 +176,7 @@ func (d *disassembler) translateInst(f *function, bb *basicBlock, inst *instruct
 
 // instADD translates the given ADD instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instADD(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instADD(f *Func, bb *BasicBlock, inst *Inst) error {
 	x := d.useArg(f, bb, inst, inst.Args[0])
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	result := f.cur.NewAdd(x, y)
@@ -186,7 +186,7 @@ func (d *disassembler) instADD(f *function, bb *basicBlock, inst *instruction) e
 
 // instAND translates the given AND instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instAND(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instAND(f *Func, bb *BasicBlock, inst *Inst) error {
 	x := d.useArg(f, bb, inst, inst.Args[0])
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	result := f.cur.NewAnd(x, y)
@@ -196,8 +196,8 @@ func (d *disassembler) instAND(f *function, bb *basicBlock, inst *instruction) e
 
 // instCALL translates the given CALL instruction from x86 machine code to LLVM
 // IR assembly.
-func (d *disassembler) instCALL(f *function, bb *basicBlock, inst *instruction) error {
-	var callee *function
+func (d *disassembler) instCALL(f *Func, bb *BasicBlock, inst *Inst) error {
+	var callee *Func
 	if addr, ok := d.getAddr(f, bb, inst, inst.Args[0]); ok {
 		if c, ok := d.funcs[addr]; ok {
 			callee = c
@@ -212,7 +212,7 @@ func (d *disassembler) instCALL(f *function, bb *basicBlock, inst *instruction) 
 		// analysis will provide this information in the future also for local
 		// function pointer callees.
 		var ok bool
-		callee, ok = c.(*function)
+		callee, ok = c.(*Func)
 		if !ok {
 			return errors.Errorf("invalid callee type; expected *main.function, got %T", c)
 		}
@@ -244,7 +244,7 @@ func (d *disassembler) instCALL(f *function, bb *basicBlock, inst *instruction) 
 
 // instCDQ translates the given CDQ instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instCDQ(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instCDQ(f *Func, bb *BasicBlock, inst *Inst) error {
 	// EDX:EAX = sign-extend of EAX.
 	eax := d.useReg(f, x86asm.EAX)
 	tmp := f.cur.NewLShr(eax, constant.NewInt(31, types.I32))
@@ -268,7 +268,7 @@ func (d *disassembler) instCDQ(f *function, bb *basicBlock, inst *instruction) e
 
 // instCMP translates the given CMP instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instCMP(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instCMP(f *Func, bb *BasicBlock, inst *Inst) error {
 	x := d.useArg(f, bb, inst, inst.Args[0])
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	// Set the status flags according to the result.
@@ -280,7 +280,7 @@ func (d *disassembler) instCMP(f *function, bb *basicBlock, inst *instruction) e
 
 // instDEC translates the given DEC instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instDEC(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instDEC(f *Func, bb *BasicBlock, inst *Inst) error {
 	x := d.useArg(f, bb, inst, inst.Args[0])
 	one := constant.NewInt(1, types.I32)
 	result := f.cur.NewSub(x, one)
@@ -290,7 +290,7 @@ func (d *disassembler) instDEC(f *function, bb *basicBlock, inst *instruction) e
 
 // instIMUL translates the given IMUL instruction from x86 machine code to LLVM
 // IR assembly.
-func (d *disassembler) instIMUL(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instIMUL(f *Func, bb *BasicBlock, inst *Inst) error {
 	x := d.useArg(f, bb, inst, inst.Args[1])
 	y := d.useArg(f, bb, inst, inst.Args[2])
 	result := f.cur.NewMul(x, y)
@@ -300,7 +300,7 @@ func (d *disassembler) instIMUL(f *function, bb *basicBlock, inst *instruction) 
 
 // instINC translates the given INC instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instINC(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instINC(f *Func, bb *BasicBlock, inst *Inst) error {
 	x := d.useArg(f, bb, inst, inst.Args[0])
 	one := constant.NewInt(1, types.I32)
 	result := f.cur.NewAdd(x, one)
@@ -310,7 +310,7 @@ func (d *disassembler) instINC(f *function, bb *basicBlock, inst *instruction) e
 
 // instLEA translates the given LEA instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instLEA(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instLEA(f *Func, bb *BasicBlock, inst *Inst) error {
 	y, ok := inst.Args[1].(x86asm.Mem)
 	if !ok {
 		return errors.Errorf("invalid LEA operand type; expected x86asm.Mem, got %T", inst.Args[1])
@@ -322,7 +322,7 @@ func (d *disassembler) instLEA(f *function, bb *basicBlock, inst *instruction) e
 
 // instMOV translates the given MOV instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instMOV(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instMOV(f *Func, bb *BasicBlock, inst *Inst) error {
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	d.defArg(f, bb, inst, inst.Args[0], y)
 	return nil
@@ -330,7 +330,7 @@ func (d *disassembler) instMOV(f *function, bb *basicBlock, inst *instruction) e
 
 // instMOVSB translates the given MOVSB instruction from x86 machine code to
 // LLVM IR assembly.
-func (d *disassembler) instMOVSB(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instMOVSB(f *Func, bb *BasicBlock, inst *Inst) error {
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	y = f.cur.NewBitCast(y, types.NewPointer(types.I8))
 	d.defArg(f, bb, inst, inst.Args[0], y)
@@ -339,7 +339,7 @@ func (d *disassembler) instMOVSB(f *function, bb *basicBlock, inst *instruction)
 
 // instMOVSD translates the given MOVSD instruction from x86 machine code to
 // LLVM IR assembly.
-func (d *disassembler) instMOVSD(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instMOVSD(f *Func, bb *BasicBlock, inst *Inst) error {
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	y = f.cur.NewBitCast(y, types.NewPointer(types.I32))
 	d.defArg(f, bb, inst, inst.Args[0], y)
@@ -348,7 +348,7 @@ func (d *disassembler) instMOVSD(f *function, bb *basicBlock, inst *instruction)
 
 // instMOVSW translates the given MOVSW instruction from x86 machine code to
 // LLVM IR assembly.
-func (d *disassembler) instMOVSW(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instMOVSW(f *Func, bb *BasicBlock, inst *Inst) error {
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	y = f.cur.NewBitCast(y, types.NewPointer(types.I16))
 	d.defArg(f, bb, inst, inst.Args[0], y)
@@ -357,7 +357,7 @@ func (d *disassembler) instMOVSW(f *function, bb *basicBlock, inst *instruction)
 
 // instMOVZX translates the given MOVZX instruction from x86 machine code to
 // LLVM IR assembly.
-func (d *disassembler) instMOVZX(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instMOVZX(f *Func, bb *BasicBlock, inst *Inst) error {
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	d.defArg(f, bb, inst, inst.Args[0], y)
 	return nil
@@ -365,7 +365,7 @@ func (d *disassembler) instMOVZX(f *function, bb *basicBlock, inst *instruction)
 
 // instSAR translates the given SAR instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instSAR(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instSAR(f *Func, bb *BasicBlock, inst *Inst) error {
 	// shift arithmetic right (SAR)
 	x := d.useArg(f, bb, inst, inst.Args[0])
 	y := d.useArg(f, bb, inst, inst.Args[1])
@@ -376,7 +376,7 @@ func (d *disassembler) instSAR(f *function, bb *basicBlock, inst *instruction) e
 
 // instSHR translates the given SHR instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instSHR(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instSHR(f *Func, bb *BasicBlock, inst *Inst) error {
 	// shift logical right (SHR)
 	x := d.useArg(f, bb, inst, inst.Args[0])
 	y := d.useArg(f, bb, inst, inst.Args[1])
@@ -387,7 +387,7 @@ func (d *disassembler) instSHR(f *function, bb *basicBlock, inst *instruction) e
 
 // instSUB translates the given SUB instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instSUB(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instSUB(f *Func, bb *BasicBlock, inst *Inst) error {
 	x := d.useArg(f, bb, inst, inst.Args[0])
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	result := f.cur.NewSub(x, y)
@@ -397,7 +397,7 @@ func (d *disassembler) instSUB(f *function, bb *basicBlock, inst *instruction) e
 
 // instTEST translates the given TEST instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instTEST(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instTEST(f *Func, bb *BasicBlock, inst *Inst) error {
 	x := d.useArg(f, bb, inst, inst.Args[0])
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	// Set the status flags according to the result.
@@ -409,7 +409,7 @@ func (d *disassembler) instTEST(f *function, bb *basicBlock, inst *instruction) 
 
 // instXOR translates the given XOR instruction from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) instXOR(f *function, bb *basicBlock, inst *instruction) error {
+func (d *disassembler) instXOR(f *Func, bb *BasicBlock, inst *Inst) error {
 	x := d.useArg(f, bb, inst, inst.Args[0])
 	y := d.useArg(f, bb, inst, inst.Args[1])
 	result := f.cur.NewXor(x, y)
@@ -419,7 +419,7 @@ func (d *disassembler) instXOR(f *function, bb *basicBlock, inst *instruction) e
 
 // translateTerm translates the given terminator from x86 machine code to LLVM
 // IR assembly.
-func (d *disassembler) translateTerm(f *function, bb *basicBlock, term *instruction) error {
+func (d *disassembler) translateTerm(f *Func, bb *BasicBlock, term *Inst) error {
 	if term.isDummyTerm() {
 		target, ok := f.blocks[term.addr]
 		if !ok {
@@ -443,7 +443,7 @@ func (d *disassembler) translateTerm(f *function, bb *basicBlock, term *instruct
 
 // termCondBranch translates the given conditional branch terminator from x86
 // machine code to LLVM IR assembly.
-func (d *disassembler) termCondBranch(f *function, bb *basicBlock, term *instruction) error {
+func (d *disassembler) termCondBranch(f *Func, bb *BasicBlock, term *Inst) error {
 	// target branch of conditional branching instruction.
 	next := term.addr + bin.Address(term.Len)
 	targetTrueAddrs := d.getAddrs(next, term.Args[0])
@@ -622,8 +622,8 @@ func (d *disassembler) termCondBranch(f *function, bb *basicBlock, term *instruc
 
 // termJMP translates the given JMP terminator from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) termJMP(f *function, bb *basicBlock, term *instruction) error {
-	if d.isTailCall(f.entry, term) {
+func (d *disassembler) termJMP(f *Func, bb *BasicBlock, term *Inst) error {
+	if d.isTailCall(f.addr, term) {
 		// Handle tail call terminator instructions.
 
 		// Hack: interpret JMP instruction as CALL instruction. Works since
@@ -688,7 +688,7 @@ func (d *disassembler) termJMP(f *function, bb *basicBlock, term *instruction) e
 
 // termRET translates the given RET terminator from x86 machine code to LLVM IR
 // assembly.
-func (d *disassembler) termRET(f *function, bb *basicBlock, term *instruction) error {
+func (d *disassembler) termRET(f *Func, bb *BasicBlock, term *Inst) error {
 	// Handle return values of non-void functions (passed through EAX).
 	if !types.Equal(f.Sig.Ret, types.Void) {
 		result := d.useArg(f, bb, nil, x86asm.EAX)
@@ -701,7 +701,7 @@ func (d *disassembler) termRET(f *function, bb *basicBlock, term *instruction) e
 
 // getAddr returns the address specified by the given argument, and a boolean
 // value indicating success.
-func (d *disassembler) getAddr(f *function, bb *basicBlock, inst *instruction, arg x86asm.Arg) (bin.Address, bool) {
+func (d *disassembler) getAddr(f *Func, bb *BasicBlock, inst *Inst, arg x86asm.Arg) (bin.Address, bool) {
 	switch arg := arg.(type) {
 	case x86asm.Reg:
 		fmt.Println("arg:", arg)
@@ -739,7 +739,7 @@ func (d *disassembler) getAddr(f *function, bb *basicBlock, inst *instruction, a
 
 // mem returns a pointer to the LLVM IR value associated with the given memory
 // argument.
-func (d *disassembler) mem(f *function, bb *basicBlock, inst *instruction, arg x86asm.Mem) value.Value {
+func (d *disassembler) mem(f *Func, bb *BasicBlock, inst *Inst, arg x86asm.Mem) value.Value {
 	// Early return if constant address.
 	if arg.Segment == 0 && arg.Base == 0 && arg.Scale == 0 && arg.Index == 0 {
 		addr := bin.Address(arg.Disp)
@@ -807,7 +807,7 @@ func (d *disassembler) mem(f *function, bb *basicBlock, inst *instruction, arg x
 	return f.cur.NewBitCast(result, types.NewPointer(result.Type()))
 }
 
-func (d *disassembler) useArg(f *function, bb *basicBlock, inst *instruction, arg x86asm.Arg) value.Value {
+func (d *disassembler) useArg(f *Func, bb *BasicBlock, inst *Inst, arg x86asm.Arg) value.Value {
 	fmt.Println("useArg:", arg)
 	switch arg := arg.(type) {
 	case x86asm.Reg:
@@ -837,17 +837,17 @@ func (d *disassembler) useArg(f *function, bb *basicBlock, inst *instruction, ar
 	}
 }
 
-func (d *disassembler) useReg(f *function, reg x86asm.Reg) value.Value {
+func (d *disassembler) useReg(f *Func, reg x86asm.Reg) value.Value {
 	src := d.reg(f, reg)
 	return f.cur.NewLoad(src)
 }
 
-func (d *disassembler) defReg(f *function, reg x86asm.Reg, v value.Value) {
+func (d *disassembler) defReg(f *Func, reg x86asm.Reg, v value.Value) {
 	dst := d.reg(f, reg)
 	f.cur.NewStore(v, dst)
 }
 
-func (d *disassembler) defArg(f *function, bb *basicBlock, inst *instruction, arg x86asm.Arg, v value.Value) {
+func (d *disassembler) defArg(f *Func, bb *BasicBlock, inst *Inst, arg x86asm.Arg, v value.Value) {
 	fmt.Println("defArg:", arg)
 	switch arg := arg.(type) {
 	case x86asm.Reg:
@@ -865,7 +865,7 @@ func (d *disassembler) defArg(f *function, bb *basicBlock, inst *instruction, ar
 }
 
 // reg returns the LLVM IR value associated with the given x86 register.
-func (d *disassembler) reg(f *function, reg x86asm.Reg) value.Value {
+func (d *disassembler) reg(f *Func, reg x86asm.Reg) value.Value {
 	if v, ok := f.regs[reg]; ok {
 		return v
 	}
@@ -945,7 +945,7 @@ func (d *disassembler) reg(f *function, reg x86asm.Reg) value.Value {
 //
 // ref: $ 3.4.3.1 Status Flags, Intel 64 and IA-32 Architectures Software
 // Developer's Manual
-func (d *disassembler) updateStatusFlags(f *function, bb *basicBlock, x, y value.Value) error {
+func (d *disassembler) updateStatusFlags(f *Func, bb *BasicBlock, x, y value.Value) error {
 	// CF (bit 0) Carry flag - Set if an arithmetic operation generates a carry
 	// or a borrow out of the most- significant bit of the result; cleared
 	// otherwise. This flag indicates an overflow condition for unsigned-integer
@@ -1015,7 +1015,7 @@ func (status StatusFlag) String() string {
 
 // status returns a pointer to the LLVM IR value associated with the given
 // status flag.
-func (d *disassembler) status(f *function, status StatusFlag) value.Value {
+func (d *disassembler) status(f *Func, status StatusFlag) value.Value {
 	if v, ok := f.status[status]; ok {
 		return v
 	}
@@ -1027,21 +1027,21 @@ func (d *disassembler) status(f *function, status StatusFlag) value.Value {
 
 // useStatus loads and returns the LLVM IR value associated with the given
 // status flag.
-func (d *disassembler) useStatus(f *function, bb *basicBlock, status StatusFlag) value.Value {
+func (d *disassembler) useStatus(f *Func, bb *BasicBlock, status StatusFlag) value.Value {
 	src := d.status(f, status)
 	return f.cur.NewLoad(src)
 }
 
 // defStatus stores the given value to the LLVM IR value associated with the
 // given status flag.
-func (d *disassembler) defStatus(f *function, bb *basicBlock, status StatusFlag, v value.Value) {
+func (d *disassembler) defStatus(f *Func, bb *BasicBlock, status StatusFlag, v value.Value) {
 	dst := d.status(f, status)
 	f.cur.NewStore(v, dst)
 }
 
 // useGlobal loads and returns the LLVM IR value associated with the given
 // global variable address.
-func (d *disassembler) useGlobal(f *function, bb *basicBlock, addr bin.Address) value.Value {
+func (d *disassembler) useGlobal(f *Func, bb *BasicBlock, addr bin.Address) value.Value {
 	src, ok := d.global(f, bb, addr)
 	if !ok {
 		panic(fmt.Sprintf("unable to locate global variable at %v", addr))
@@ -1051,7 +1051,7 @@ func (d *disassembler) useGlobal(f *function, bb *basicBlock, addr bin.Address) 
 
 // defGlobal stores the given value to the LLVM IR value associated with the
 // given global variable address.
-func (d *disassembler) defGlobal(f *function, bb *basicBlock, addr bin.Address, v value.Value) {
+func (d *disassembler) defGlobal(f *Func, bb *BasicBlock, addr bin.Address, v value.Value) {
 	dst, ok := d.global(f, bb, addr)
 	if !ok {
 		panic(fmt.Sprintf("unable to locate global variable at %v", addr))
@@ -1061,7 +1061,7 @@ func (d *disassembler) defGlobal(f *function, bb *basicBlock, addr bin.Address, 
 
 // global returns a pointer to the LLVM IR value associated with the given
 // global variable, and a boolean value indicating success.
-func (d *disassembler) global(f *function, bb *basicBlock, addr bin.Address) (value.Value, bool) {
+func (d *disassembler) global(f *Func, bb *BasicBlock, addr bin.Address) (value.Value, bool) {
 	// Early return if direct access to global variable.
 	if src, ok := d.globals[addr]; ok {
 		return src, true
@@ -1093,7 +1093,7 @@ func (d *disassembler) global(f *function, bb *basicBlock, addr bin.Address) (va
 }
 
 // getElementPtr returns a pointer to the given offset into the source value.
-func (d *disassembler) getElementPtr(f *function, bb *basicBlock, src value.Value, offset int64) *ir.InstGetElementPtr {
+func (d *disassembler) getElementPtr(f *Func, bb *BasicBlock, src value.Value, offset int64) *ir.InstGetElementPtr {
 	srcType, ok := src.Type().(*types.PointerType)
 	if !ok {
 		panic(fmt.Errorf("invalid source address type; expected *types.PointerType, got %T", src.Type()))

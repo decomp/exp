@@ -18,8 +18,12 @@ type function struct {
 	*ir.Function
 	// Entry address of the function.
 	entry bin.Address
-	// Basic blocks of the function.
-	blocks map[bin.Address]*basicBlock
+	// Current basic block being generated.
+	cur *ir.BasicBlock
+	// x86 basic blocks of the function.
+	bbs map[bin.Address]*basicBlock
+	// LLVM IR basic blocks of the function.
+	blocks map[bin.Address]*ir.BasicBlock
 	// Registers used within the function.
 	regs map[x86asm.Reg]*ir.InstAlloca
 	// Status flags used within the function.
@@ -29,17 +33,12 @@ type function struct {
 // basicBlock tracks the information required to translate a basic block from
 // x86 machine code to LLVM IR assembly.
 type basicBlock struct {
-	// LLVM IR code for the basic block.
-	*ir.BasicBlock
 	// Entry address of the basic block.
 	addr bin.Address
 	// Instructions of the basic block.
 	insts []*instruction
 	// Terminator of the basic block.
 	term *instruction
-	// Additional basic blocks used when translation of single x86 basic blocks
-	// require multiple LLVM IR basic blocks.
-	extra []*basicBlock
 }
 
 // instruction tracks the information required to translate an instruction from
@@ -58,7 +57,8 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*function, error) {
 	if !ok {
 		f = &function{
 			entry:  entry,
-			blocks: make(map[bin.Address]*basicBlock),
+			bbs:    make(map[bin.Address]*basicBlock),
+			blocks: make(map[bin.Address]*ir.BasicBlock),
 			regs:   make(map[x86asm.Reg]*ir.InstAlloca),
 			status: make(map[StatusFlag]*ir.InstAlloca),
 		}
@@ -66,15 +66,15 @@ func (d *disassembler) decodeFunc(entry bin.Address) (*function, error) {
 	queue := newQueue()
 	for queue.push(entry); !queue.empty(); {
 		addr := queue.pop()
-		block, err := d.decodeBlock(addr)
+		bb, err := d.decodeBlock(addr)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		f.blocks[addr] = block
+		f.bbs[addr] = bb
 		// Add terminators to queue, if not already decoded.
-		targets := d.targets(entry, block.term)
+		targets := d.targets(entry, bb.term)
 		for _, target := range targets {
-			if _, ok := f.blocks[target]; ok {
+			if _, ok := f.bbs[target]; ok {
 				// ignore block if already decoded.
 				continue
 			}
@@ -105,18 +105,14 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
 	maxLen := d.getMaxBlockLen(addr)
 
 	// Decode instructions.
-	label := fmt.Sprintf("block_%06X", uint64(addr))
-	block := &basicBlock{
-		BasicBlock: &ir.BasicBlock{
-			Name: label,
-		},
+	bb := &basicBlock{
 		addr: addr,
 	}
 	for j := int64(0); j < maxLen; {
 		inst, err := x86asm.Decode(src, d.mode)
 		if err != nil {
 			// TODO: Remove debug info when the disassembler matures.
-			printBlock(block)
+			printBlock(bb)
 			fmt.Println("addr:", addr)
 			return nil, errors.WithStack(err)
 		}
@@ -124,7 +120,7 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
 			Inst: inst,
 			addr: addr,
 		}
-		block.insts = append(block.insts, i)
+		bb.insts = append(bb.insts, i)
 		j += int64(inst.Len)
 		src = src[inst.Len:]
 		addr += bin.Address(inst.Len)
@@ -135,20 +131,20 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*basicBlock, error) {
 			break
 		}
 	}
-	lastInst := block.insts[len(block.insts)-1]
+	lastInst := bb.insts[len(bb.insts)-1]
 	if lastInst.isTerm() {
-		block.insts = block.insts[:len(block.insts)-1]
-		block.term = lastInst
+		bb.insts = bb.insts[:len(bb.insts)-1]
+		bb.term = lastInst
 	} else {
 		// TODO: Figure out a better representation for dummy terminators.
 
 		// dummy terminator denoted the zero value for x86asm.Inst and address of
 		// fallthrough basic block.
-		block.term = &instruction{
+		bb.term = &instruction{
 			addr: lastInst.addr + bin.Address(lastInst.Len),
 		}
 	}
-	return block, nil
+	return bb, nil
 }
 
 // isTerm reports whether the given instruction is a terminating instruction.
@@ -389,27 +385,27 @@ func (q *queue) empty() bool {
 // printFunc pretty-prints the given function.
 func printFunc(f *function) {
 	var blockAddrs []bin.Address
-	for blockAddr := range f.blocks {
+	for blockAddr := range f.bbs {
 		blockAddrs = append(blockAddrs, blockAddr)
 	}
 	sort.Sort(bin.Addresses(blockAddrs))
 	for _, blockAddr := range blockAddrs {
-		block := f.blocks[blockAddr]
-		printBlock(block)
+		bb := f.bbs[blockAddr]
+		printBlock(bb)
 	}
 }
 
 // printBlock pretty-prints the given basic block.
-func printBlock(block *basicBlock) {
-	for _, inst := range block.insts {
+func printBlock(bb *basicBlock) {
+	for _, inst := range bb.insts {
 		fmt.Println(inst)
 	}
-	if block.term == nil {
+	if bb.term == nil {
 		fmt.Println("; ### terminator missing in basic block")
-	} else if block.term.isDummyTerm() {
+	} else if bb.term.isDummyTerm() {
 		fmt.Println("; dummy terminator")
 	} else {
-		fmt.Println(block.term)
+		fmt.Println(bb.term)
 	}
 }
 

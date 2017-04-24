@@ -80,13 +80,13 @@ func main() {
 
 	// TODO: Remove -block. Used for debugging.
 	if blockAddr != 0 {
-		block, err := d.decodeBlock(blockAddr)
+		bb, err := d.decodeBlock(blockAddr)
 		if err != nil {
 			log.Fatalf("%+v", err)
 		}
-		printBlock(block)
-		//fmt.Println("targets from basic block address:", block.addr)
-		//targets := d.targets(block.term)
+		printBlock(bb)
+		//fmt.Println("targets from basic block address:", bb.addr)
+		//targets := d.targets(bb.term)
 		//for _, target := range targets {
 		//	fmt.Println(target)
 		//}
@@ -301,7 +301,8 @@ func parseSigs(llPath string, funcs map[bin.Address]*function) error {
 		fn := &function{
 			Function: f,
 			entry:    entry,
-			blocks:   make(map[bin.Address]*basicBlock),
+			bbs:      make(map[bin.Address]*basicBlock),
+			blocks:   make(map[bin.Address]*ir.BasicBlock),
 			regs:     make(map[x86asm.Reg]*ir.InstAlloca),
 			status:   make(map[StatusFlag]*ir.InstAlloca),
 		}

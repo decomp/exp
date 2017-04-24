@@ -66,7 +66,7 @@ func (d *disassembler) translateFunc(f *Func) error {
 	if len(f.regs) > 0 || len(f.statusFlags) > 0 {
 		entry := &ir.BasicBlock{}
 		// Allocate local variables for each register used within the function.
-		for reg := x86asm.AL; reg <= x86asm.TR7; reg++ {
+		for reg := firstReg; reg <= lastReg; reg++ {
 			if inst, ok := f.regs[reg]; ok {
 				entry.AppendInst(inst)
 			}
@@ -887,7 +887,7 @@ func (d *disassembler) reg(f *Func, reg x86asm.Reg) value.Value {
 		panic(fmt.Errorf("support for register %v not yet implemented", reg))
 	}
 	v := ir.NewAlloca(typ)
-	v.SetName(strings.ToLower(reg.String()))
+	v.SetName(strings.ToLower(Register(reg).String()))
 	f.regs[reg] = v
 	return v
 }

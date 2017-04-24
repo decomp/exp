@@ -3313,8 +3313,22 @@ func (f *Func) emitInstICEBP(inst *Inst) error {
 // emitInst translates the given x86 IDIV instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstIDIV(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstIDIV: not yet implemented")
+	// IDIV - Signed Divide
+
+	// Signed divide EDX:EAX by r/m32, with result stored in:
+	//
+	//    EAX = Quotient
+	//    EDX = Remainder
+	x := f.useArg(inst.Arg(0))
+	edx_eax := f.useReg(EDX_EAX)
+	if !types.Equal(x.Type(), types.I64) {
+		x = f.cur.NewSExt(x, types.I64)
+	}
+	quo := f.cur.NewSDiv(edx_eax, x)
+	rem := f.cur.NewSRem(edx_eax, x)
+	f.defReg(EAX, quo)
+	f.defReg(EDX, rem)
+	return nil
 }
 
 // --- [ IMUL ] ----------------------------------------------------------------
@@ -6116,8 +6130,11 @@ func (f *Func) emitInstSGDT(inst *Inst) error {
 // emitInst translates the given x86 SHL instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstSHL(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSHL: not yet implemented")
+	// shift logical left (SHL)
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	result := f.cur.NewShl(x, y)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ SHLD ] ----------------------------------------------------------------

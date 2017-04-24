@@ -58,7 +58,7 @@ func (f *Func) useArg(arg *Arg) value.Value {
 		addr := next + bin.Address(a)
 		return f.useAddr(addr)
 	default:
-		panic(fmt.Errorf("support for argument type %T not yet implemented", arg))
+		panic(fmt.Errorf("support for argument type %T not yet implemented", arg.Arg))
 	}
 }
 
@@ -156,6 +156,11 @@ func (f *Func) useRegElem(reg *Reg, elem types.Type) value.Value {
 func (f *Func) defReg(reg *Reg, v value.Value) {
 	dst := f.reg(reg.Reg)
 	f.cur.NewStore(v, dst)
+	switch reg.Reg {
+	case x86asm.EAX, x86asm.EDX:
+		// Redefine the PSEUDO-register EDX:EAX based on change in EAX or EDX.
+		f.redefEDX_EAX()
+	}
 }
 
 // defRegElem stores the value of the specified element type to the given x86
@@ -177,7 +182,7 @@ func (f *Func) reg(reg x86asm.Reg) value.Value {
 	}
 	typ := regType(reg)
 	v := ir.NewAlloca(typ)
-	name := strings.ToLower(reg.String())
+	name := strings.ToLower(Register(reg).String())
 	v.SetName(name)
 	f.regs[reg] = v
 	return v
@@ -272,7 +277,7 @@ func (f *Func) mem(mem *Mem) value.Value {
 	if segment == nil && index == nil {
 		// Stack local memory access.
 		if mem.Base == x86asm.ESP || mem.Base == x86asm.EBP {
-			name := fmt.Sprintf("%s_%d", strings.ToLower(mem.Base.String()), f.espDisp+mem.Disp)
+			name := fmt.Sprintf("%s_%d", strings.ToLower(Register(mem.Base).String()), f.espDisp+mem.Disp)
 			if v, ok := f.locals[name]; ok {
 				return v
 			}
@@ -525,4 +530,15 @@ func (f *Func) getFunc(arg *Arg) (value.Named, *types.FuncType, ir.CallConv, boo
 	}
 	fmt.Printf("unable to locate function for argument %v\n", arg.Arg)
 	panic("not yet implemented")
+}
+
+// redefEDX_EAX redefines the 64-bit pseudo-register EDX:EAX based on the value
+// of EAX and EDX.
+func (f *Func) redefEDX_EAX() {
+	edx := f.useReg(EDX)
+	eax := f.useReg(EAX)
+	tmp1 := f.cur.NewSExt(edx, types.I64)
+	tmp2 := f.cur.NewZExt(eax, types.I64)
+	tmp := f.cur.NewOr(tmp1, tmp2)
+	f.defReg(EDX_EAX, tmp)
 }

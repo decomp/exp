@@ -14,6 +14,13 @@ type Register x86asm.Reg
 // String returns the string representation of reg.
 func (reg Register) String() string {
 	r := x86asm.Reg(reg)
+	// Pretty-print pseudo-registers.
+	m := map[x86asm.Reg]string{
+		x86asm_EDX_EAX: "EDX:EAX",
+	}
+	if s, ok := m[r]; ok {
+		return s
+	}
 	return r.String()
 }
 
@@ -203,6 +210,8 @@ func parseReg(s string) x86asm.Reg {
 		"TR5": x86asm.TR5,
 		"TR6": x86asm.TR6,
 		"TR7": x86asm.TR7,
+		// PSEUDO-registers.
+		"EDX:EAX": x86asm_EDX_EAX,
 	}
 	if reg, ok := m[s]; ok {
 		return reg
@@ -264,6 +273,9 @@ func regType(reg x86asm.Reg) types.Type {
 	// Task registers.
 	case x86asm.TR0, x86asm.TR1, x86asm.TR2, x86asm.TR3, x86asm.TR4, x86asm.TR5, x86asm.TR6, x86asm.TR7:
 		panic(fmt.Errorf("support for register %v not yet implemented", reg))
+	// PSEUDO-registers.
+	case x86asm_EDX_EAX:
+		return types.I64
 	default:
 		panic(fmt.Errorf("support for register %v not yet implemented", reg))
 	}
@@ -438,4 +450,19 @@ var (
 	TR5 = NewReg(x86asm.TR5, nil)
 	TR6 = NewReg(x86asm.TR6, nil)
 	TR7 = NewReg(x86asm.TR7, nil)
+	// PSEUDO-registers.
+	EDX_EAX = NewReg(x86asm_EDX_EAX, nil)
+)
+
+// PSEUDO-registers.
+const (
+	firstReg = x86asm.AL
+	// CL
+	// ...
+	// TR7
+
+	// EDX:EAX (used in idiv)
+	x86asm_EDX_EAX = x86asm.TR7 + 1
+
+	lastReg = x86asm_EDX_EAX
 )

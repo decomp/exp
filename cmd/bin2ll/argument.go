@@ -312,7 +312,7 @@ func (f *Func) mem(mem *Mem) value.Value {
 					addr := bin.Address(mem.Disp - offset)
 					v, ok := f.addr(addr)
 					if !ok {
-						panic(fmt.Errorf("unable to locate value at address %v, referenced from %v instruction at %v", addr, mem.parent.Op, mem.parent.addr))
+						panic(fmt.Errorf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.parent.Op, mem.parent.addr))
 					}
 					// TODO: Figure out how to handle negative offsets.
 					disp = f.getElementPtr(v, offset)
@@ -323,7 +323,7 @@ func (f *Func) mem(mem *Mem) value.Value {
 			addr := bin.Address(mem.Disp)
 			v, ok := f.addr(addr)
 			if !ok {
-				warn.Printf("unable to locate value at address %v, referenced from %v instruction at %v", addr, mem.parent.Op, mem.parent.addr)
+				warn.Printf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.parent.Op, mem.parent.addr)
 			}
 			disp = v
 		}
@@ -333,7 +333,7 @@ func (f *Func) mem(mem *Mem) value.Value {
 	if segment == nil && base == nil && index == nil {
 		if disp == nil {
 			addr := bin.Address(mem.Disp)
-			panic(fmt.Errorf("unable to locate value at address %v, referenced from %v instruction at %v", addr, mem.parent.Op, mem.parent.addr))
+			panic(fmt.Errorf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.parent.Op, mem.parent.addr))
 		}
 		return disp
 	}
@@ -351,6 +351,7 @@ func (f *Func) mem(mem *Mem) value.Value {
 		if src == nil {
 			src = base
 		} else {
+			src = f.castToPtr(src, mem.parent)
 			indices := []value.Value{base}
 			src = f.cur.NewGetElementPtr(src, indices...)
 		}
@@ -363,6 +364,7 @@ func (f *Func) mem(mem *Mem) value.Value {
 		if src == nil {
 			src = index
 		} else {
+			src = f.castToPtr(src, mem.parent)
 			indices := []value.Value{index}
 			src = f.cur.NewGetElementPtr(src, indices...)
 		}
@@ -377,8 +379,15 @@ func (f *Func) mem(mem *Mem) value.Value {
 	// TODO: Cast into proper type, once type analysis information is available.
 
 	// Force bitcast into pointer type.
+	return f.castToPtr(src, mem.parent)
+}
+
+// castToPtr casts the given value into a pointer, where the element type is
+// derrived from src and instruction prefixes, with instruction prefix takes
+// precedence.
+func (f *Func) castToPtr(src value.Value, parent *Inst) value.Value {
 	elem := src.Type()
-	for _, prefix := range mem.parent.Prefix[:] {
+	for _, prefix := range parent.Prefix[:] {
 		// The first zero in the array marks the end of the prefixes.
 		if prefix == 0 {
 			break
@@ -388,11 +397,11 @@ func (f *Func) mem(mem *Mem) value.Value {
 		if implied {
 			switch prefix & 0x0FFF {
 			case x86asm.PrefixData16:
-				switch mem.parent.Op {
-				case x86asm.MOVSW:
+				switch parent.Op {
+				case x86asm.MOV, x86asm.MOVSW:
 					// supported.
 				default:
-					panic(fmt.Errorf("support for implied prefix %v (0x%04X) not yet implemented for %v instruction", prefix, uint16(prefix), mem.parent.Op))
+					panic(fmt.Errorf("support for implied prefix %v (0x%04X) not yet implemented for %v instruction", prefix, uint16(prefix), parent.Op))
 				}
 			default:
 				panic(fmt.Errorf("support for prefix %v (0x%04X) not yet implemented", prefix, uint16(prefix)))
@@ -401,16 +410,15 @@ func (f *Func) mem(mem *Mem) value.Value {
 			switch prefix & 0x0FFF {
 			case x86asm.PrefixData16:
 				elem = types.I16
-				panic(fmt.Errorf("inst prefix: %v", mem.parent))
+				panic(fmt.Errorf("inst prefix: %v", parent))
 			default:
 				panic(fmt.Errorf("support for prefix %v (0x%04X) not yet implemented", prefix, uint16(prefix)))
 			}
 		}
 	}
 	if !types.IsPointer(elem) {
-		src = f.cur.NewBitCast(src, types.NewPointer(elem))
+		return f.cur.NewBitCast(src, types.NewPointer(elem))
 	}
-
 	return src
 }
 
@@ -474,7 +482,7 @@ func (f *Func) status(status StatusFlag) value.Value {
 // --- [ address ] -------------------------------------------------------------
 
 // useAddr loads and returns the value of the given address, emitting code to f.
-func (f *Func) useAddr(addr bin.Address) value.Value {
+func (f *Func) useAddr(addr bin.Address) value.Named {
 	src, ok := f.addr(addr)
 	if !ok {
 		panic(fmt.Errorf("unable to locate value at address %v", addr))
@@ -494,7 +502,7 @@ func (f *Func) defAddr(addr bin.Address, v value.Value) {
 // addr returns a pointer to the LLVM IR value associated with the given
 // address, emitting code to f. The returned value is one of *ir.BasicBlock,
 // *ir.Global and *ir.Function, and the boolean value indicates success
-func (f *Func) addr(addr bin.Address) (value.Value, bool) {
+func (f *Func) addr(addr bin.Address) (value.Named, bool) {
 	if block, ok := f.blocks[addr]; ok {
 		return block, true
 	}
@@ -543,6 +551,29 @@ func (f *Func) getFunc(arg *Arg) (value.Named, *types.FuncType, ir.CallConv, boo
 			return v, v.Sig, v.CallConv, true
 		}
 	}
+
+	// Handle function pointers in structures.
+	switch a := arg.Arg.(type) {
+	case x86asm.Mem:
+		if context, ok := f.d.contexts[arg.parent.addr]; ok {
+			if c, ok := context.Regs[Register(a.Base)]; ok {
+				if addr, ok := c["addr"]; ok {
+					v := f.useAddr(bin.Address(addr))
+					// TODO: Figure out how to handle negative offsets.
+					v = f.getElementPtr(v, a.Disp)
+					v = f.cur.NewLoad(v)
+					if typ, ok := v.Type().(*types.PointerType); ok {
+						if sig := typ.Elem.(*types.FuncType); ok {
+							// TODO: Figure out how to recover calling convention.
+							// Perhaps through context.json at call sites?
+							return v, sig, ir.CallConvNone, true
+						}
+					}
+				}
+			}
+		}
+	}
+
 	fmt.Printf("unable to locate function for argument %v\n", arg.Arg)
 	panic("not yet implemented")
 }

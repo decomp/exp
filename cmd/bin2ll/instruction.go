@@ -3294,8 +3294,16 @@ func (f *Func) emitInstIDIV(inst *Inst) error {
 // emitInstIMUL translates the given x86 IMUL instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstIMUL(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstIMUL: not yet implemented")
+	// TODO: Add support for one-operand form IMUL.
+	// TODO: Add support for three-operand form IMUL.
+
+	// IMUL - Signed Multiply
+
+	// Two-operand form.
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	result := f.cur.NewMul(x, y)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ IN ] ------------------------------------------------------------------
@@ -3819,7 +3827,7 @@ func (f *Func) emitInstMONITOR(inst *Inst) error {
 // code to f.
 func (f *Func) emitInstMOV(inst *Inst) error {
 	src := f.useArg(inst.Arg(1))
-	f.defArg(inst.Arg(0), src)
+	f.defArgElem(inst.Arg(0), src, src.Type())
 	return nil
 }
 
@@ -4137,8 +4145,13 @@ func (f *Func) emitInstMOVSW(inst *Inst) error {
 // emitInstMOVSX translates the given x86 MOVSX instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstMOVSX(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstMOVSX: not yet implemented")
+	size := inst.MemBytes * 8
+	elem := types.NewInt(size)
+	src := f.useArgElem(inst.Arg(1), elem)
+	// TODO: Handle dst type dynamically.
+	src = f.cur.NewSExt(src, types.I32)
+	f.defArg(inst.Arg(0), src)
+	return nil
 }
 
 // --- [ MOVSXD ] --------------------------------------------------------------
@@ -4268,8 +4281,27 @@ func (f *Func) emitInstNOP(inst *Inst) error {
 // emitInstNOT translates the given x86 NOT instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstNOT(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstNOT: not yet implemented")
+	x := f.useArg(inst.Arg(0))
+	var mask value.Value
+	typ, ok := x.Type().(*types.IntType)
+	if !ok {
+		panic(fmt.Errorf("invalid NOT operand type; expected *types.IntType, got %T", x.Type()))
+	}
+	switch typ.Size {
+	case 8:
+		mask = constant.NewInt(0xFF, types.I8)
+	case 16:
+		mask = constant.NewInt(0xFFFF, types.I16)
+	case 32:
+		mask = constant.NewInt(0xFFFFFFFF, types.I32)
+	case 64:
+		mask = constant.NewIntFromString("0xFFFFFFFFFFFFFFFF", types.I64)
+	default:
+		panic(fmt.Errorf("support for operand bit size %d not yet implemented", typ.Size))
+	}
+	result := f.cur.NewXor(x, mask)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ OR ] ------------------------------------------------------------------
@@ -4277,8 +4309,10 @@ func (f *Func) emitInstNOT(inst *Inst) error {
 // emitInstOR translates the given x86 OR instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) emitInstOR(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstOR: not yet implemented")
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	result := f.cur.NewOr(x, y)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ ORPD ] ----------------------------------------------------------------

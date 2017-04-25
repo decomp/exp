@@ -46,6 +46,18 @@ func (d *disassembler) translateFunc(f *Func) error {
 	}
 	dbg.Printf("translating function %q at %v", f.Name, f.entry)
 
+	// Preprocess the function to assess if any instruction makes use of EDX:EAX
+	// (e.g. IDIV).
+	for _, bb := range f.bbs {
+		for _, inst := range bb.insts {
+			switch inst.Op {
+			// TODO: Identify more instructions which makes use of EDX:EAX.
+			case x86asm.IDIV:
+				f.usesEDX_EAX = true
+			}
+		}
+	}
+
 	var blockAddrs []bin.Address
 	for _, bb := range f.bbs {
 		blockAddrs = append(blockAddrs, bb.addr)

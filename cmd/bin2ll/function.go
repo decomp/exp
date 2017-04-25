@@ -25,6 +25,10 @@ type Func struct {
 	statusFlags map[StatusFlag]*ir.InstAlloca
 	// Local varialbes used within the function.
 	locals map[string]*ir.InstAlloca
+	// usesEDX_EAX specifies whether any instruction of the function uses
+	// EDX:EAX.
+	usesEDX_EAX bool
+
 	// TODO: Move espDisp from Func to BasicBlock, and propagate symbolic
 	// execution information through context.json.
 

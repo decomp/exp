@@ -581,6 +581,9 @@ func (f *Func) getFunc(arg *Arg) (value.Named, *types.FuncType, ir.CallConv, boo
 // redefEDX_EAX redefines the 64-bit pseudo-register EDX:EAX based on the value
 // of EAX and EDX.
 func (f *Func) redefEDX_EAX() {
+	if !f.usesEDX_EAX {
+		return
+	}
 	edx := f.useReg(EDX)
 	eax := f.useReg(EAX)
 	tmp1 := f.cur.NewSExt(edx, types.I64)

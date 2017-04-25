@@ -25,12 +25,12 @@ import (
 //    (PF=0)              SETPO    Set byte if parity odd.             PRESUDO-instruction
 //    (PF=1)              SETP     Set byte if parity.
 //    (PF=1)              SETPE    Set byte if parity even.            PRESUDO-instruction
-//    (SF≠OF)             SETL     Set byte if less.
-//    (SF≠OF)             SETNGE   Set byte if not greater or equal.   PRESUDO-instruction
 //    (SF=0)              SETNS    Set byte if not sign.
 //    (SF=1)              SETS     Set byte if sign.
 //    (SF=OF)             SETGE    Set byte if greater or equal.
 //    (SF=OF)             SETNL    Set byte if not less.               PRESUDO-instruction
+//    (SF≠OF)             SETL     Set byte if less.
+//    (SF≠OF)             SETNGE   Set byte if not greater or equal.   PRESUDO-instruction
 //    (ZF=0 and SF=OF)    SETG     Set byte if greater.
 //    (ZF=0 and SF=OF)    SETNLE   Set byte if not less or equal.      PRESUDO-instruction
 //    (ZF=0)              SETNE    Set byte if not equal.
@@ -145,19 +145,6 @@ func (f *Func) emitInstSETP(inst *Inst) error {
 	return f.emitInstSETcc(inst.Arg(0), cond)
 }
 
-// --- [ SETL ] ----------------------------------------------------------------
-
-// emitInstSETL translates the given x86 SETL instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETL(inst *Inst) error {
-	// Set byte if less.
-	//    (SF≠OF)
-	sf := f.useStatus(SF)
-	of := f.useStatus(OF)
-	cond := f.cur.NewICmp(ir.IntNE, sf, of)
-	return f.emitInstSETcc(inst.Arg(0), cond)
-}
-
 // --- [ SETNS ] ---------------------------------------------------------------
 
 // emitInstSETNS translates the given x86 SETNS instruction to LLVM IR, emitting
@@ -192,6 +179,19 @@ func (f *Func) emitInstSETGE(inst *Inst) error {
 	sf := f.useStatus(SF)
 	of := f.useStatus(OF)
 	cond := f.cur.NewICmp(ir.IntEQ, sf, of)
+	return f.emitInstSETcc(inst.Arg(0), cond)
+}
+
+// --- [ SETL ] ----------------------------------------------------------------
+
+// emitInstSETL translates the given x86 SETL instruction to LLVM IR, emitting
+// code to f.
+func (f *Func) emitInstSETL(inst *Inst) error {
+	// Set byte if less.
+	//    (SF≠OF)
+	sf := f.useStatus(SF)
+	of := f.useStatus(OF)
+	cond := f.cur.NewICmp(ir.IntNE, sf, of)
 	return f.emitInstSETcc(inst.Arg(0), cond)
 }
 

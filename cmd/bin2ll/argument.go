@@ -198,6 +198,21 @@ type Mem struct {
 	parent *Inst
 }
 
+// Segment returns the segment register of the memory reference.
+func (mem *Mem) Segment() *Reg {
+	return NewReg(mem.Mem.Segment, mem.parent)
+}
+
+// Base returns the base register of the memory reference.
+func (mem *Mem) Base() *Reg {
+	return NewReg(mem.Mem.Base, mem.parent)
+}
+
+// Index returns the index register of the memory reference.
+func (mem *Mem) Index() *Reg {
+	return NewReg(mem.Mem.Index, mem.parent)
+}
+
 // NewMem returns a new memory reference argument with the given parent
 // instruction.
 func NewMem(arg x86asm.Arg, parent *Inst) *Mem {
@@ -256,14 +271,14 @@ func (f *Func) mem(mem *Mem) value.Value {
 		index   value.Value
 		disp    value.Value
 	)
-	if mem.Segment != 0 {
-		segment = f.useReg(NewReg(mem.Segment, mem.parent))
+	if mem.Mem.Segment != 0 {
+		segment = f.useReg(mem.Segment())
 	}
-	if mem.Base != 0 {
-		base = f.useReg(NewReg(mem.Base, mem.parent))
+	if mem.Mem.Base != 0 {
+		base = f.useReg(mem.Base())
 	}
-	if mem.Index != 0 {
-		index = f.useReg(NewReg(mem.Index, mem.parent))
+	if mem.Mem.Index != 0 {
+		index = f.useReg(mem.Index())
 	}
 
 	// TODO: Add proper support for memory references.
@@ -276,8 +291,8 @@ func (f *Func) mem(mem *Mem) value.Value {
 	// Handle local variables.
 	if segment == nil && index == nil {
 		// Stack local memory access.
-		if mem.Base == x86asm.ESP || mem.Base == x86asm.EBP {
-			name := fmt.Sprintf("%s_%d", strings.ToLower(Register(mem.Base).String()), f.espDisp+mem.Disp)
+		if mem.Mem.Base == x86asm.ESP || mem.Mem.Base == x86asm.EBP {
+			name := fmt.Sprintf("%s_%d", strings.ToLower(Register(mem.Mem.Base).String()), f.espDisp+mem.Disp)
 			if v, ok := f.locals[name]; ok {
 				return v
 			}

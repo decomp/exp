@@ -140,7 +140,7 @@ func (d *disassembler) translateBlock(f *Func, bb *BasicBlock) error {
 		}
 	}
 	// Translate terminator.
-	if err := d.translateTerm(f, bb, bb.term); err != nil {
+	if err := f.emitTerm(bb.term); err != nil {
 		return errors.WithStack(err)
 	}
 	return nil

@@ -501,46 +501,6 @@ func (f *Func) emitInst(inst *Inst) error {
 		return f.emitInstIRETD(inst)
 	case x86asm.IRETQ:
 		return f.emitInstIRETQ(inst)
-	case x86asm.JA:
-		return f.emitInstJA(inst)
-	case x86asm.JAE:
-		return f.emitInstJAE(inst)
-	case x86asm.JB:
-		return f.emitInstJB(inst)
-	case x86asm.JBE:
-		return f.emitInstJBE(inst)
-	case x86asm.JCXZ:
-		return f.emitInstJCXZ(inst)
-	case x86asm.JE:
-		return f.emitInstJE(inst)
-	case x86asm.JECXZ:
-		return f.emitInstJECXZ(inst)
-	case x86asm.JG:
-		return f.emitInstJG(inst)
-	case x86asm.JGE:
-		return f.emitInstJGE(inst)
-	case x86asm.JL:
-		return f.emitInstJL(inst)
-	case x86asm.JLE:
-		return f.emitInstJLE(inst)
-	case x86asm.JMP:
-		return f.emitInstJMP(inst)
-	case x86asm.JNE:
-		return f.emitInstJNE(inst)
-	case x86asm.JNO:
-		return f.emitInstJNO(inst)
-	case x86asm.JNP:
-		return f.emitInstJNP(inst)
-	case x86asm.JNS:
-		return f.emitInstJNS(inst)
-	case x86asm.JO:
-		return f.emitInstJO(inst)
-	case x86asm.JP:
-		return f.emitInstJP(inst)
-	case x86asm.JRCXZ:
-		return f.emitInstJRCXZ(inst)
-	case x86asm.JS:
-		return f.emitInstJS(inst)
 	case x86asm.LAHF:
 		return f.emitInstLAHF(inst)
 	case x86asm.LAR:
@@ -1041,8 +1001,6 @@ func (f *Func) emitInst(inst *Inst) error {
 		return f.emitInstRDTSC(inst)
 	case x86asm.RDTSCP:
 		return f.emitInstRDTSCP(inst)
-	case x86asm.RET:
-		return f.emitInstRET(inst)
 	case x86asm.ROL:
 		return f.emitInstROL(inst)
 	case x86asm.ROR:
@@ -1272,8 +1230,8 @@ func (f *Func) emitInst(inst *Inst) error {
 
 // --- [ AAA ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 AAA instruction to LLVM IR, emitting code
-// to f.
+// emitInstAAA translates the given x86 AAA instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstAAA(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstAAA: not yet implemented")
@@ -1281,8 +1239,8 @@ func (f *Func) emitInstAAA(inst *Inst) error {
 
 // --- [ AAD ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 AAD instruction to LLVM IR, emitting code
-// to f.
+// emitInstAAD translates the given x86 AAD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstAAD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstAAD: not yet implemented")
@@ -1290,8 +1248,8 @@ func (f *Func) emitInstAAD(inst *Inst) error {
 
 // --- [ AAM ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 AAM instruction to LLVM IR, emitting code
-// to f.
+// emitInstAAM translates the given x86 AAM instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstAAM(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstAAM: not yet implemented")
@@ -1299,8 +1257,8 @@ func (f *Func) emitInstAAM(inst *Inst) error {
 
 // --- [ AAS ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 AAS instruction to LLVM IR, emitting code
-// to f.
+// emitInstAAS translates the given x86 AAS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstAAS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstAAS: not yet implemented")
@@ -1308,8 +1266,8 @@ func (f *Func) emitInstAAS(inst *Inst) error {
 
 // --- [ ADC ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 ADC instruction to LLVM IR, emitting code
-// to f.
+// emitInstADC translates the given x86 ADC instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstADC(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstADC: not yet implemented")
@@ -1317,8 +1275,8 @@ func (f *Func) emitInstADC(inst *Inst) error {
 
 // --- [ ADD ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 ADD instruction to LLVM IR, emitting code
-// to f.
+// emitInstADD translates the given x86 ADD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstADD(inst *Inst) error {
 	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
 	result := f.cur.NewAdd(x, y)
@@ -1328,8 +1286,8 @@ func (f *Func) emitInstADD(inst *Inst) error {
 
 // --- [ ADDPD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 ADDPD instruction to LLVM IR, emitting code
-// to f.
+// emitInstADDPD translates the given x86 ADDPD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstADDPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstADDPD: not yet implemented")
@@ -1337,8 +1295,8 @@ func (f *Func) emitInstADDPD(inst *Inst) error {
 
 // --- [ ADDPS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 ADDPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstADDPS translates the given x86 ADDPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstADDPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstADDPS: not yet implemented")
@@ -1346,8 +1304,8 @@ func (f *Func) emitInstADDPS(inst *Inst) error {
 
 // --- [ ADDSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 ADDSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstADDSD translates the given x86 ADDSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstADDSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstADDSD: not yet implemented")
@@ -1355,8 +1313,8 @@ func (f *Func) emitInstADDSD(inst *Inst) error {
 
 // --- [ ADDSS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 ADDSS instruction to LLVM IR, emitting code
-// to f.
+// emitInstADDSS translates the given x86 ADDSS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstADDSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstADDSS: not yet implemented")
@@ -1364,8 +1322,8 @@ func (f *Func) emitInstADDSS(inst *Inst) error {
 
 // --- [ ADDSUBPD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 ADDSUBPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstADDSUBPD translates the given x86 ADDSUBPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstADDSUBPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstADDSUBPD: not yet implemented")
@@ -1373,8 +1331,8 @@ func (f *Func) emitInstADDSUBPD(inst *Inst) error {
 
 // --- [ ADDSUBPS ] ------------------------------------------------------------
 
-// emitInst translates the given x86 ADDSUBPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstADDSUBPS translates the given x86 ADDSUBPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstADDSUBPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstADDSUBPS: not yet implemented")
@@ -1382,8 +1340,8 @@ func (f *Func) emitInstADDSUBPS(inst *Inst) error {
 
 // --- [ AESDEC ] --------------------------------------------------------------
 
-// emitInst translates the given x86 AESDEC instruction to LLVM IR, emitting
-// code to f.
+// emitInstAESDEC translates the given x86 AESDEC instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstAESDEC(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstAESDEC: not yet implemented")
@@ -1391,8 +1349,8 @@ func (f *Func) emitInstAESDEC(inst *Inst) error {
 
 // --- [ AESDECLAST ] ----------------------------------------------------------
 
-// emitInst translates the given x86 AESDECLAST instruction to LLVM IR, emitting
-// code to f.
+// emitInstAESDECLAST translates the given x86 AESDECLAST instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstAESDECLAST(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstAESDECLAST: not yet implemented")
@@ -1400,8 +1358,8 @@ func (f *Func) emitInstAESDECLAST(inst *Inst) error {
 
 // --- [ AESENC ] --------------------------------------------------------------
 
-// emitInst translates the given x86 AESENC instruction to LLVM IR, emitting
-// code to f.
+// emitInstAESENC translates the given x86 AESENC instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstAESENC(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstAESENC: not yet implemented")
@@ -1409,8 +1367,8 @@ func (f *Func) emitInstAESENC(inst *Inst) error {
 
 // --- [ AESENCLAST ] ----------------------------------------------------------
 
-// emitInst translates the given x86 AESENCLAST instruction to LLVM IR, emitting
-// code to f.
+// emitInstAESENCLAST translates the given x86 AESENCLAST instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstAESENCLAST(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstAESENCLAST: not yet implemented")
@@ -1418,8 +1376,8 @@ func (f *Func) emitInstAESENCLAST(inst *Inst) error {
 
 // --- [ AESIMC ] --------------------------------------------------------------
 
-// emitInst translates the given x86 AESIMC instruction to LLVM IR, emitting
-// code to f.
+// emitInstAESIMC translates the given x86 AESIMC instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstAESIMC(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstAESIMC: not yet implemented")
@@ -1427,8 +1385,8 @@ func (f *Func) emitInstAESIMC(inst *Inst) error {
 
 // --- [ AESKEYGENASSIST ] -----------------------------------------------------
 
-// emitInst translates the given x86 AESKEYGENASSIST instruction to LLVM IR,
-// emitting code to f.
+// emitInstAESKEYGENASSIST translates the given x86 AESKEYGENASSIST instruction
+// to LLVM IR, emitting code to f.
 func (f *Func) emitInstAESKEYGENASSIST(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstAESKEYGENASSIST: not yet implemented")
@@ -1436,8 +1394,8 @@ func (f *Func) emitInstAESKEYGENASSIST(inst *Inst) error {
 
 // --- [ AND ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 AND instruction to LLVM IR, emitting code
-// to f.
+// emitInstAND translates the given x86 AND instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstAND(inst *Inst) error {
 	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
 	result := f.cur.NewAnd(x, y)
@@ -1447,8 +1405,8 @@ func (f *Func) emitInstAND(inst *Inst) error {
 
 // --- [ ANDNPD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 ANDNPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstANDNPD translates the given x86 ANDNPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstANDNPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstANDNPD: not yet implemented")
@@ -1456,8 +1414,8 @@ func (f *Func) emitInstANDNPD(inst *Inst) error {
 
 // --- [ ANDNPS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 ANDNPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstANDNPS translates the given x86 ANDNPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstANDNPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstANDNPS: not yet implemented")
@@ -1465,8 +1423,8 @@ func (f *Func) emitInstANDNPS(inst *Inst) error {
 
 // --- [ ANDPD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 ANDPD instruction to LLVM IR, emitting code
-// to f.
+// emitInstANDPD translates the given x86 ANDPD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstANDPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstANDPD: not yet implemented")
@@ -1474,8 +1432,8 @@ func (f *Func) emitInstANDPD(inst *Inst) error {
 
 // --- [ ANDPS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 ANDPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstANDPS translates the given x86 ANDPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstANDPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstANDPS: not yet implemented")
@@ -1483,8 +1441,8 @@ func (f *Func) emitInstANDPS(inst *Inst) error {
 
 // --- [ ARPL ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 ARPL instruction to LLVM IR, emitting code
-// to f.
+// emitInstARPL translates the given x86 ARPL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstARPL(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstARPL: not yet implemented")
@@ -1492,8 +1450,8 @@ func (f *Func) emitInstARPL(inst *Inst) error {
 
 // --- [ BLENDPD ] -------------------------------------------------------------
 
-// emitInst translates the given x86 BLENDPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstBLENDPD translates the given x86 BLENDPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstBLENDPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBLENDPD: not yet implemented")
@@ -1501,8 +1459,8 @@ func (f *Func) emitInstBLENDPD(inst *Inst) error {
 
 // --- [ BLENDPS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 BLENDPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstBLENDPS translates the given x86 BLENDPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstBLENDPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBLENDPS: not yet implemented")
@@ -1510,8 +1468,8 @@ func (f *Func) emitInstBLENDPS(inst *Inst) error {
 
 // --- [ BLENDVPD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 BLENDVPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstBLENDVPD translates the given x86 BLENDVPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstBLENDVPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBLENDVPD: not yet implemented")
@@ -1519,8 +1477,8 @@ func (f *Func) emitInstBLENDVPD(inst *Inst) error {
 
 // --- [ BLENDVPS ] ------------------------------------------------------------
 
-// emitInst translates the given x86 BLENDVPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstBLENDVPS translates the given x86 BLENDVPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstBLENDVPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBLENDVPS: not yet implemented")
@@ -1528,8 +1486,8 @@ func (f *Func) emitInstBLENDVPS(inst *Inst) error {
 
 // --- [ BOUND ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 BOUND instruction to LLVM IR, emitting code
-// to f.
+// emitInstBOUND translates the given x86 BOUND instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstBOUND(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBOUND: not yet implemented")
@@ -1537,8 +1495,8 @@ func (f *Func) emitInstBOUND(inst *Inst) error {
 
 // --- [ BSF ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 BSF instruction to LLVM IR, emitting code
-// to f.
+// emitInstBSF translates the given x86 BSF instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstBSF(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBSF: not yet implemented")
@@ -1546,8 +1504,8 @@ func (f *Func) emitInstBSF(inst *Inst) error {
 
 // --- [ BSR ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 BSR instruction to LLVM IR, emitting code
-// to f.
+// emitInstBSR translates the given x86 BSR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstBSR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBSR: not yet implemented")
@@ -1555,8 +1513,8 @@ func (f *Func) emitInstBSR(inst *Inst) error {
 
 // --- [ BSWAP ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 BSWAP instruction to LLVM IR, emitting code
-// to f.
+// emitInstBSWAP translates the given x86 BSWAP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstBSWAP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBSWAP: not yet implemented")
@@ -1564,8 +1522,8 @@ func (f *Func) emitInstBSWAP(inst *Inst) error {
 
 // --- [ BT ] ------------------------------------------------------------------
 
-// emitInst translates the given x86 BT instruction to LLVM IR, emitting code to
-// f.
+// emitInstBT translates the given x86 BT instruction to LLVM IR, emitting code
+// to f.
 func (f *Func) emitInstBT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBT: not yet implemented")
@@ -1573,8 +1531,8 @@ func (f *Func) emitInstBT(inst *Inst) error {
 
 // --- [ BTC ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 BTC instruction to LLVM IR, emitting code
-// to f.
+// emitInstBTC translates the given x86 BTC instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstBTC(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBTC: not yet implemented")
@@ -1582,8 +1540,8 @@ func (f *Func) emitInstBTC(inst *Inst) error {
 
 // --- [ BTR ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 BTR instruction to LLVM IR, emitting code
-// to f.
+// emitInstBTR translates the given x86 BTR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstBTR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBTR: not yet implemented")
@@ -1591,8 +1549,8 @@ func (f *Func) emitInstBTR(inst *Inst) error {
 
 // --- [ BTS ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 BTS instruction to LLVM IR, emitting code
-// to f.
+// emitInstBTS translates the given x86 BTS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstBTS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstBTS: not yet implemented")
@@ -1600,8 +1558,8 @@ func (f *Func) emitInstBTS(inst *Inst) error {
 
 // --- [ CALL ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 CALL instruction to LLVM IR, emitting code
-// to f.
+// emitInstCALL translates the given x86 CALL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCALL(inst *Inst) error {
 	// Locate callee information.
 	callee, sig, callconv, ok := f.getFunc(inst.Arg(0))
@@ -1658,8 +1616,8 @@ func (f *Func) emitInstCALL(inst *Inst) error {
 
 // --- [ CBW ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 CBW instruction to LLVM IR, emitting code
-// to f.
+// emitInstCBW translates the given x86 CBW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCBW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCBW: not yet implemented")
@@ -1667,8 +1625,8 @@ func (f *Func) emitInstCBW(inst *Inst) error {
 
 // --- [ CDQ ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 CDQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstCDQ translates the given x86 CDQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCDQ(inst *Inst) error {
 	// EDX:EAX = sign-extend of EAX.
 	eax := f.useReg(EAX)
@@ -1693,8 +1651,8 @@ func (f *Func) emitInstCDQ(inst *Inst) error {
 
 // --- [ CDQE ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 CDQE instruction to LLVM IR, emitting code
-// to f.
+// emitInstCDQE translates the given x86 CDQE instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCDQE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCDQE: not yet implemented")
@@ -1702,8 +1660,8 @@ func (f *Func) emitInstCDQE(inst *Inst) error {
 
 // --- [ CLC ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 CLC instruction to LLVM IR, emitting code
-// to f.
+// emitInstCLC translates the given x86 CLC instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCLC(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCLC: not yet implemented")
@@ -1711,8 +1669,8 @@ func (f *Func) emitInstCLC(inst *Inst) error {
 
 // --- [ CLD ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 CLD instruction to LLVM IR, emitting code
-// to f.
+// emitInstCLD translates the given x86 CLD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCLD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCLD: not yet implemented")
@@ -1720,8 +1678,8 @@ func (f *Func) emitInstCLD(inst *Inst) error {
 
 // --- [ CLFLUSH ] -------------------------------------------------------------
 
-// emitInst translates the given x86 CLFLUSH instruction to LLVM IR, emitting
-// code to f.
+// emitInstCLFLUSH translates the given x86 CLFLUSH instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCLFLUSH(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCLFLUSH: not yet implemented")
@@ -1729,8 +1687,8 @@ func (f *Func) emitInstCLFLUSH(inst *Inst) error {
 
 // --- [ CLI ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 CLI instruction to LLVM IR, emitting code
-// to f.
+// emitInstCLI translates the given x86 CLI instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCLI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCLI: not yet implemented")
@@ -1738,8 +1696,8 @@ func (f *Func) emitInstCLI(inst *Inst) error {
 
 // --- [ CLTS ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 CLTS instruction to LLVM IR, emitting code
-// to f.
+// emitInstCLTS translates the given x86 CLTS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCLTS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCLTS: not yet implemented")
@@ -1747,8 +1705,8 @@ func (f *Func) emitInstCLTS(inst *Inst) error {
 
 // --- [ CMC ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 CMC instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMC translates the given x86 CMC instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMC(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMC: not yet implemented")
@@ -1756,8 +1714,8 @@ func (f *Func) emitInstCMC(inst *Inst) error {
 
 // --- [ CMOVA ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVA instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMOVA translates the given x86 CMOVA instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMOVA(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVA: not yet implemented")
@@ -1765,8 +1723,8 @@ func (f *Func) emitInstCMOVA(inst *Inst) error {
 
 // --- [ CMOVAE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVAE instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMOVAE translates the given x86 CMOVAE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCMOVAE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVAE: not yet implemented")
@@ -1774,8 +1732,8 @@ func (f *Func) emitInstCMOVAE(inst *Inst) error {
 
 // --- [ CMOVB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVB instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMOVB translates the given x86 CMOVB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMOVB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVB: not yet implemented")
@@ -1783,8 +1741,8 @@ func (f *Func) emitInstCMOVB(inst *Inst) error {
 
 // --- [ CMOVBE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVBE instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMOVBE translates the given x86 CMOVBE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCMOVBE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVBE: not yet implemented")
@@ -1792,8 +1750,8 @@ func (f *Func) emitInstCMOVBE(inst *Inst) error {
 
 // --- [ CMOVE ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVE instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMOVE translates the given x86 CMOVE instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMOVE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVE: not yet implemented")
@@ -1801,8 +1759,8 @@ func (f *Func) emitInstCMOVE(inst *Inst) error {
 
 // --- [ CMOVG ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVG instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMOVG translates the given x86 CMOVG instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMOVG(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVG: not yet implemented")
@@ -1810,8 +1768,8 @@ func (f *Func) emitInstCMOVG(inst *Inst) error {
 
 // --- [ CMOVGE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVGE instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMOVGE translates the given x86 CMOVGE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCMOVGE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVGE: not yet implemented")
@@ -1819,8 +1777,8 @@ func (f *Func) emitInstCMOVGE(inst *Inst) error {
 
 // --- [ CMOVL ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVL instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMOVL translates the given x86 CMOVL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMOVL(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVL: not yet implemented")
@@ -1828,8 +1786,8 @@ func (f *Func) emitInstCMOVL(inst *Inst) error {
 
 // --- [ CMOVLE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVLE instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMOVLE translates the given x86 CMOVLE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCMOVLE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVLE: not yet implemented")
@@ -1837,8 +1795,8 @@ func (f *Func) emitInstCMOVLE(inst *Inst) error {
 
 // --- [ CMOVNE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVNE instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMOVNE translates the given x86 CMOVNE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCMOVNE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVNE: not yet implemented")
@@ -1846,8 +1804,8 @@ func (f *Func) emitInstCMOVNE(inst *Inst) error {
 
 // --- [ CMOVNO ] --------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVNO instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMOVNO translates the given x86 CMOVNO instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCMOVNO(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVNO: not yet implemented")
@@ -1855,8 +1813,8 @@ func (f *Func) emitInstCMOVNO(inst *Inst) error {
 
 // --- [ CMOVNP ] --------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVNP instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMOVNP translates the given x86 CMOVNP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCMOVNP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVNP: not yet implemented")
@@ -1864,8 +1822,8 @@ func (f *Func) emitInstCMOVNP(inst *Inst) error {
 
 // --- [ CMOVNS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVNS instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMOVNS translates the given x86 CMOVNS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCMOVNS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVNS: not yet implemented")
@@ -1873,8 +1831,8 @@ func (f *Func) emitInstCMOVNS(inst *Inst) error {
 
 // --- [ CMOVO ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVO instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMOVO translates the given x86 CMOVO instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMOVO(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVO: not yet implemented")
@@ -1882,8 +1840,8 @@ func (f *Func) emitInstCMOVO(inst *Inst) error {
 
 // --- [ CMOVP ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVP instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMOVP translates the given x86 CMOVP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMOVP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVP: not yet implemented")
@@ -1891,8 +1849,8 @@ func (f *Func) emitInstCMOVP(inst *Inst) error {
 
 // --- [ CMOVS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMOVS instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMOVS translates the given x86 CMOVS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMOVS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMOVS: not yet implemented")
@@ -1900,8 +1858,8 @@ func (f *Func) emitInstCMOVS(inst *Inst) error {
 
 // --- [ CMP ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 CMP instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMP translates the given x86 CMP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMP(inst *Inst) error {
 	// result = x SUB y; set CF, PF, AF, ZF, SF, and OF according to result.
 	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
@@ -1948,8 +1906,8 @@ func (f *Func) emitInstCMP(inst *Inst) error {
 
 // --- [ CMPPD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMPPD instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMPPD translates the given x86 CMPPD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMPPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMPPD: not yet implemented")
@@ -1957,8 +1915,8 @@ func (f *Func) emitInstCMPPD(inst *Inst) error {
 
 // --- [ CMPPS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMPPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMPPS translates the given x86 CMPPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMPPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMPPS: not yet implemented")
@@ -1966,8 +1924,8 @@ func (f *Func) emitInstCMPPS(inst *Inst) error {
 
 // --- [ CMPSB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMPSB instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMPSB translates the given x86 CMPSB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMPSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMPSB: not yet implemented")
@@ -1975,8 +1933,8 @@ func (f *Func) emitInstCMPSB(inst *Inst) error {
 
 // --- [ CMPSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMPSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMPSD translates the given x86 CMPSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMPSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMPSD: not yet implemented")
@@ -1984,8 +1942,8 @@ func (f *Func) emitInstCMPSD(inst *Inst) error {
 
 // --- [ CMPSD_XMM ] -----------------------------------------------------------
 
-// emitInst translates the given x86 CMPSD_XMM instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMPSD_XMM translates the given x86 CMPSD_XMM instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCMPSD_XMM(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMPSD_XMM: not yet implemented")
@@ -1993,8 +1951,8 @@ func (f *Func) emitInstCMPSD_XMM(inst *Inst) error {
 
 // --- [ CMPSQ ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMPSQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMPSQ translates the given x86 CMPSQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMPSQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMPSQ: not yet implemented")
@@ -2002,8 +1960,8 @@ func (f *Func) emitInstCMPSQ(inst *Inst) error {
 
 // --- [ CMPSS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMPSS instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMPSS translates the given x86 CMPSS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMPSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMPSS: not yet implemented")
@@ -2011,8 +1969,8 @@ func (f *Func) emitInstCMPSS(inst *Inst) error {
 
 // --- [ CMPSW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CMPSW instruction to LLVM IR, emitting code
-// to f.
+// emitInstCMPSW translates the given x86 CMPSW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCMPSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMPSW: not yet implemented")
@@ -2020,8 +1978,8 @@ func (f *Func) emitInstCMPSW(inst *Inst) error {
 
 // --- [ CMPXCHG ] -------------------------------------------------------------
 
-// emitInst translates the given x86 CMPXCHG instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMPXCHG translates the given x86 CMPXCHG instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCMPXCHG(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMPXCHG: not yet implemented")
@@ -2029,8 +1987,8 @@ func (f *Func) emitInstCMPXCHG(inst *Inst) error {
 
 // --- [ CMPXCHG16B ] ----------------------------------------------------------
 
-// emitInst translates the given x86 CMPXCHG16B instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMPXCHG16B translates the given x86 CMPXCHG16B instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstCMPXCHG16B(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMPXCHG16B: not yet implemented")
@@ -2038,8 +1996,8 @@ func (f *Func) emitInstCMPXCHG16B(inst *Inst) error {
 
 // --- [ CMPXCHG8B ] -----------------------------------------------------------
 
-// emitInst translates the given x86 CMPXCHG8B instruction to LLVM IR, emitting
-// code to f.
+// emitInstCMPXCHG8B translates the given x86 CMPXCHG8B instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCMPXCHG8B(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCMPXCHG8B: not yet implemented")
@@ -2047,8 +2005,8 @@ func (f *Func) emitInstCMPXCHG8B(inst *Inst) error {
 
 // --- [ COMISD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 COMISD instruction to LLVM IR, emitting
-// code to f.
+// emitInstCOMISD translates the given x86 COMISD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCOMISD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCOMISD: not yet implemented")
@@ -2056,8 +2014,8 @@ func (f *Func) emitInstCOMISD(inst *Inst) error {
 
 // --- [ COMISS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 COMISS instruction to LLVM IR, emitting
-// code to f.
+// emitInstCOMISS translates the given x86 COMISS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCOMISS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCOMISS: not yet implemented")
@@ -2065,8 +2023,8 @@ func (f *Func) emitInstCOMISS(inst *Inst) error {
 
 // --- [ CPUID ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CPUID instruction to LLVM IR, emitting code
-// to f.
+// emitInstCPUID translates the given x86 CPUID instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCPUID(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCPUID: not yet implemented")
@@ -2074,8 +2032,8 @@ func (f *Func) emitInstCPUID(inst *Inst) error {
 
 // --- [ CQO ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 CQO instruction to LLVM IR, emitting code
-// to f.
+// emitInstCQO translates the given x86 CQO instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCQO(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCQO: not yet implemented")
@@ -2083,8 +2041,8 @@ func (f *Func) emitInstCQO(inst *Inst) error {
 
 // --- [ CRC32 ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 CRC32 instruction to LLVM IR, emitting code
-// to f.
+// emitInstCRC32 translates the given x86 CRC32 instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCRC32(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCRC32: not yet implemented")
@@ -2092,8 +2050,8 @@ func (f *Func) emitInstCRC32(inst *Inst) error {
 
 // --- [ CVTDQ2PD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTDQ2PD instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTDQ2PD translates the given x86 CVTDQ2PD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTDQ2PD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTDQ2PD: not yet implemented")
@@ -2101,8 +2059,8 @@ func (f *Func) emitInstCVTDQ2PD(inst *Inst) error {
 
 // --- [ CVTDQ2PS ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTDQ2PS instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTDQ2PS translates the given x86 CVTDQ2PS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTDQ2PS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTDQ2PS: not yet implemented")
@@ -2110,8 +2068,8 @@ func (f *Func) emitInstCVTDQ2PS(inst *Inst) error {
 
 // --- [ CVTPD2DQ ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTPD2DQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTPD2DQ translates the given x86 CVTPD2DQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTPD2DQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTPD2DQ: not yet implemented")
@@ -2119,8 +2077,8 @@ func (f *Func) emitInstCVTPD2DQ(inst *Inst) error {
 
 // --- [ CVTPD2PI ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTPD2PI instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTPD2PI translates the given x86 CVTPD2PI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTPD2PI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTPD2PI: not yet implemented")
@@ -2128,8 +2086,8 @@ func (f *Func) emitInstCVTPD2PI(inst *Inst) error {
 
 // --- [ CVTPD2PS ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTPD2PS instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTPD2PS translates the given x86 CVTPD2PS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTPD2PS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTPD2PS: not yet implemented")
@@ -2137,8 +2095,8 @@ func (f *Func) emitInstCVTPD2PS(inst *Inst) error {
 
 // --- [ CVTPI2PD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTPI2PD instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTPI2PD translates the given x86 CVTPI2PD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTPI2PD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTPI2PD: not yet implemented")
@@ -2146,8 +2104,8 @@ func (f *Func) emitInstCVTPI2PD(inst *Inst) error {
 
 // --- [ CVTPI2PS ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTPI2PS instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTPI2PS translates the given x86 CVTPI2PS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTPI2PS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTPI2PS: not yet implemented")
@@ -2155,8 +2113,8 @@ func (f *Func) emitInstCVTPI2PS(inst *Inst) error {
 
 // --- [ CVTPS2DQ ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTPS2DQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTPS2DQ translates the given x86 CVTPS2DQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTPS2DQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTPS2DQ: not yet implemented")
@@ -2164,8 +2122,8 @@ func (f *Func) emitInstCVTPS2DQ(inst *Inst) error {
 
 // --- [ CVTPS2PD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTPS2PD instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTPS2PD translates the given x86 CVTPS2PD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTPS2PD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTPS2PD: not yet implemented")
@@ -2173,8 +2131,8 @@ func (f *Func) emitInstCVTPS2PD(inst *Inst) error {
 
 // --- [ CVTPS2PI ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTPS2PI instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTPS2PI translates the given x86 CVTPS2PI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTPS2PI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTPS2PI: not yet implemented")
@@ -2182,8 +2140,8 @@ func (f *Func) emitInstCVTPS2PI(inst *Inst) error {
 
 // --- [ CVTSD2SI ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTSD2SI instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTSD2SI translates the given x86 CVTSD2SI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTSD2SI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTSD2SI: not yet implemented")
@@ -2191,8 +2149,8 @@ func (f *Func) emitInstCVTSD2SI(inst *Inst) error {
 
 // --- [ CVTSD2SS ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTSD2SS instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTSD2SS translates the given x86 CVTSD2SS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTSD2SS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTSD2SS: not yet implemented")
@@ -2200,8 +2158,8 @@ func (f *Func) emitInstCVTSD2SS(inst *Inst) error {
 
 // --- [ CVTSI2SD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTSI2SD instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTSI2SD translates the given x86 CVTSI2SD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTSI2SD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTSI2SD: not yet implemented")
@@ -2209,8 +2167,8 @@ func (f *Func) emitInstCVTSI2SD(inst *Inst) error {
 
 // --- [ CVTSI2SS ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTSI2SS instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTSI2SS translates the given x86 CVTSI2SS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTSI2SS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTSI2SS: not yet implemented")
@@ -2218,8 +2176,8 @@ func (f *Func) emitInstCVTSI2SS(inst *Inst) error {
 
 // --- [ CVTSS2SD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTSS2SD instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTSS2SD translates the given x86 CVTSS2SD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTSS2SD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTSS2SD: not yet implemented")
@@ -2227,8 +2185,8 @@ func (f *Func) emitInstCVTSS2SD(inst *Inst) error {
 
 // --- [ CVTSS2SI ] ------------------------------------------------------------
 
-// emitInst translates the given x86 CVTSS2SI instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTSS2SI translates the given x86 CVTSS2SI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTSS2SI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTSS2SI: not yet implemented")
@@ -2236,8 +2194,8 @@ func (f *Func) emitInstCVTSS2SI(inst *Inst) error {
 
 // --- [ CVTTPD2DQ ] -----------------------------------------------------------
 
-// emitInst translates the given x86 CVTTPD2DQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTTPD2DQ translates the given x86 CVTTPD2DQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTTPD2DQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTTPD2DQ: not yet implemented")
@@ -2245,8 +2203,8 @@ func (f *Func) emitInstCVTTPD2DQ(inst *Inst) error {
 
 // --- [ CVTTPD2PI ] -----------------------------------------------------------
 
-// emitInst translates the given x86 CVTTPD2PI instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTTPD2PI translates the given x86 CVTTPD2PI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTTPD2PI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTTPD2PI: not yet implemented")
@@ -2254,8 +2212,8 @@ func (f *Func) emitInstCVTTPD2PI(inst *Inst) error {
 
 // --- [ CVTTPS2DQ ] -----------------------------------------------------------
 
-// emitInst translates the given x86 CVTTPS2DQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTTPS2DQ translates the given x86 CVTTPS2DQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTTPS2DQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTTPS2DQ: not yet implemented")
@@ -2263,8 +2221,8 @@ func (f *Func) emitInstCVTTPS2DQ(inst *Inst) error {
 
 // --- [ CVTTPS2PI ] -----------------------------------------------------------
 
-// emitInst translates the given x86 CVTTPS2PI instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTTPS2PI translates the given x86 CVTTPS2PI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTTPS2PI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTTPS2PI: not yet implemented")
@@ -2272,8 +2230,8 @@ func (f *Func) emitInstCVTTPS2PI(inst *Inst) error {
 
 // --- [ CVTTSD2SI ] -----------------------------------------------------------
 
-// emitInst translates the given x86 CVTTSD2SI instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTTSD2SI translates the given x86 CVTTSD2SI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTTSD2SI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTTSD2SI: not yet implemented")
@@ -2281,8 +2239,8 @@ func (f *Func) emitInstCVTTSD2SI(inst *Inst) error {
 
 // --- [ CVTTSS2SI ] -----------------------------------------------------------
 
-// emitInst translates the given x86 CVTTSS2SI instruction to LLVM IR, emitting
-// code to f.
+// emitInstCVTTSS2SI translates the given x86 CVTTSS2SI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstCVTTSS2SI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCVTTSS2SI: not yet implemented")
@@ -2290,8 +2248,8 @@ func (f *Func) emitInstCVTTSS2SI(inst *Inst) error {
 
 // --- [ CWD ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 CWD instruction to LLVM IR, emitting code
-// to f.
+// emitInstCWD translates the given x86 CWD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCWD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCWD: not yet implemented")
@@ -2299,8 +2257,8 @@ func (f *Func) emitInstCWD(inst *Inst) error {
 
 // --- [ CWDE ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 CWDE instruction to LLVM IR, emitting code
-// to f.
+// emitInstCWDE translates the given x86 CWDE instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstCWDE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstCWDE: not yet implemented")
@@ -2308,8 +2266,8 @@ func (f *Func) emitInstCWDE(inst *Inst) error {
 
 // --- [ DAA ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 DAA instruction to LLVM IR, emitting code
-// to f.
+// emitInstDAA translates the given x86 DAA instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstDAA(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstDAA: not yet implemented")
@@ -2317,8 +2275,8 @@ func (f *Func) emitInstDAA(inst *Inst) error {
 
 // --- [ DAS ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 DAS instruction to LLVM IR, emitting code
-// to f.
+// emitInstDAS translates the given x86 DAS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstDAS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstDAS: not yet implemented")
@@ -2326,8 +2284,8 @@ func (f *Func) emitInstDAS(inst *Inst) error {
 
 // --- [ DEC ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 DEC instruction to LLVM IR, emitting code
-// to f.
+// emitInstDEC translates the given x86 DEC instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstDEC(inst *Inst) error {
 	x := f.useArg(inst.Arg(0))
 	one := constant.NewInt(1, types.I32)
@@ -2338,8 +2296,8 @@ func (f *Func) emitInstDEC(inst *Inst) error {
 
 // --- [ DIV ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 DIV instruction to LLVM IR, emitting code
-// to f.
+// emitInstDIV translates the given x86 DIV instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstDIV(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstDIV: not yet implemented")
@@ -2347,8 +2305,8 @@ func (f *Func) emitInstDIV(inst *Inst) error {
 
 // --- [ DIVPD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 DIVPD instruction to LLVM IR, emitting code
-// to f.
+// emitInstDIVPD translates the given x86 DIVPD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstDIVPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstDIVPD: not yet implemented")
@@ -2356,8 +2314,8 @@ func (f *Func) emitInstDIVPD(inst *Inst) error {
 
 // --- [ DIVPS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 DIVPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstDIVPS translates the given x86 DIVPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstDIVPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstDIVPS: not yet implemented")
@@ -2365,8 +2323,8 @@ func (f *Func) emitInstDIVPS(inst *Inst) error {
 
 // --- [ DIVSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 DIVSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstDIVSD translates the given x86 DIVSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstDIVSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstDIVSD: not yet implemented")
@@ -2374,8 +2332,8 @@ func (f *Func) emitInstDIVSD(inst *Inst) error {
 
 // --- [ DIVSS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 DIVSS instruction to LLVM IR, emitting code
-// to f.
+// emitInstDIVSS translates the given x86 DIVSS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstDIVSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstDIVSS: not yet implemented")
@@ -2383,8 +2341,8 @@ func (f *Func) emitInstDIVSS(inst *Inst) error {
 
 // --- [ DPPD ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 DPPD instruction to LLVM IR, emitting code
-// to f.
+// emitInstDPPD translates the given x86 DPPD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstDPPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstDPPD: not yet implemented")
@@ -2392,8 +2350,8 @@ func (f *Func) emitInstDPPD(inst *Inst) error {
 
 // --- [ DPPS ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 DPPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstDPPS translates the given x86 DPPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstDPPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstDPPS: not yet implemented")
@@ -2401,8 +2359,8 @@ func (f *Func) emitInstDPPS(inst *Inst) error {
 
 // --- [ EMMS ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 EMMS instruction to LLVM IR, emitting code
-// to f.
+// emitInstEMMS translates the given x86 EMMS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstEMMS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstEMMS: not yet implemented")
@@ -2410,8 +2368,8 @@ func (f *Func) emitInstEMMS(inst *Inst) error {
 
 // --- [ ENTER ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 ENTER instruction to LLVM IR, emitting code
-// to f.
+// emitInstENTER translates the given x86 ENTER instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstENTER(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstENTER: not yet implemented")
@@ -2419,8 +2377,8 @@ func (f *Func) emitInstENTER(inst *Inst) error {
 
 // --- [ EXTRACTPS ] -----------------------------------------------------------
 
-// emitInst translates the given x86 EXTRACTPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstEXTRACTPS translates the given x86 EXTRACTPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstEXTRACTPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstEXTRACTPS: not yet implemented")
@@ -2428,8 +2386,8 @@ func (f *Func) emitInstEXTRACTPS(inst *Inst) error {
 
 // --- [ F2XM1 ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 F2XM1 instruction to LLVM IR, emitting code
-// to f.
+// emitInstF2XM1 translates the given x86 F2XM1 instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstF2XM1(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstF2XM1: not yet implemented")
@@ -2437,8 +2395,8 @@ func (f *Func) emitInstF2XM1(inst *Inst) error {
 
 // --- [ FABS ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FABS instruction to LLVM IR, emitting code
-// to f.
+// emitInstFABS translates the given x86 FABS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFABS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFABS: not yet implemented")
@@ -2446,8 +2404,8 @@ func (f *Func) emitInstFABS(inst *Inst) error {
 
 // --- [ FADD ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FADD instruction to LLVM IR, emitting code
-// to f.
+// emitInstFADD translates the given x86 FADD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFADD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFADD: not yet implemented")
@@ -2455,8 +2413,8 @@ func (f *Func) emitInstFADD(inst *Inst) error {
 
 // --- [ FADDP ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FADDP instruction to LLVM IR, emitting code
-// to f.
+// emitInstFADDP translates the given x86 FADDP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFADDP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFADDP: not yet implemented")
@@ -2464,8 +2422,8 @@ func (f *Func) emitInstFADDP(inst *Inst) error {
 
 // --- [ FBLD ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FBLD instruction to LLVM IR, emitting code
-// to f.
+// emitInstFBLD translates the given x86 FBLD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFBLD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFBLD: not yet implemented")
@@ -2473,8 +2431,8 @@ func (f *Func) emitInstFBLD(inst *Inst) error {
 
 // --- [ FBSTP ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FBSTP instruction to LLVM IR, emitting code
-// to f.
+// emitInstFBSTP translates the given x86 FBSTP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFBSTP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFBSTP: not yet implemented")
@@ -2482,8 +2440,8 @@ func (f *Func) emitInstFBSTP(inst *Inst) error {
 
 // --- [ FCHS ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FCHS instruction to LLVM IR, emitting code
-// to f.
+// emitInstFCHS translates the given x86 FCHS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFCHS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCHS: not yet implemented")
@@ -2491,8 +2449,8 @@ func (f *Func) emitInstFCHS(inst *Inst) error {
 
 // --- [ FCMOVB ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FCMOVB instruction to LLVM IR, emitting
-// code to f.
+// emitInstFCMOVB translates the given x86 FCMOVB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFCMOVB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCMOVB: not yet implemented")
@@ -2500,8 +2458,8 @@ func (f *Func) emitInstFCMOVB(inst *Inst) error {
 
 // --- [ FCMOVBE ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FCMOVBE instruction to LLVM IR, emitting
-// code to f.
+// emitInstFCMOVBE translates the given x86 FCMOVBE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFCMOVBE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCMOVBE: not yet implemented")
@@ -2509,8 +2467,8 @@ func (f *Func) emitInstFCMOVBE(inst *Inst) error {
 
 // --- [ FCMOVE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FCMOVE instruction to LLVM IR, emitting
-// code to f.
+// emitInstFCMOVE translates the given x86 FCMOVE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFCMOVE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCMOVE: not yet implemented")
@@ -2518,8 +2476,8 @@ func (f *Func) emitInstFCMOVE(inst *Inst) error {
 
 // --- [ FCMOVNB ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FCMOVNB instruction to LLVM IR, emitting
-// code to f.
+// emitInstFCMOVNB translates the given x86 FCMOVNB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFCMOVNB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCMOVNB: not yet implemented")
@@ -2527,8 +2485,8 @@ func (f *Func) emitInstFCMOVNB(inst *Inst) error {
 
 // --- [ FCMOVNBE ] ------------------------------------------------------------
 
-// emitInst translates the given x86 FCMOVNBE instruction to LLVM IR, emitting
-// code to f.
+// emitInstFCMOVNBE translates the given x86 FCMOVNBE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFCMOVNBE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCMOVNBE: not yet implemented")
@@ -2536,8 +2494,8 @@ func (f *Func) emitInstFCMOVNBE(inst *Inst) error {
 
 // --- [ FCMOVNE ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FCMOVNE instruction to LLVM IR, emitting
-// code to f.
+// emitInstFCMOVNE translates the given x86 FCMOVNE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFCMOVNE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCMOVNE: not yet implemented")
@@ -2545,8 +2503,8 @@ func (f *Func) emitInstFCMOVNE(inst *Inst) error {
 
 // --- [ FCMOVNU ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FCMOVNU instruction to LLVM IR, emitting
-// code to f.
+// emitInstFCMOVNU translates the given x86 FCMOVNU instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFCMOVNU(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCMOVNU: not yet implemented")
@@ -2554,8 +2512,8 @@ func (f *Func) emitInstFCMOVNU(inst *Inst) error {
 
 // --- [ FCMOVU ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FCMOVU instruction to LLVM IR, emitting
-// code to f.
+// emitInstFCMOVU translates the given x86 FCMOVU instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFCMOVU(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCMOVU: not yet implemented")
@@ -2563,8 +2521,8 @@ func (f *Func) emitInstFCMOVU(inst *Inst) error {
 
 // --- [ FCOM ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FCOM instruction to LLVM IR, emitting code
-// to f.
+// emitInstFCOM translates the given x86 FCOM instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFCOM(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCOM: not yet implemented")
@@ -2572,8 +2530,8 @@ func (f *Func) emitInstFCOM(inst *Inst) error {
 
 // --- [ FCOMI ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FCOMI instruction to LLVM IR, emitting code
-// to f.
+// emitInstFCOMI translates the given x86 FCOMI instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFCOMI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCOMI: not yet implemented")
@@ -2581,8 +2539,8 @@ func (f *Func) emitInstFCOMI(inst *Inst) error {
 
 // --- [ FCOMIP ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FCOMIP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFCOMIP translates the given x86 FCOMIP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFCOMIP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCOMIP: not yet implemented")
@@ -2590,8 +2548,8 @@ func (f *Func) emitInstFCOMIP(inst *Inst) error {
 
 // --- [ FCOMP ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FCOMP instruction to LLVM IR, emitting code
-// to f.
+// emitInstFCOMP translates the given x86 FCOMP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFCOMP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCOMP: not yet implemented")
@@ -2599,8 +2557,8 @@ func (f *Func) emitInstFCOMP(inst *Inst) error {
 
 // --- [ FCOMPP ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FCOMPP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFCOMPP translates the given x86 FCOMPP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFCOMPP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCOMPP: not yet implemented")
@@ -2608,8 +2566,8 @@ func (f *Func) emitInstFCOMPP(inst *Inst) error {
 
 // --- [ FCOS ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FCOS instruction to LLVM IR, emitting code
-// to f.
+// emitInstFCOS translates the given x86 FCOS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFCOS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCOS: not yet implemented")
@@ -2617,8 +2575,8 @@ func (f *Func) emitInstFCOS(inst *Inst) error {
 
 // --- [ FDECSTP ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FDECSTP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFDECSTP translates the given x86 FDECSTP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFDECSTP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFDECSTP: not yet implemented")
@@ -2626,8 +2584,8 @@ func (f *Func) emitInstFDECSTP(inst *Inst) error {
 
 // --- [ FDIV ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FDIV instruction to LLVM IR, emitting code
-// to f.
+// emitInstFDIV translates the given x86 FDIV instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFDIV(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFDIV: not yet implemented")
@@ -2635,8 +2593,8 @@ func (f *Func) emitInstFDIV(inst *Inst) error {
 
 // --- [ FDIVP ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FDIVP instruction to LLVM IR, emitting code
-// to f.
+// emitInstFDIVP translates the given x86 FDIVP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFDIVP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFDIVP: not yet implemented")
@@ -2644,8 +2602,8 @@ func (f *Func) emitInstFDIVP(inst *Inst) error {
 
 // --- [ FDIVR ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FDIVR instruction to LLVM IR, emitting code
-// to f.
+// emitInstFDIVR translates the given x86 FDIVR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFDIVR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFDIVR: not yet implemented")
@@ -2653,8 +2611,8 @@ func (f *Func) emitInstFDIVR(inst *Inst) error {
 
 // --- [ FDIVRP ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FDIVRP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFDIVRP translates the given x86 FDIVRP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFDIVRP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFDIVRP: not yet implemented")
@@ -2662,8 +2620,8 @@ func (f *Func) emitInstFDIVRP(inst *Inst) error {
 
 // --- [ FFREE ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FFREE instruction to LLVM IR, emitting code
-// to f.
+// emitInstFFREE translates the given x86 FFREE instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFFREE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFFREE: not yet implemented")
@@ -2671,8 +2629,8 @@ func (f *Func) emitInstFFREE(inst *Inst) error {
 
 // --- [ FFREEP ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FFREEP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFFREEP translates the given x86 FFREEP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFFREEP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFFREEP: not yet implemented")
@@ -2680,8 +2638,8 @@ func (f *Func) emitInstFFREEP(inst *Inst) error {
 
 // --- [ FIADD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FIADD instruction to LLVM IR, emitting code
-// to f.
+// emitInstFIADD translates the given x86 FIADD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFIADD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFIADD: not yet implemented")
@@ -2689,8 +2647,8 @@ func (f *Func) emitInstFIADD(inst *Inst) error {
 
 // --- [ FICOM ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FICOM instruction to LLVM IR, emitting code
-// to f.
+// emitInstFICOM translates the given x86 FICOM instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFICOM(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFICOM: not yet implemented")
@@ -2698,8 +2656,8 @@ func (f *Func) emitInstFICOM(inst *Inst) error {
 
 // --- [ FICOMP ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FICOMP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFICOMP translates the given x86 FICOMP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFICOMP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFICOMP: not yet implemented")
@@ -2707,8 +2665,8 @@ func (f *Func) emitInstFICOMP(inst *Inst) error {
 
 // --- [ FIDIV ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FIDIV instruction to LLVM IR, emitting code
-// to f.
+// emitInstFIDIV translates the given x86 FIDIV instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFIDIV(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFIDIV: not yet implemented")
@@ -2716,8 +2674,8 @@ func (f *Func) emitInstFIDIV(inst *Inst) error {
 
 // --- [ FIDIVR ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FIDIVR instruction to LLVM IR, emitting
-// code to f.
+// emitInstFIDIVR translates the given x86 FIDIVR instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFIDIVR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFIDIVR: not yet implemented")
@@ -2725,8 +2683,8 @@ func (f *Func) emitInstFIDIVR(inst *Inst) error {
 
 // --- [ FILD ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FILD instruction to LLVM IR, emitting code
-// to f.
+// emitInstFILD translates the given x86 FILD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFILD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFILD: not yet implemented")
@@ -2734,8 +2692,8 @@ func (f *Func) emitInstFILD(inst *Inst) error {
 
 // --- [ FIMUL ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FIMUL instruction to LLVM IR, emitting code
-// to f.
+// emitInstFIMUL translates the given x86 FIMUL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFIMUL(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFIMUL: not yet implemented")
@@ -2743,8 +2701,8 @@ func (f *Func) emitInstFIMUL(inst *Inst) error {
 
 // --- [ FINCSTP ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FINCSTP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFINCSTP translates the given x86 FINCSTP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFINCSTP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFINCSTP: not yet implemented")
@@ -2752,8 +2710,8 @@ func (f *Func) emitInstFINCSTP(inst *Inst) error {
 
 // --- [ FIST ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FIST instruction to LLVM IR, emitting code
-// to f.
+// emitInstFIST translates the given x86 FIST instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFIST(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFIST: not yet implemented")
@@ -2761,8 +2719,8 @@ func (f *Func) emitInstFIST(inst *Inst) error {
 
 // --- [ FISTP ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FISTP instruction to LLVM IR, emitting code
-// to f.
+// emitInstFISTP translates the given x86 FISTP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFISTP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFISTP: not yet implemented")
@@ -2770,8 +2728,8 @@ func (f *Func) emitInstFISTP(inst *Inst) error {
 
 // --- [ FISTTP ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FISTTP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFISTTP translates the given x86 FISTTP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFISTTP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFISTTP: not yet implemented")
@@ -2779,8 +2737,8 @@ func (f *Func) emitInstFISTTP(inst *Inst) error {
 
 // --- [ FISUB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FISUB instruction to LLVM IR, emitting code
-// to f.
+// emitInstFISUB translates the given x86 FISUB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFISUB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFISUB: not yet implemented")
@@ -2788,8 +2746,8 @@ func (f *Func) emitInstFISUB(inst *Inst) error {
 
 // --- [ FISUBR ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FISUBR instruction to LLVM IR, emitting
-// code to f.
+// emitInstFISUBR translates the given x86 FISUBR instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFISUBR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFISUBR: not yet implemented")
@@ -2797,8 +2755,8 @@ func (f *Func) emitInstFISUBR(inst *Inst) error {
 
 // --- [ FLD ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 FLD instruction to LLVM IR, emitting code
-// to f.
+// emitInstFLD translates the given x86 FLD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFLD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFLD: not yet implemented")
@@ -2806,8 +2764,8 @@ func (f *Func) emitInstFLD(inst *Inst) error {
 
 // --- [ FLD1 ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FLD1 instruction to LLVM IR, emitting code
-// to f.
+// emitInstFLD1 translates the given x86 FLD1 instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFLD1(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFLD1: not yet implemented")
@@ -2815,8 +2773,8 @@ func (f *Func) emitInstFLD1(inst *Inst) error {
 
 // --- [ FLDCW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FLDCW instruction to LLVM IR, emitting code
-// to f.
+// emitInstFLDCW translates the given x86 FLDCW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFLDCW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFLDCW: not yet implemented")
@@ -2824,8 +2782,8 @@ func (f *Func) emitInstFLDCW(inst *Inst) error {
 
 // --- [ FLDENV ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FLDENV instruction to LLVM IR, emitting
-// code to f.
+// emitInstFLDENV translates the given x86 FLDENV instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFLDENV(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFLDENV: not yet implemented")
@@ -2833,8 +2791,8 @@ func (f *Func) emitInstFLDENV(inst *Inst) error {
 
 // --- [ FLDL2E ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FLDL2E instruction to LLVM IR, emitting
-// code to f.
+// emitInstFLDL2E translates the given x86 FLDL2E instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFLDL2E(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFLDL2E: not yet implemented")
@@ -2842,8 +2800,8 @@ func (f *Func) emitInstFLDL2E(inst *Inst) error {
 
 // --- [ FLDL2T ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FLDL2T instruction to LLVM IR, emitting
-// code to f.
+// emitInstFLDL2T translates the given x86 FLDL2T instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFLDL2T(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFLDL2T: not yet implemented")
@@ -2851,8 +2809,8 @@ func (f *Func) emitInstFLDL2T(inst *Inst) error {
 
 // --- [ FLDLG2 ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FLDLG2 instruction to LLVM IR, emitting
-// code to f.
+// emitInstFLDLG2 translates the given x86 FLDLG2 instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFLDLG2(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFLDLG2: not yet implemented")
@@ -2860,8 +2818,8 @@ func (f *Func) emitInstFLDLG2(inst *Inst) error {
 
 // --- [ FLDLN2 ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FLDLN2 instruction to LLVM IR, emitting
-// code to f.
+// emitInstFLDLN2 translates the given x86 FLDLN2 instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFLDLN2(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFLDLN2: not yet implemented")
@@ -2869,8 +2827,8 @@ func (f *Func) emitInstFLDLN2(inst *Inst) error {
 
 // --- [ FLDPI ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FLDPI instruction to LLVM IR, emitting code
-// to f.
+// emitInstFLDPI translates the given x86 FLDPI instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFLDPI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFLDPI: not yet implemented")
@@ -2878,8 +2836,8 @@ func (f *Func) emitInstFLDPI(inst *Inst) error {
 
 // --- [ FLDZ ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FLDZ instruction to LLVM IR, emitting code
-// to f.
+// emitInstFLDZ translates the given x86 FLDZ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFLDZ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFLDZ: not yet implemented")
@@ -2887,8 +2845,8 @@ func (f *Func) emitInstFLDZ(inst *Inst) error {
 
 // --- [ FMUL ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FMUL instruction to LLVM IR, emitting code
-// to f.
+// emitInstFMUL translates the given x86 FMUL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFMUL(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFMUL: not yet implemented")
@@ -2896,8 +2854,8 @@ func (f *Func) emitInstFMUL(inst *Inst) error {
 
 // --- [ FMULP ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FMULP instruction to LLVM IR, emitting code
-// to f.
+// emitInstFMULP translates the given x86 FMULP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFMULP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFMULP: not yet implemented")
@@ -2905,8 +2863,8 @@ func (f *Func) emitInstFMULP(inst *Inst) error {
 
 // --- [ FNCLEX ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FNCLEX instruction to LLVM IR, emitting
-// code to f.
+// emitInstFNCLEX translates the given x86 FNCLEX instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFNCLEX(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFNCLEX: not yet implemented")
@@ -2914,8 +2872,8 @@ func (f *Func) emitInstFNCLEX(inst *Inst) error {
 
 // --- [ FNINIT ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FNINIT instruction to LLVM IR, emitting
-// code to f.
+// emitInstFNINIT translates the given x86 FNINIT instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFNINIT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFNINIT: not yet implemented")
@@ -2923,8 +2881,8 @@ func (f *Func) emitInstFNINIT(inst *Inst) error {
 
 // --- [ FNOP ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FNOP instruction to LLVM IR, emitting code
-// to f.
+// emitInstFNOP translates the given x86 FNOP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFNOP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFNOP: not yet implemented")
@@ -2932,8 +2890,8 @@ func (f *Func) emitInstFNOP(inst *Inst) error {
 
 // --- [ FNSAVE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FNSAVE instruction to LLVM IR, emitting
-// code to f.
+// emitInstFNSAVE translates the given x86 FNSAVE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFNSAVE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFNSAVE: not yet implemented")
@@ -2941,8 +2899,8 @@ func (f *Func) emitInstFNSAVE(inst *Inst) error {
 
 // --- [ FNSTCW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FNSTCW instruction to LLVM IR, emitting
-// code to f.
+// emitInstFNSTCW translates the given x86 FNSTCW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFNSTCW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFNSTCW: not yet implemented")
@@ -2950,8 +2908,8 @@ func (f *Func) emitInstFNSTCW(inst *Inst) error {
 
 // --- [ FNSTENV ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FNSTENV instruction to LLVM IR, emitting
-// code to f.
+// emitInstFNSTENV translates the given x86 FNSTENV instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFNSTENV(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFNSTENV: not yet implemented")
@@ -2959,8 +2917,8 @@ func (f *Func) emitInstFNSTENV(inst *Inst) error {
 
 // --- [ FNSTSW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FNSTSW instruction to LLVM IR, emitting
-// code to f.
+// emitInstFNSTSW translates the given x86 FNSTSW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFNSTSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFNSTSW: not yet implemented")
@@ -2968,8 +2926,8 @@ func (f *Func) emitInstFNSTSW(inst *Inst) error {
 
 // --- [ FPATAN ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FPATAN instruction to LLVM IR, emitting
-// code to f.
+// emitInstFPATAN translates the given x86 FPATAN instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFPATAN(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFPATAN: not yet implemented")
@@ -2977,8 +2935,8 @@ func (f *Func) emitInstFPATAN(inst *Inst) error {
 
 // --- [ FPREM ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FPREM instruction to LLVM IR, emitting code
-// to f.
+// emitInstFPREM translates the given x86 FPREM instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFPREM(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFPREM: not yet implemented")
@@ -2986,8 +2944,8 @@ func (f *Func) emitInstFPREM(inst *Inst) error {
 
 // --- [ FPREM1 ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FPREM1 instruction to LLVM IR, emitting
-// code to f.
+// emitInstFPREM1 translates the given x86 FPREM1 instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFPREM1(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFPREM1: not yet implemented")
@@ -2995,8 +2953,8 @@ func (f *Func) emitInstFPREM1(inst *Inst) error {
 
 // --- [ FPTAN ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FPTAN instruction to LLVM IR, emitting code
-// to f.
+// emitInstFPTAN translates the given x86 FPTAN instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFPTAN(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFPTAN: not yet implemented")
@@ -3004,8 +2962,8 @@ func (f *Func) emitInstFPTAN(inst *Inst) error {
 
 // --- [ FRNDINT ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FRNDINT instruction to LLVM IR, emitting
-// code to f.
+// emitInstFRNDINT translates the given x86 FRNDINT instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFRNDINT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFRNDINT: not yet implemented")
@@ -3013,8 +2971,8 @@ func (f *Func) emitInstFRNDINT(inst *Inst) error {
 
 // --- [ FRSTOR ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FRSTOR instruction to LLVM IR, emitting
-// code to f.
+// emitInstFRSTOR translates the given x86 FRSTOR instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFRSTOR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFRSTOR: not yet implemented")
@@ -3022,8 +2980,8 @@ func (f *Func) emitInstFRSTOR(inst *Inst) error {
 
 // --- [ FSCALE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FSCALE instruction to LLVM IR, emitting
-// code to f.
+// emitInstFSCALE translates the given x86 FSCALE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFSCALE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFSCALE: not yet implemented")
@@ -3031,8 +2989,8 @@ func (f *Func) emitInstFSCALE(inst *Inst) error {
 
 // --- [ FSIN ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FSIN instruction to LLVM IR, emitting code
-// to f.
+// emitInstFSIN translates the given x86 FSIN instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFSIN(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFSIN: not yet implemented")
@@ -3040,8 +2998,8 @@ func (f *Func) emitInstFSIN(inst *Inst) error {
 
 // --- [ FSINCOS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FSINCOS instruction to LLVM IR, emitting
-// code to f.
+// emitInstFSINCOS translates the given x86 FSINCOS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFSINCOS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFSINCOS: not yet implemented")
@@ -3049,8 +3007,8 @@ func (f *Func) emitInstFSINCOS(inst *Inst) error {
 
 // --- [ FSQRT ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FSQRT instruction to LLVM IR, emitting code
-// to f.
+// emitInstFSQRT translates the given x86 FSQRT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFSQRT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFSQRT: not yet implemented")
@@ -3058,8 +3016,8 @@ func (f *Func) emitInstFSQRT(inst *Inst) error {
 
 // --- [ FST ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 FST instruction to LLVM IR, emitting code
-// to f.
+// emitInstFST translates the given x86 FST instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFST(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFST: not yet implemented")
@@ -3067,8 +3025,8 @@ func (f *Func) emitInstFST(inst *Inst) error {
 
 // --- [ FSTP ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FSTP instruction to LLVM IR, emitting code
-// to f.
+// emitInstFSTP translates the given x86 FSTP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFSTP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFSTP: not yet implemented")
@@ -3076,8 +3034,8 @@ func (f *Func) emitInstFSTP(inst *Inst) error {
 
 // --- [ FSUB ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FSUB instruction to LLVM IR, emitting code
-// to f.
+// emitInstFSUB translates the given x86 FSUB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFSUB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFSUB: not yet implemented")
@@ -3085,8 +3043,8 @@ func (f *Func) emitInstFSUB(inst *Inst) error {
 
 // --- [ FSUBP ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FSUBP instruction to LLVM IR, emitting code
-// to f.
+// emitInstFSUBP translates the given x86 FSUBP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFSUBP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFSUBP: not yet implemented")
@@ -3094,8 +3052,8 @@ func (f *Func) emitInstFSUBP(inst *Inst) error {
 
 // --- [ FSUBR ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FSUBR instruction to LLVM IR, emitting code
-// to f.
+// emitInstFSUBR translates the given x86 FSUBR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFSUBR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFSUBR: not yet implemented")
@@ -3103,8 +3061,8 @@ func (f *Func) emitInstFSUBR(inst *Inst) error {
 
 // --- [ FSUBRP ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FSUBRP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFSUBRP translates the given x86 FSUBRP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFSUBRP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFSUBRP: not yet implemented")
@@ -3112,8 +3070,8 @@ func (f *Func) emitInstFSUBRP(inst *Inst) error {
 
 // --- [ FTST ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FTST instruction to LLVM IR, emitting code
-// to f.
+// emitInstFTST translates the given x86 FTST instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFTST(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFTST: not yet implemented")
@@ -3121,8 +3079,8 @@ func (f *Func) emitInstFTST(inst *Inst) error {
 
 // --- [ FUCOM ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FUCOM instruction to LLVM IR, emitting code
-// to f.
+// emitInstFUCOM translates the given x86 FUCOM instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFUCOM(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFUCOM: not yet implemented")
@@ -3130,8 +3088,8 @@ func (f *Func) emitInstFUCOM(inst *Inst) error {
 
 // --- [ FUCOMI ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FUCOMI instruction to LLVM IR, emitting
-// code to f.
+// emitInstFUCOMI translates the given x86 FUCOMI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFUCOMI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFUCOMI: not yet implemented")
@@ -3139,8 +3097,8 @@ func (f *Func) emitInstFUCOMI(inst *Inst) error {
 
 // --- [ FUCOMIP ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FUCOMIP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFUCOMIP translates the given x86 FUCOMIP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFUCOMIP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFUCOMIP: not yet implemented")
@@ -3148,8 +3106,8 @@ func (f *Func) emitInstFUCOMIP(inst *Inst) error {
 
 // --- [ FUCOMP ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FUCOMP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFUCOMP translates the given x86 FUCOMP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFUCOMP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFUCOMP: not yet implemented")
@@ -3157,8 +3115,8 @@ func (f *Func) emitInstFUCOMP(inst *Inst) error {
 
 // --- [ FUCOMPP ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FUCOMPP instruction to LLVM IR, emitting
-// code to f.
+// emitInstFUCOMPP translates the given x86 FUCOMPP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFUCOMPP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFUCOMPP: not yet implemented")
@@ -3166,8 +3124,8 @@ func (f *Func) emitInstFUCOMPP(inst *Inst) error {
 
 // --- [ FWAIT ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FWAIT instruction to LLVM IR, emitting code
-// to f.
+// emitInstFWAIT translates the given x86 FWAIT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFWAIT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFWAIT: not yet implemented")
@@ -3175,8 +3133,8 @@ func (f *Func) emitInstFWAIT(inst *Inst) error {
 
 // --- [ FXAM ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FXAM instruction to LLVM IR, emitting code
-// to f.
+// emitInstFXAM translates the given x86 FXAM instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFXAM(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFXAM: not yet implemented")
@@ -3184,8 +3142,8 @@ func (f *Func) emitInstFXAM(inst *Inst) error {
 
 // --- [ FXCH ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 FXCH instruction to LLVM IR, emitting code
-// to f.
+// emitInstFXCH translates the given x86 FXCH instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFXCH(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFXCH: not yet implemented")
@@ -3193,8 +3151,8 @@ func (f *Func) emitInstFXCH(inst *Inst) error {
 
 // --- [ FXRSTOR ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FXRSTOR instruction to LLVM IR, emitting
-// code to f.
+// emitInstFXRSTOR translates the given x86 FXRSTOR instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFXRSTOR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFXRSTOR: not yet implemented")
@@ -3202,8 +3160,8 @@ func (f *Func) emitInstFXRSTOR(inst *Inst) error {
 
 // --- [ FXRSTOR64 ] -----------------------------------------------------------
 
-// emitInst translates the given x86 FXRSTOR64 instruction to LLVM IR, emitting
-// code to f.
+// emitInstFXRSTOR64 translates the given x86 FXRSTOR64 instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFXRSTOR64(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFXRSTOR64: not yet implemented")
@@ -3211,8 +3169,8 @@ func (f *Func) emitInstFXRSTOR64(inst *Inst) error {
 
 // --- [ FXSAVE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 FXSAVE instruction to LLVM IR, emitting
-// code to f.
+// emitInstFXSAVE translates the given x86 FXSAVE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFXSAVE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFXSAVE: not yet implemented")
@@ -3220,8 +3178,8 @@ func (f *Func) emitInstFXSAVE(inst *Inst) error {
 
 // --- [ FXSAVE64 ] ------------------------------------------------------------
 
-// emitInst translates the given x86 FXSAVE64 instruction to LLVM IR, emitting
-// code to f.
+// emitInstFXSAVE64 translates the given x86 FXSAVE64 instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFXSAVE64(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFXSAVE64: not yet implemented")
@@ -3229,8 +3187,8 @@ func (f *Func) emitInstFXSAVE64(inst *Inst) error {
 
 // --- [ FXTRACT ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FXTRACT instruction to LLVM IR, emitting
-// code to f.
+// emitInstFXTRACT translates the given x86 FXTRACT instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFXTRACT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFXTRACT: not yet implemented")
@@ -3238,8 +3196,8 @@ func (f *Func) emitInstFXTRACT(inst *Inst) error {
 
 // --- [ FYL2X ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 FYL2X instruction to LLVM IR, emitting code
-// to f.
+// emitInstFYL2X translates the given x86 FYL2X instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstFYL2X(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFYL2X: not yet implemented")
@@ -3247,8 +3205,8 @@ func (f *Func) emitInstFYL2X(inst *Inst) error {
 
 // --- [ FYL2XP1 ] -------------------------------------------------------------
 
-// emitInst translates the given x86 FYL2XP1 instruction to LLVM IR, emitting
-// code to f.
+// emitInstFYL2XP1 translates the given x86 FYL2XP1 instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstFYL2XP1(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFYL2XP1: not yet implemented")
@@ -3256,8 +3214,8 @@ func (f *Func) emitInstFYL2XP1(inst *Inst) error {
 
 // --- [ HADDPD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 HADDPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstHADDPD translates the given x86 HADDPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstHADDPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstHADDPD: not yet implemented")
@@ -3265,8 +3223,8 @@ func (f *Func) emitInstHADDPD(inst *Inst) error {
 
 // --- [ HADDPS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 HADDPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstHADDPS translates the given x86 HADDPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstHADDPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstHADDPS: not yet implemented")
@@ -3274,8 +3232,8 @@ func (f *Func) emitInstHADDPS(inst *Inst) error {
 
 // --- [ HLT ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 HLT instruction to LLVM IR, emitting code
-// to f.
+// emitInstHLT translates the given x86 HLT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstHLT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstHLT: not yet implemented")
@@ -3283,8 +3241,8 @@ func (f *Func) emitInstHLT(inst *Inst) error {
 
 // --- [ HSUBPD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 HSUBPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstHSUBPD translates the given x86 HSUBPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstHSUBPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstHSUBPD: not yet implemented")
@@ -3292,8 +3250,8 @@ func (f *Func) emitInstHSUBPD(inst *Inst) error {
 
 // --- [ HSUBPS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 HSUBPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstHSUBPS translates the given x86 HSUBPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstHSUBPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstHSUBPS: not yet implemented")
@@ -3301,8 +3259,8 @@ func (f *Func) emitInstHSUBPS(inst *Inst) error {
 
 // --- [ ICEBP ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 ICEBP instruction to LLVM IR, emitting code
-// to f.
+// emitInstICEBP translates the given x86 ICEBP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstICEBP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstICEBP: not yet implemented")
@@ -3310,8 +3268,8 @@ func (f *Func) emitInstICEBP(inst *Inst) error {
 
 // --- [ IDIV ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 IDIV instruction to LLVM IR, emitting code
-// to f.
+// emitInstIDIV translates the given x86 IDIV instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstIDIV(inst *Inst) error {
 	// IDIV - Signed Divide
 
@@ -3333,8 +3291,8 @@ func (f *Func) emitInstIDIV(inst *Inst) error {
 
 // --- [ IMUL ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 IMUL instruction to LLVM IR, emitting code
-// to f.
+// emitInstIMUL translates the given x86 IMUL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstIMUL(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstIMUL: not yet implemented")
@@ -3342,8 +3300,8 @@ func (f *Func) emitInstIMUL(inst *Inst) error {
 
 // --- [ IN ] ------------------------------------------------------------------
 
-// emitInst translates the given x86 IN instruction to LLVM IR, emitting code to
-// f.
+// emitInstIN translates the given x86 IN instruction to LLVM IR, emitting code
+// to f.
 func (f *Func) emitInstIN(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstIN: not yet implemented")
@@ -3351,8 +3309,8 @@ func (f *Func) emitInstIN(inst *Inst) error {
 
 // --- [ INC ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 INC instruction to LLVM IR, emitting code
-// to f.
+// emitInstINC translates the given x86 INC instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstINC(inst *Inst) error {
 	x := f.useArg(inst.Arg(0))
 	one := constant.NewInt(1, types.I32)
@@ -3363,8 +3321,8 @@ func (f *Func) emitInstINC(inst *Inst) error {
 
 // --- [ INSB ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 INSB instruction to LLVM IR, emitting code
-// to f.
+// emitInstINSB translates the given x86 INSB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstINSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstINSB: not yet implemented")
@@ -3372,8 +3330,8 @@ func (f *Func) emitInstINSB(inst *Inst) error {
 
 // --- [ INSD ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 INSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstINSD translates the given x86 INSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstINSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstINSD: not yet implemented")
@@ -3381,8 +3339,8 @@ func (f *Func) emitInstINSD(inst *Inst) error {
 
 // --- [ INSERTPS ] ------------------------------------------------------------
 
-// emitInst translates the given x86 INSERTPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstINSERTPS translates the given x86 INSERTPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstINSERTPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstINSERTPS: not yet implemented")
@@ -3390,8 +3348,8 @@ func (f *Func) emitInstINSERTPS(inst *Inst) error {
 
 // --- [ INSW ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 INSW instruction to LLVM IR, emitting code
-// to f.
+// emitInstINSW translates the given x86 INSW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstINSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstINSW: not yet implemented")
@@ -3399,8 +3357,8 @@ func (f *Func) emitInstINSW(inst *Inst) error {
 
 // --- [ INT ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 INT instruction to LLVM IR, emitting code
-// to f.
+// emitInstINT translates the given x86 INT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstINT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstINT: not yet implemented")
@@ -3408,8 +3366,8 @@ func (f *Func) emitInstINT(inst *Inst) error {
 
 // --- [ INTO ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 INTO instruction to LLVM IR, emitting code
-// to f.
+// emitInstINTO translates the given x86 INTO instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstINTO(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstINTO: not yet implemented")
@@ -3417,8 +3375,8 @@ func (f *Func) emitInstINTO(inst *Inst) error {
 
 // --- [ INVD ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 INVD instruction to LLVM IR, emitting code
-// to f.
+// emitInstINVD translates the given x86 INVD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstINVD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstINVD: not yet implemented")
@@ -3426,8 +3384,8 @@ func (f *Func) emitInstINVD(inst *Inst) error {
 
 // --- [ INVLPG ] --------------------------------------------------------------
 
-// emitInst translates the given x86 INVLPG instruction to LLVM IR, emitting
-// code to f.
+// emitInstINVLPG translates the given x86 INVLPG instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstINVLPG(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstINVLPG: not yet implemented")
@@ -3435,8 +3393,8 @@ func (f *Func) emitInstINVLPG(inst *Inst) error {
 
 // --- [ INVPCID ] -------------------------------------------------------------
 
-// emitInst translates the given x86 INVPCID instruction to LLVM IR, emitting
-// code to f.
+// emitInstINVPCID translates the given x86 INVPCID instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstINVPCID(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstINVPCID: not yet implemented")
@@ -3444,8 +3402,8 @@ func (f *Func) emitInstINVPCID(inst *Inst) error {
 
 // --- [ IRET ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 IRET instruction to LLVM IR, emitting code
-// to f.
+// emitInstIRET translates the given x86 IRET instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstIRET(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstIRET: not yet implemented")
@@ -3453,8 +3411,8 @@ func (f *Func) emitInstIRET(inst *Inst) error {
 
 // --- [ IRETD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 IRETD instruction to LLVM IR, emitting code
-// to f.
+// emitInstIRETD translates the given x86 IRETD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstIRETD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstIRETD: not yet implemented")
@@ -3462,197 +3420,17 @@ func (f *Func) emitInstIRETD(inst *Inst) error {
 
 // --- [ IRETQ ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 IRETQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstIRETQ translates the given x86 IRETQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstIRETQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstIRETQ: not yet implemented")
 }
 
-// --- [ JA ] ------------------------------------------------------------------
-
-// emitInst translates the given x86 JA instruction to LLVM IR, emitting code to
-// f.
-func (f *Func) emitInstJA(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJA: not yet implemented")
-}
-
-// --- [ JAE ] -----------------------------------------------------------------
-
-// emitInst translates the given x86 JAE instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJAE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJAE: not yet implemented")
-}
-
-// --- [ JB ] ------------------------------------------------------------------
-
-// emitInst translates the given x86 JB instruction to LLVM IR, emitting code to
-// f.
-func (f *Func) emitInstJB(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJB: not yet implemented")
-}
-
-// --- [ JBE ] -----------------------------------------------------------------
-
-// emitInst translates the given x86 JBE instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJBE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJBE: not yet implemented")
-}
-
-// --- [ JCXZ ] ----------------------------------------------------------------
-
-// emitInst translates the given x86 JCXZ instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJCXZ(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJCXZ: not yet implemented")
-}
-
-// --- [ JE ] ------------------------------------------------------------------
-
-// emitInst translates the given x86 JE instruction to LLVM IR, emitting code to
-// f.
-func (f *Func) emitInstJE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJE: not yet implemented")
-}
-
-// --- [ JECXZ ] ---------------------------------------------------------------
-
-// emitInst translates the given x86 JECXZ instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJECXZ(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJECXZ: not yet implemented")
-}
-
-// --- [ JG ] ------------------------------------------------------------------
-
-// emitInst translates the given x86 JG instruction to LLVM IR, emitting code to
-// f.
-func (f *Func) emitInstJG(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJG: not yet implemented")
-}
-
-// --- [ JGE ] -----------------------------------------------------------------
-
-// emitInst translates the given x86 JGE instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJGE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJGE: not yet implemented")
-}
-
-// --- [ JL ] ------------------------------------------------------------------
-
-// emitInst translates the given x86 JL instruction to LLVM IR, emitting code to
-// f.
-func (f *Func) emitInstJL(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJL: not yet implemented")
-}
-
-// --- [ JLE ] -----------------------------------------------------------------
-
-// emitInst translates the given x86 JLE instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJLE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJLE: not yet implemented")
-}
-
-// --- [ JMP ] -----------------------------------------------------------------
-
-// emitInst translates the given x86 JMP instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJMP(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJMP: not yet implemented")
-}
-
-// --- [ JNE ] -----------------------------------------------------------------
-
-// emitInst translates the given x86 JNE instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJNE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJNE: not yet implemented")
-}
-
-// --- [ JNO ] -----------------------------------------------------------------
-
-// emitInst translates the given x86 JNO instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJNO(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJNO: not yet implemented")
-}
-
-// --- [ JNP ] -----------------------------------------------------------------
-
-// emitInst translates the given x86 JNP instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJNP(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJNP: not yet implemented")
-}
-
-// --- [ JNS ] -----------------------------------------------------------------
-
-// emitInst translates the given x86 JNS instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJNS(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJNS: not yet implemented")
-}
-
-// --- [ JO ] ------------------------------------------------------------------
-
-// emitInst translates the given x86 JO instruction to LLVM IR, emitting code to
-// f.
-func (f *Func) emitInstJO(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJO: not yet implemented")
-}
-
-// --- [ JP ] ------------------------------------------------------------------
-
-// emitInst translates the given x86 JP instruction to LLVM IR, emitting code to
-// f.
-func (f *Func) emitInstJP(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJP: not yet implemented")
-}
-
-// --- [ JRCXZ ] ---------------------------------------------------------------
-
-// emitInst translates the given x86 JRCXZ instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstJRCXZ(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJRCXZ: not yet implemented")
-}
-
-// --- [ JS ] ------------------------------------------------------------------
-
-// emitInst translates the given x86 JS instruction to LLVM IR, emitting code to
-// f.
-func (f *Func) emitInstJS(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstJS: not yet implemented")
-}
-
 // --- [ LAHF ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 LAHF instruction to LLVM IR, emitting code
-// to f.
+// emitInstLAHF translates the given x86 LAHF instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLAHF(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLAHF: not yet implemented")
@@ -3660,8 +3438,8 @@ func (f *Func) emitInstLAHF(inst *Inst) error {
 
 // --- [ LAR ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 LAR instruction to LLVM IR, emitting code
-// to f.
+// emitInstLAR translates the given x86 LAR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLAR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLAR: not yet implemented")
@@ -3669,8 +3447,8 @@ func (f *Func) emitInstLAR(inst *Inst) error {
 
 // --- [ LCALL ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 LCALL instruction to LLVM IR, emitting code
-// to f.
+// emitInstLCALL translates the given x86 LCALL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLCALL(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLCALL: not yet implemented")
@@ -3678,8 +3456,8 @@ func (f *Func) emitInstLCALL(inst *Inst) error {
 
 // --- [ LDDQU ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 LDDQU instruction to LLVM IR, emitting code
-// to f.
+// emitInstLDDQU translates the given x86 LDDQU instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLDDQU(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLDDQU: not yet implemented")
@@ -3687,8 +3465,8 @@ func (f *Func) emitInstLDDQU(inst *Inst) error {
 
 // --- [ LDMXCSR ] -------------------------------------------------------------
 
-// emitInst translates the given x86 LDMXCSR instruction to LLVM IR, emitting
-// code to f.
+// emitInstLDMXCSR translates the given x86 LDMXCSR instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstLDMXCSR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLDMXCSR: not yet implemented")
@@ -3696,8 +3474,8 @@ func (f *Func) emitInstLDMXCSR(inst *Inst) error {
 
 // --- [ LDS ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 LDS instruction to LLVM IR, emitting code
-// to f.
+// emitInstLDS translates the given x86 LDS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLDS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLDS: not yet implemented")
@@ -3705,8 +3483,8 @@ func (f *Func) emitInstLDS(inst *Inst) error {
 
 // --- [ LEA ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 LEA instruction to LLVM IR, emitting code
-// to f.
+// emitInstLEA translates the given x86 LEA instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLEA(inst *Inst) error {
 	y := f.mem(inst.Mem(1))
 	f.defArg(inst.Arg(0), y)
@@ -3715,8 +3493,8 @@ func (f *Func) emitInstLEA(inst *Inst) error {
 
 // --- [ LEAVE ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 LEAVE instruction to LLVM IR, emitting code
-// to f.
+// emitInstLEAVE translates the given x86 LEAVE instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLEAVE(inst *Inst) error {
 	// Pseudo-instruction for:
 	//
@@ -3740,8 +3518,8 @@ func (f *Func) emitInstLEAVE(inst *Inst) error {
 
 // --- [ LES ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 LES instruction to LLVM IR, emitting code
-// to f.
+// emitInstLES translates the given x86 LES instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLES(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLES: not yet implemented")
@@ -3749,8 +3527,8 @@ func (f *Func) emitInstLES(inst *Inst) error {
 
 // --- [ LFENCE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 LFENCE instruction to LLVM IR, emitting
-// code to f.
+// emitInstLFENCE translates the given x86 LFENCE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstLFENCE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLFENCE: not yet implemented")
@@ -3758,8 +3536,8 @@ func (f *Func) emitInstLFENCE(inst *Inst) error {
 
 // --- [ LFS ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 LFS instruction to LLVM IR, emitting code
-// to f.
+// emitInstLFS translates the given x86 LFS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLFS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLFS: not yet implemented")
@@ -3767,8 +3545,8 @@ func (f *Func) emitInstLFS(inst *Inst) error {
 
 // --- [ LGDT ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 LGDT instruction to LLVM IR, emitting code
-// to f.
+// emitInstLGDT translates the given x86 LGDT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLGDT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLGDT: not yet implemented")
@@ -3776,8 +3554,8 @@ func (f *Func) emitInstLGDT(inst *Inst) error {
 
 // --- [ LGS ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 LGS instruction to LLVM IR, emitting code
-// to f.
+// emitInstLGS translates the given x86 LGS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLGS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLGS: not yet implemented")
@@ -3785,8 +3563,8 @@ func (f *Func) emitInstLGS(inst *Inst) error {
 
 // --- [ LIDT ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 LIDT instruction to LLVM IR, emitting code
-// to f.
+// emitInstLIDT translates the given x86 LIDT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLIDT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLIDT: not yet implemented")
@@ -3794,8 +3572,8 @@ func (f *Func) emitInstLIDT(inst *Inst) error {
 
 // --- [ LJMP ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 LJMP instruction to LLVM IR, emitting code
-// to f.
+// emitInstLJMP translates the given x86 LJMP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLJMP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLJMP: not yet implemented")
@@ -3803,8 +3581,8 @@ func (f *Func) emitInstLJMP(inst *Inst) error {
 
 // --- [ LLDT ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 LLDT instruction to LLVM IR, emitting code
-// to f.
+// emitInstLLDT translates the given x86 LLDT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLLDT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLLDT: not yet implemented")
@@ -3812,8 +3590,8 @@ func (f *Func) emitInstLLDT(inst *Inst) error {
 
 // --- [ LMSW ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 LMSW instruction to LLVM IR, emitting code
-// to f.
+// emitInstLMSW translates the given x86 LMSW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLMSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLMSW: not yet implemented")
@@ -3821,8 +3599,8 @@ func (f *Func) emitInstLMSW(inst *Inst) error {
 
 // --- [ LODSB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 LODSB instruction to LLVM IR, emitting code
-// to f.
+// emitInstLODSB translates the given x86 LODSB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLODSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLODSB: not yet implemented")
@@ -3830,8 +3608,8 @@ func (f *Func) emitInstLODSB(inst *Inst) error {
 
 // --- [ LODSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 LODSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstLODSD translates the given x86 LODSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLODSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLODSD: not yet implemented")
@@ -3839,8 +3617,8 @@ func (f *Func) emitInstLODSD(inst *Inst) error {
 
 // --- [ LODSQ ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 LODSQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstLODSQ translates the given x86 LODSQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLODSQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLODSQ: not yet implemented")
@@ -3848,8 +3626,8 @@ func (f *Func) emitInstLODSQ(inst *Inst) error {
 
 // --- [ LODSW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 LODSW instruction to LLVM IR, emitting code
-// to f.
+// emitInstLODSW translates the given x86 LODSW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLODSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLODSW: not yet implemented")
@@ -3857,8 +3635,8 @@ func (f *Func) emitInstLODSW(inst *Inst) error {
 
 // --- [ LOOP ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 LOOP instruction to LLVM IR, emitting code
-// to f.
+// emitInstLOOP translates the given x86 LOOP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLOOP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLOOP: not yet implemented")
@@ -3866,8 +3644,8 @@ func (f *Func) emitInstLOOP(inst *Inst) error {
 
 // --- [ LOOPE ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 LOOPE instruction to LLVM IR, emitting code
-// to f.
+// emitInstLOOPE translates the given x86 LOOPE instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLOOPE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLOOPE: not yet implemented")
@@ -3875,8 +3653,8 @@ func (f *Func) emitInstLOOPE(inst *Inst) error {
 
 // --- [ LOOPNE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 LOOPNE instruction to LLVM IR, emitting
-// code to f.
+// emitInstLOOPNE translates the given x86 LOOPNE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstLOOPNE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLOOPNE: not yet implemented")
@@ -3884,8 +3662,8 @@ func (f *Func) emitInstLOOPNE(inst *Inst) error {
 
 // --- [ LRET ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 LRET instruction to LLVM IR, emitting code
-// to f.
+// emitInstLRET translates the given x86 LRET instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLRET(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLRET: not yet implemented")
@@ -3893,8 +3671,8 @@ func (f *Func) emitInstLRET(inst *Inst) error {
 
 // --- [ LSL ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 LSL instruction to LLVM IR, emitting code
-// to f.
+// emitInstLSL translates the given x86 LSL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLSL(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLSL: not yet implemented")
@@ -3902,8 +3680,8 @@ func (f *Func) emitInstLSL(inst *Inst) error {
 
 // --- [ LSS ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 LSS instruction to LLVM IR, emitting code
-// to f.
+// emitInstLSS translates the given x86 LSS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLSS: not yet implemented")
@@ -3911,8 +3689,8 @@ func (f *Func) emitInstLSS(inst *Inst) error {
 
 // --- [ LTR ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 LTR instruction to LLVM IR, emitting code
-// to f.
+// emitInstLTR translates the given x86 LTR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLTR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLTR: not yet implemented")
@@ -3920,8 +3698,8 @@ func (f *Func) emitInstLTR(inst *Inst) error {
 
 // --- [ LZCNT ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 LZCNT instruction to LLVM IR, emitting code
-// to f.
+// emitInstLZCNT translates the given x86 LZCNT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstLZCNT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstLZCNT: not yet implemented")
@@ -3929,8 +3707,8 @@ func (f *Func) emitInstLZCNT(inst *Inst) error {
 
 // --- [ MASKMOVDQU ] ----------------------------------------------------------
 
-// emitInst translates the given x86 MASKMOVDQU instruction to LLVM IR, emitting
-// code to f.
+// emitInstMASKMOVDQU translates the given x86 MASKMOVDQU instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstMASKMOVDQU(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMASKMOVDQU: not yet implemented")
@@ -3938,8 +3716,8 @@ func (f *Func) emitInstMASKMOVDQU(inst *Inst) error {
 
 // --- [ MASKMOVQ ] ------------------------------------------------------------
 
-// emitInst translates the given x86 MASKMOVQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstMASKMOVQ translates the given x86 MASKMOVQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMASKMOVQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMASKMOVQ: not yet implemented")
@@ -3947,8 +3725,8 @@ func (f *Func) emitInstMASKMOVQ(inst *Inst) error {
 
 // --- [ MAXPD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MAXPD instruction to LLVM IR, emitting code
-// to f.
+// emitInstMAXPD translates the given x86 MAXPD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMAXPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMAXPD: not yet implemented")
@@ -3956,8 +3734,8 @@ func (f *Func) emitInstMAXPD(inst *Inst) error {
 
 // --- [ MAXPS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MAXPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstMAXPS translates the given x86 MAXPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMAXPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMAXPS: not yet implemented")
@@ -3965,8 +3743,8 @@ func (f *Func) emitInstMAXPS(inst *Inst) error {
 
 // --- [ MAXSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MAXSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstMAXSD translates the given x86 MAXSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMAXSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMAXSD: not yet implemented")
@@ -3974,8 +3752,8 @@ func (f *Func) emitInstMAXSD(inst *Inst) error {
 
 // --- [ MAXSS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MAXSS instruction to LLVM IR, emitting code
-// to f.
+// emitInstMAXSS translates the given x86 MAXSS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMAXSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMAXSS: not yet implemented")
@@ -3983,8 +3761,8 @@ func (f *Func) emitInstMAXSS(inst *Inst) error {
 
 // --- [ MFENCE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MFENCE instruction to LLVM IR, emitting
-// code to f.
+// emitInstMFENCE translates the given x86 MFENCE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMFENCE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMFENCE: not yet implemented")
@@ -3992,8 +3770,8 @@ func (f *Func) emitInstMFENCE(inst *Inst) error {
 
 // --- [ MINPD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MINPD instruction to LLVM IR, emitting code
-// to f.
+// emitInstMINPD translates the given x86 MINPD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMINPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMINPD: not yet implemented")
@@ -4001,8 +3779,8 @@ func (f *Func) emitInstMINPD(inst *Inst) error {
 
 // --- [ MINPS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MINPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstMINPS translates the given x86 MINPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMINPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMINPS: not yet implemented")
@@ -4010,8 +3788,8 @@ func (f *Func) emitInstMINPS(inst *Inst) error {
 
 // --- [ MINSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MINSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstMINSD translates the given x86 MINSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMINSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMINSD: not yet implemented")
@@ -4019,8 +3797,8 @@ func (f *Func) emitInstMINSD(inst *Inst) error {
 
 // --- [ MINSS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MINSS instruction to LLVM IR, emitting code
-// to f.
+// emitInstMINSS translates the given x86 MINSS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMINSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMINSS: not yet implemented")
@@ -4028,8 +3806,8 @@ func (f *Func) emitInstMINSS(inst *Inst) error {
 
 // --- [ MONITOR ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MONITOR instruction to LLVM IR, emitting
-// code to f.
+// emitInstMONITOR translates the given x86 MONITOR instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMONITOR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMONITOR: not yet implemented")
@@ -4037,8 +3815,8 @@ func (f *Func) emitInstMONITOR(inst *Inst) error {
 
 // --- [ MOV ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 MOV instruction to LLVM IR, emitting code
-// to f.
+// emitInstMOV translates the given x86 MOV instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMOV(inst *Inst) error {
 	src := f.useArg(inst.Arg(1))
 	f.defArg(inst.Arg(0), src)
@@ -4047,8 +3825,8 @@ func (f *Func) emitInstMOV(inst *Inst) error {
 
 // --- [ MOVAPD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVAPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVAPD translates the given x86 MOVAPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVAPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVAPD: not yet implemented")
@@ -4056,8 +3834,8 @@ func (f *Func) emitInstMOVAPD(inst *Inst) error {
 
 // --- [ MOVAPS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVAPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVAPS translates the given x86 MOVAPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVAPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVAPS: not yet implemented")
@@ -4065,8 +3843,8 @@ func (f *Func) emitInstMOVAPS(inst *Inst) error {
 
 // --- [ MOVBE ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MOVBE instruction to LLVM IR, emitting code
-// to f.
+// emitInstMOVBE translates the given x86 MOVBE instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMOVBE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVBE: not yet implemented")
@@ -4074,8 +3852,8 @@ func (f *Func) emitInstMOVBE(inst *Inst) error {
 
 // --- [ MOVD ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 MOVD instruction to LLVM IR, emitting code
-// to f.
+// emitInstMOVD translates the given x86 MOVD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMOVD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVD: not yet implemented")
@@ -4083,8 +3861,8 @@ func (f *Func) emitInstMOVD(inst *Inst) error {
 
 // --- [ MOVDDUP ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MOVDDUP instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVDDUP translates the given x86 MOVDDUP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVDDUP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVDDUP: not yet implemented")
@@ -4092,8 +3870,8 @@ func (f *Func) emitInstMOVDDUP(inst *Inst) error {
 
 // --- [ MOVDQ2Q ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MOVDQ2Q instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVDQ2Q translates the given x86 MOVDQ2Q instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVDQ2Q(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVDQ2Q: not yet implemented")
@@ -4101,8 +3879,8 @@ func (f *Func) emitInstMOVDQ2Q(inst *Inst) error {
 
 // --- [ MOVDQA ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVDQA instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVDQA translates the given x86 MOVDQA instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVDQA(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVDQA: not yet implemented")
@@ -4110,8 +3888,8 @@ func (f *Func) emitInstMOVDQA(inst *Inst) error {
 
 // --- [ MOVDQU ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVDQU instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVDQU translates the given x86 MOVDQU instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVDQU(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVDQU: not yet implemented")
@@ -4119,8 +3897,8 @@ func (f *Func) emitInstMOVDQU(inst *Inst) error {
 
 // --- [ MOVHLPS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MOVHLPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVHLPS translates the given x86 MOVHLPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVHLPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVHLPS: not yet implemented")
@@ -4128,8 +3906,8 @@ func (f *Func) emitInstMOVHLPS(inst *Inst) error {
 
 // --- [ MOVHPD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVHPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVHPD translates the given x86 MOVHPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVHPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVHPD: not yet implemented")
@@ -4137,8 +3915,8 @@ func (f *Func) emitInstMOVHPD(inst *Inst) error {
 
 // --- [ MOVHPS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVHPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVHPS translates the given x86 MOVHPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVHPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVHPS: not yet implemented")
@@ -4146,8 +3924,8 @@ func (f *Func) emitInstMOVHPS(inst *Inst) error {
 
 // --- [ MOVLHPS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MOVLHPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVLHPS translates the given x86 MOVLHPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVLHPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVLHPS: not yet implemented")
@@ -4155,8 +3933,8 @@ func (f *Func) emitInstMOVLHPS(inst *Inst) error {
 
 // --- [ MOVLPD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVLPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVLPD translates the given x86 MOVLPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVLPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVLPD: not yet implemented")
@@ -4164,8 +3942,8 @@ func (f *Func) emitInstMOVLPD(inst *Inst) error {
 
 // --- [ MOVLPS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVLPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVLPS translates the given x86 MOVLPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVLPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVLPS: not yet implemented")
@@ -4173,8 +3951,8 @@ func (f *Func) emitInstMOVLPS(inst *Inst) error {
 
 // --- [ MOVMSKPD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 MOVMSKPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVMSKPD translates the given x86 MOVMSKPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVMSKPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVMSKPD: not yet implemented")
@@ -4182,8 +3960,8 @@ func (f *Func) emitInstMOVMSKPD(inst *Inst) error {
 
 // --- [ MOVMSKPS ] ------------------------------------------------------------
 
-// emitInst translates the given x86 MOVMSKPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVMSKPS translates the given x86 MOVMSKPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVMSKPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVMSKPS: not yet implemented")
@@ -4191,8 +3969,8 @@ func (f *Func) emitInstMOVMSKPS(inst *Inst) error {
 
 // --- [ MOVNTDQ ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MOVNTDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVNTDQ translates the given x86 MOVNTDQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVNTDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVNTDQ: not yet implemented")
@@ -4200,8 +3978,8 @@ func (f *Func) emitInstMOVNTDQ(inst *Inst) error {
 
 // --- [ MOVNTDQA ] ------------------------------------------------------------
 
-// emitInst translates the given x86 MOVNTDQA instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVNTDQA translates the given x86 MOVNTDQA instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVNTDQA(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVNTDQA: not yet implemented")
@@ -4209,8 +3987,8 @@ func (f *Func) emitInstMOVNTDQA(inst *Inst) error {
 
 // --- [ MOVNTI ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVNTI instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVNTI translates the given x86 MOVNTI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVNTI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVNTI: not yet implemented")
@@ -4218,8 +3996,8 @@ func (f *Func) emitInstMOVNTI(inst *Inst) error {
 
 // --- [ MOVNTPD ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MOVNTPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVNTPD translates the given x86 MOVNTPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVNTPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVNTPD: not yet implemented")
@@ -4227,8 +4005,8 @@ func (f *Func) emitInstMOVNTPD(inst *Inst) error {
 
 // --- [ MOVNTPS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MOVNTPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVNTPS translates the given x86 MOVNTPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVNTPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVNTPS: not yet implemented")
@@ -4236,8 +4014,8 @@ func (f *Func) emitInstMOVNTPS(inst *Inst) error {
 
 // --- [ MOVNTQ ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVNTQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVNTQ translates the given x86 MOVNTQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVNTQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVNTQ: not yet implemented")
@@ -4245,8 +4023,8 @@ func (f *Func) emitInstMOVNTQ(inst *Inst) error {
 
 // --- [ MOVNTSD ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MOVNTSD instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVNTSD translates the given x86 MOVNTSD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVNTSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVNTSD: not yet implemented")
@@ -4254,8 +4032,8 @@ func (f *Func) emitInstMOVNTSD(inst *Inst) error {
 
 // --- [ MOVNTSS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MOVNTSS instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVNTSS translates the given x86 MOVNTSS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVNTSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVNTSS: not yet implemented")
@@ -4263,8 +4041,8 @@ func (f *Func) emitInstMOVNTSS(inst *Inst) error {
 
 // --- [ MOVQ ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 MOVQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstMOVQ translates the given x86 MOVQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMOVQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVQ: not yet implemented")
@@ -4272,8 +4050,8 @@ func (f *Func) emitInstMOVQ(inst *Inst) error {
 
 // --- [ MOVQ2DQ ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MOVQ2DQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVQ2DQ translates the given x86 MOVQ2DQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVQ2DQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVQ2DQ: not yet implemented")
@@ -4281,8 +4059,8 @@ func (f *Func) emitInstMOVQ2DQ(inst *Inst) error {
 
 // --- [ MOVSB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MOVSB instruction to LLVM IR, emitting code
-// to f.
+// emitInstMOVSB translates the given x86 MOVSB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMOVSB(inst *Inst) error {
 	src := f.useArgElem(inst.Arg(1), types.I8)
 	f.defArg(inst.Arg(0), src)
@@ -4291,8 +4069,8 @@ func (f *Func) emitInstMOVSB(inst *Inst) error {
 
 // --- [ MOVSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MOVSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstMOVSD translates the given x86 MOVSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMOVSD(inst *Inst) error {
 	src := f.useArgElem(inst.Arg(1), types.I32)
 	f.defArg(inst.Arg(0), src)
@@ -4301,8 +4079,8 @@ func (f *Func) emitInstMOVSD(inst *Inst) error {
 
 // --- [ MOVSD_XMM ] -----------------------------------------------------------
 
-// emitInst translates the given x86 MOVSD_XMM instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVSD_XMM translates the given x86 MOVSD_XMM instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVSD_XMM(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVSD_XMM: not yet implemented")
@@ -4310,8 +4088,8 @@ func (f *Func) emitInstMOVSD_XMM(inst *Inst) error {
 
 // --- [ MOVSHDUP ] ------------------------------------------------------------
 
-// emitInst translates the given x86 MOVSHDUP instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVSHDUP translates the given x86 MOVSHDUP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVSHDUP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVSHDUP: not yet implemented")
@@ -4319,8 +4097,8 @@ func (f *Func) emitInstMOVSHDUP(inst *Inst) error {
 
 // --- [ MOVSLDUP ] ------------------------------------------------------------
 
-// emitInst translates the given x86 MOVSLDUP instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVSLDUP translates the given x86 MOVSLDUP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVSLDUP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVSLDUP: not yet implemented")
@@ -4328,8 +4106,8 @@ func (f *Func) emitInstMOVSLDUP(inst *Inst) error {
 
 // --- [ MOVSQ ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MOVSQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstMOVSQ translates the given x86 MOVSQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMOVSQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVSQ: not yet implemented")
@@ -4337,8 +4115,8 @@ func (f *Func) emitInstMOVSQ(inst *Inst) error {
 
 // --- [ MOVSS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MOVSS instruction to LLVM IR, emitting code
-// to f.
+// emitInstMOVSS translates the given x86 MOVSS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMOVSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVSS: not yet implemented")
@@ -4346,8 +4124,8 @@ func (f *Func) emitInstMOVSS(inst *Inst) error {
 
 // --- [ MOVSW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MOVSW instruction to LLVM IR, emitting code
-// to f.
+// emitInstMOVSW translates the given x86 MOVSW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMOVSW(inst *Inst) error {
 	src := f.useArgElem(inst.Arg(1), types.I16)
 	f.defArg(inst.Arg(0), src)
@@ -4356,8 +4134,8 @@ func (f *Func) emitInstMOVSW(inst *Inst) error {
 
 // --- [ MOVSX ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MOVSX instruction to LLVM IR, emitting code
-// to f.
+// emitInstMOVSX translates the given x86 MOVSX instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMOVSX(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVSX: not yet implemented")
@@ -4365,8 +4143,8 @@ func (f *Func) emitInstMOVSX(inst *Inst) error {
 
 // --- [ MOVSXD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVSXD instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVSXD translates the given x86 MOVSXD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVSXD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVSXD: not yet implemented")
@@ -4374,8 +4152,8 @@ func (f *Func) emitInstMOVSXD(inst *Inst) error {
 
 // --- [ MOVUPD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVUPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVUPD translates the given x86 MOVUPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVUPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVUPD: not yet implemented")
@@ -4383,8 +4161,8 @@ func (f *Func) emitInstMOVUPD(inst *Inst) error {
 
 // --- [ MOVUPS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 MOVUPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstMOVUPS translates the given x86 MOVUPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMOVUPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMOVUPS: not yet implemented")
@@ -4392,8 +4170,8 @@ func (f *Func) emitInstMOVUPS(inst *Inst) error {
 
 // --- [ MOVZX ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MOVZX instruction to LLVM IR, emitting code
-// to f.
+// emitInstMOVZX translates the given x86 MOVZX instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMOVZX(inst *Inst) error {
 	size := inst.MemBytes * 8
 	elem := types.NewInt(size)
@@ -4406,8 +4184,8 @@ func (f *Func) emitInstMOVZX(inst *Inst) error {
 
 // --- [ MPSADBW ] -------------------------------------------------------------
 
-// emitInst translates the given x86 MPSADBW instruction to LLVM IR, emitting
-// code to f.
+// emitInstMPSADBW translates the given x86 MPSADBW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstMPSADBW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMPSADBW: not yet implemented")
@@ -4415,8 +4193,8 @@ func (f *Func) emitInstMPSADBW(inst *Inst) error {
 
 // --- [ MUL ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 MUL instruction to LLVM IR, emitting code
-// to f.
+// emitInstMUL translates the given x86 MUL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMUL(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMUL: not yet implemented")
@@ -4424,8 +4202,8 @@ func (f *Func) emitInstMUL(inst *Inst) error {
 
 // --- [ MULPD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MULPD instruction to LLVM IR, emitting code
-// to f.
+// emitInstMULPD translates the given x86 MULPD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMULPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMULPD: not yet implemented")
@@ -4433,8 +4211,8 @@ func (f *Func) emitInstMULPD(inst *Inst) error {
 
 // --- [ MULPS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MULPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstMULPS translates the given x86 MULPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMULPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMULPS: not yet implemented")
@@ -4442,8 +4220,8 @@ func (f *Func) emitInstMULPS(inst *Inst) error {
 
 // --- [ MULSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MULSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstMULSD translates the given x86 MULSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMULSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMULSD: not yet implemented")
@@ -4451,8 +4229,8 @@ func (f *Func) emitInstMULSD(inst *Inst) error {
 
 // --- [ MULSS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MULSS instruction to LLVM IR, emitting code
-// to f.
+// emitInstMULSS translates the given x86 MULSS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMULSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMULSS: not yet implemented")
@@ -4460,8 +4238,8 @@ func (f *Func) emitInstMULSS(inst *Inst) error {
 
 // --- [ MWAIT ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 MWAIT instruction to LLVM IR, emitting code
-// to f.
+// emitInstMWAIT translates the given x86 MWAIT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstMWAIT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstMWAIT: not yet implemented")
@@ -4469,8 +4247,8 @@ func (f *Func) emitInstMWAIT(inst *Inst) error {
 
 // --- [ NEG ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 NEG instruction to LLVM IR, emitting code
-// to f.
+// emitInstNEG translates the given x86 NEG instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstNEG(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstNEG: not yet implemented")
@@ -4478,8 +4256,8 @@ func (f *Func) emitInstNEG(inst *Inst) error {
 
 // --- [ NOP ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 NOP instruction to LLVM IR, emitting code
-// to f.
+// emitInstNOP translates the given x86 NOP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstNOP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstNOP: not yet implemented")
@@ -4487,8 +4265,8 @@ func (f *Func) emitInstNOP(inst *Inst) error {
 
 // --- [ NOT ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 NOT instruction to LLVM IR, emitting code
-// to f.
+// emitInstNOT translates the given x86 NOT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstNOT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstNOT: not yet implemented")
@@ -4496,8 +4274,8 @@ func (f *Func) emitInstNOT(inst *Inst) error {
 
 // --- [ OR ] ------------------------------------------------------------------
 
-// emitInst translates the given x86 OR instruction to LLVM IR, emitting code to
-// f.
+// emitInstOR translates the given x86 OR instruction to LLVM IR, emitting code
+// to f.
 func (f *Func) emitInstOR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstOR: not yet implemented")
@@ -4505,8 +4283,8 @@ func (f *Func) emitInstOR(inst *Inst) error {
 
 // --- [ ORPD ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 ORPD instruction to LLVM IR, emitting code
-// to f.
+// emitInstORPD translates the given x86 ORPD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstORPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstORPD: not yet implemented")
@@ -4514,8 +4292,8 @@ func (f *Func) emitInstORPD(inst *Inst) error {
 
 // --- [ ORPS ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 ORPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstORPS translates the given x86 ORPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstORPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstORPS: not yet implemented")
@@ -4523,8 +4301,8 @@ func (f *Func) emitInstORPS(inst *Inst) error {
 
 // --- [ OUT ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 OUT instruction to LLVM IR, emitting code
-// to f.
+// emitInstOUT translates the given x86 OUT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstOUT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstOUT: not yet implemented")
@@ -4532,8 +4310,8 @@ func (f *Func) emitInstOUT(inst *Inst) error {
 
 // --- [ OUTSB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 OUTSB instruction to LLVM IR, emitting code
-// to f.
+// emitInstOUTSB translates the given x86 OUTSB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstOUTSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstOUTSB: not yet implemented")
@@ -4541,8 +4319,8 @@ func (f *Func) emitInstOUTSB(inst *Inst) error {
 
 // --- [ OUTSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 OUTSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstOUTSD translates the given x86 OUTSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstOUTSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstOUTSD: not yet implemented")
@@ -4550,8 +4328,8 @@ func (f *Func) emitInstOUTSD(inst *Inst) error {
 
 // --- [ OUTSW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 OUTSW instruction to LLVM IR, emitting code
-// to f.
+// emitInstOUTSW translates the given x86 OUTSW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstOUTSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstOUTSW: not yet implemented")
@@ -4559,8 +4337,8 @@ func (f *Func) emitInstOUTSW(inst *Inst) error {
 
 // --- [ PABSB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PABSB instruction to LLVM IR, emitting code
-// to f.
+// emitInstPABSB translates the given x86 PABSB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPABSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPABSB: not yet implemented")
@@ -4568,8 +4346,8 @@ func (f *Func) emitInstPABSB(inst *Inst) error {
 
 // --- [ PABSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PABSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstPABSD translates the given x86 PABSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPABSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPABSD: not yet implemented")
@@ -4577,8 +4355,8 @@ func (f *Func) emitInstPABSD(inst *Inst) error {
 
 // --- [ PABSW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PABSW instruction to LLVM IR, emitting code
-// to f.
+// emitInstPABSW translates the given x86 PABSW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPABSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPABSW: not yet implemented")
@@ -4586,8 +4364,8 @@ func (f *Func) emitInstPABSW(inst *Inst) error {
 
 // --- [ PACKSSDW ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PACKSSDW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPACKSSDW translates the given x86 PACKSSDW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPACKSSDW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPACKSSDW: not yet implemented")
@@ -4595,8 +4373,8 @@ func (f *Func) emitInstPACKSSDW(inst *Inst) error {
 
 // --- [ PACKSSWB ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PACKSSWB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPACKSSWB translates the given x86 PACKSSWB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPACKSSWB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPACKSSWB: not yet implemented")
@@ -4604,8 +4382,8 @@ func (f *Func) emitInstPACKSSWB(inst *Inst) error {
 
 // --- [ PACKUSDW ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PACKUSDW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPACKUSDW translates the given x86 PACKUSDW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPACKUSDW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPACKUSDW: not yet implemented")
@@ -4613,8 +4391,8 @@ func (f *Func) emitInstPACKUSDW(inst *Inst) error {
 
 // --- [ PACKUSWB ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PACKUSWB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPACKUSWB translates the given x86 PACKUSWB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPACKUSWB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPACKUSWB: not yet implemented")
@@ -4622,8 +4400,8 @@ func (f *Func) emitInstPACKUSWB(inst *Inst) error {
 
 // --- [ PADDB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PADDB instruction to LLVM IR, emitting code
-// to f.
+// emitInstPADDB translates the given x86 PADDB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPADDB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPADDB: not yet implemented")
@@ -4631,8 +4409,8 @@ func (f *Func) emitInstPADDB(inst *Inst) error {
 
 // --- [ PADDD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PADDD instruction to LLVM IR, emitting code
-// to f.
+// emitInstPADDD translates the given x86 PADDD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPADDD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPADDD: not yet implemented")
@@ -4640,8 +4418,8 @@ func (f *Func) emitInstPADDD(inst *Inst) error {
 
 // --- [ PADDQ ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PADDQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstPADDQ translates the given x86 PADDQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPADDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPADDQ: not yet implemented")
@@ -4649,8 +4427,8 @@ func (f *Func) emitInstPADDQ(inst *Inst) error {
 
 // --- [ PADDSB ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PADDSB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPADDSB translates the given x86 PADDSB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPADDSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPADDSB: not yet implemented")
@@ -4658,8 +4436,8 @@ func (f *Func) emitInstPADDSB(inst *Inst) error {
 
 // --- [ PADDSW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PADDSW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPADDSW translates the given x86 PADDSW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPADDSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPADDSW: not yet implemented")
@@ -4667,8 +4445,8 @@ func (f *Func) emitInstPADDSW(inst *Inst) error {
 
 // --- [ PADDUSB ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PADDUSB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPADDUSB translates the given x86 PADDUSB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPADDUSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPADDUSB: not yet implemented")
@@ -4676,8 +4454,8 @@ func (f *Func) emitInstPADDUSB(inst *Inst) error {
 
 // --- [ PADDUSW ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PADDUSW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPADDUSW translates the given x86 PADDUSW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPADDUSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPADDUSW: not yet implemented")
@@ -4685,8 +4463,8 @@ func (f *Func) emitInstPADDUSW(inst *Inst) error {
 
 // --- [ PADDW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PADDW instruction to LLVM IR, emitting code
-// to f.
+// emitInstPADDW translates the given x86 PADDW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPADDW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPADDW: not yet implemented")
@@ -4694,8 +4472,8 @@ func (f *Func) emitInstPADDW(inst *Inst) error {
 
 // --- [ PALIGNR ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PALIGNR instruction to LLVM IR, emitting
-// code to f.
+// emitInstPALIGNR translates the given x86 PALIGNR instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPALIGNR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPALIGNR: not yet implemented")
@@ -4703,8 +4481,8 @@ func (f *Func) emitInstPALIGNR(inst *Inst) error {
 
 // --- [ PAND ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 PAND instruction to LLVM IR, emitting code
-// to f.
+// emitInstPAND translates the given x86 PAND instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPAND(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPAND: not yet implemented")
@@ -4712,8 +4490,8 @@ func (f *Func) emitInstPAND(inst *Inst) error {
 
 // --- [ PANDN ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PANDN instruction to LLVM IR, emitting code
-// to f.
+// emitInstPANDN translates the given x86 PANDN instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPANDN(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPANDN: not yet implemented")
@@ -4721,8 +4499,8 @@ func (f *Func) emitInstPANDN(inst *Inst) error {
 
 // --- [ PAUSE ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PAUSE instruction to LLVM IR, emitting code
-// to f.
+// emitInstPAUSE translates the given x86 PAUSE instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPAUSE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPAUSE: not yet implemented")
@@ -4730,8 +4508,8 @@ func (f *Func) emitInstPAUSE(inst *Inst) error {
 
 // --- [ PAVGB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PAVGB instruction to LLVM IR, emitting code
-// to f.
+// emitInstPAVGB translates the given x86 PAVGB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPAVGB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPAVGB: not yet implemented")
@@ -4739,8 +4517,8 @@ func (f *Func) emitInstPAVGB(inst *Inst) error {
 
 // --- [ PAVGW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PAVGW instruction to LLVM IR, emitting code
-// to f.
+// emitInstPAVGW translates the given x86 PAVGW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPAVGW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPAVGW: not yet implemented")
@@ -4748,8 +4526,8 @@ func (f *Func) emitInstPAVGW(inst *Inst) error {
 
 // --- [ PBLENDVB ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PBLENDVB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPBLENDVB translates the given x86 PBLENDVB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPBLENDVB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPBLENDVB: not yet implemented")
@@ -4757,8 +4535,8 @@ func (f *Func) emitInstPBLENDVB(inst *Inst) error {
 
 // --- [ PBLENDW ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PBLENDW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPBLENDW translates the given x86 PBLENDW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPBLENDW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPBLENDW: not yet implemented")
@@ -4766,8 +4544,8 @@ func (f *Func) emitInstPBLENDW(inst *Inst) error {
 
 // --- [ PCLMULQDQ ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PCLMULQDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCLMULQDQ translates the given x86 PCLMULQDQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCLMULQDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCLMULQDQ: not yet implemented")
@@ -4775,8 +4553,8 @@ func (f *Func) emitInstPCLMULQDQ(inst *Inst) error {
 
 // --- [ PCMPEQB ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PCMPEQB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPEQB translates the given x86 PCMPEQB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPEQB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPEQB: not yet implemented")
@@ -4784,8 +4562,8 @@ func (f *Func) emitInstPCMPEQB(inst *Inst) error {
 
 // --- [ PCMPEQD ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PCMPEQD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPEQD translates the given x86 PCMPEQD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPEQD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPEQD: not yet implemented")
@@ -4793,8 +4571,8 @@ func (f *Func) emitInstPCMPEQD(inst *Inst) error {
 
 // --- [ PCMPEQQ ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PCMPEQQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPEQQ translates the given x86 PCMPEQQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPEQQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPEQQ: not yet implemented")
@@ -4802,8 +4580,8 @@ func (f *Func) emitInstPCMPEQQ(inst *Inst) error {
 
 // --- [ PCMPEQW ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PCMPEQW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPEQW translates the given x86 PCMPEQW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPEQW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPEQW: not yet implemented")
@@ -4811,8 +4589,8 @@ func (f *Func) emitInstPCMPEQW(inst *Inst) error {
 
 // --- [ PCMPESTRI ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PCMPESTRI instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPESTRI translates the given x86 PCMPESTRI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPESTRI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPESTRI: not yet implemented")
@@ -4820,8 +4598,8 @@ func (f *Func) emitInstPCMPESTRI(inst *Inst) error {
 
 // --- [ PCMPESTRM ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PCMPESTRM instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPESTRM translates the given x86 PCMPESTRM instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPESTRM(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPESTRM: not yet implemented")
@@ -4829,8 +4607,8 @@ func (f *Func) emitInstPCMPESTRM(inst *Inst) error {
 
 // --- [ PCMPGTB ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PCMPGTB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPGTB translates the given x86 PCMPGTB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPGTB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPGTB: not yet implemented")
@@ -4838,8 +4616,8 @@ func (f *Func) emitInstPCMPGTB(inst *Inst) error {
 
 // --- [ PCMPGTD ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PCMPGTD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPGTD translates the given x86 PCMPGTD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPGTD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPGTD: not yet implemented")
@@ -4847,8 +4625,8 @@ func (f *Func) emitInstPCMPGTD(inst *Inst) error {
 
 // --- [ PCMPGTQ ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PCMPGTQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPGTQ translates the given x86 PCMPGTQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPGTQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPGTQ: not yet implemented")
@@ -4856,8 +4634,8 @@ func (f *Func) emitInstPCMPGTQ(inst *Inst) error {
 
 // --- [ PCMPGTW ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PCMPGTW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPGTW translates the given x86 PCMPGTW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPGTW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPGTW: not yet implemented")
@@ -4865,8 +4643,8 @@ func (f *Func) emitInstPCMPGTW(inst *Inst) error {
 
 // --- [ PCMPISTRI ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PCMPISTRI instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPISTRI translates the given x86 PCMPISTRI instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPISTRI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPISTRI: not yet implemented")
@@ -4874,8 +4652,8 @@ func (f *Func) emitInstPCMPISTRI(inst *Inst) error {
 
 // --- [ PCMPISTRM ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PCMPISTRM instruction to LLVM IR, emitting
-// code to f.
+// emitInstPCMPISTRM translates the given x86 PCMPISTRM instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPCMPISTRM(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPCMPISTRM: not yet implemented")
@@ -4883,8 +4661,8 @@ func (f *Func) emitInstPCMPISTRM(inst *Inst) error {
 
 // --- [ PEXTRB ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PEXTRB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPEXTRB translates the given x86 PEXTRB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPEXTRB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPEXTRB: not yet implemented")
@@ -4892,8 +4670,8 @@ func (f *Func) emitInstPEXTRB(inst *Inst) error {
 
 // --- [ PEXTRD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PEXTRD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPEXTRD translates the given x86 PEXTRD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPEXTRD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPEXTRD: not yet implemented")
@@ -4901,8 +4679,8 @@ func (f *Func) emitInstPEXTRD(inst *Inst) error {
 
 // --- [ PEXTRQ ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PEXTRQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPEXTRQ translates the given x86 PEXTRQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPEXTRQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPEXTRQ: not yet implemented")
@@ -4910,8 +4688,8 @@ func (f *Func) emitInstPEXTRQ(inst *Inst) error {
 
 // --- [ PEXTRW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PEXTRW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPEXTRW translates the given x86 PEXTRW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPEXTRW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPEXTRW: not yet implemented")
@@ -4919,8 +4697,8 @@ func (f *Func) emitInstPEXTRW(inst *Inst) error {
 
 // --- [ PHADDD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PHADDD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPHADDD translates the given x86 PHADDD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPHADDD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPHADDD: not yet implemented")
@@ -4928,8 +4706,8 @@ func (f *Func) emitInstPHADDD(inst *Inst) error {
 
 // --- [ PHADDSW ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PHADDSW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPHADDSW translates the given x86 PHADDSW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPHADDSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPHADDSW: not yet implemented")
@@ -4937,8 +4715,8 @@ func (f *Func) emitInstPHADDSW(inst *Inst) error {
 
 // --- [ PHADDW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PHADDW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPHADDW translates the given x86 PHADDW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPHADDW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPHADDW: not yet implemented")
@@ -4946,8 +4724,8 @@ func (f *Func) emitInstPHADDW(inst *Inst) error {
 
 // --- [ PHMINPOSUW ] ----------------------------------------------------------
 
-// emitInst translates the given x86 PHMINPOSUW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPHMINPOSUW translates the given x86 PHMINPOSUW instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstPHMINPOSUW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPHMINPOSUW: not yet implemented")
@@ -4955,8 +4733,8 @@ func (f *Func) emitInstPHMINPOSUW(inst *Inst) error {
 
 // --- [ PHSUBD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PHSUBD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPHSUBD translates the given x86 PHSUBD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPHSUBD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPHSUBD: not yet implemented")
@@ -4964,8 +4742,8 @@ func (f *Func) emitInstPHSUBD(inst *Inst) error {
 
 // --- [ PHSUBSW ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PHSUBSW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPHSUBSW translates the given x86 PHSUBSW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPHSUBSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPHSUBSW: not yet implemented")
@@ -4973,8 +4751,8 @@ func (f *Func) emitInstPHSUBSW(inst *Inst) error {
 
 // --- [ PHSUBW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PHSUBW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPHSUBW translates the given x86 PHSUBW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPHSUBW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPHSUBW: not yet implemented")
@@ -4982,8 +4760,8 @@ func (f *Func) emitInstPHSUBW(inst *Inst) error {
 
 // --- [ PINSRB ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PINSRB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPINSRB translates the given x86 PINSRB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPINSRB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPINSRB: not yet implemented")
@@ -4991,8 +4769,8 @@ func (f *Func) emitInstPINSRB(inst *Inst) error {
 
 // --- [ PINSRD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PINSRD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPINSRD translates the given x86 PINSRD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPINSRD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPINSRD: not yet implemented")
@@ -5000,8 +4778,8 @@ func (f *Func) emitInstPINSRD(inst *Inst) error {
 
 // --- [ PINSRQ ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PINSRQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPINSRQ translates the given x86 PINSRQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPINSRQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPINSRQ: not yet implemented")
@@ -5009,8 +4787,8 @@ func (f *Func) emitInstPINSRQ(inst *Inst) error {
 
 // --- [ PINSRW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PINSRW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPINSRW translates the given x86 PINSRW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPINSRW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPINSRW: not yet implemented")
@@ -5018,8 +4796,8 @@ func (f *Func) emitInstPINSRW(inst *Inst) error {
 
 // --- [ PMADDUBSW ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PMADDUBSW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMADDUBSW translates the given x86 PMADDUBSW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMADDUBSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMADDUBSW: not yet implemented")
@@ -5027,8 +4805,8 @@ func (f *Func) emitInstPMADDUBSW(inst *Inst) error {
 
 // --- [ PMADDWD ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PMADDWD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMADDWD translates the given x86 PMADDWD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMADDWD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMADDWD: not yet implemented")
@@ -5036,8 +4814,8 @@ func (f *Func) emitInstPMADDWD(inst *Inst) error {
 
 // --- [ PMAXSB ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMAXSB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMAXSB translates the given x86 PMAXSB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMAXSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMAXSB: not yet implemented")
@@ -5045,8 +4823,8 @@ func (f *Func) emitInstPMAXSB(inst *Inst) error {
 
 // --- [ PMAXSD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMAXSD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMAXSD translates the given x86 PMAXSD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMAXSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMAXSD: not yet implemented")
@@ -5054,8 +4832,8 @@ func (f *Func) emitInstPMAXSD(inst *Inst) error {
 
 // --- [ PMAXSW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMAXSW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMAXSW translates the given x86 PMAXSW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMAXSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMAXSW: not yet implemented")
@@ -5063,8 +4841,8 @@ func (f *Func) emitInstPMAXSW(inst *Inst) error {
 
 // --- [ PMAXUB ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMAXUB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMAXUB translates the given x86 PMAXUB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMAXUB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMAXUB: not yet implemented")
@@ -5072,8 +4850,8 @@ func (f *Func) emitInstPMAXUB(inst *Inst) error {
 
 // --- [ PMAXUD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMAXUD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMAXUD translates the given x86 PMAXUD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMAXUD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMAXUD: not yet implemented")
@@ -5081,8 +4859,8 @@ func (f *Func) emitInstPMAXUD(inst *Inst) error {
 
 // --- [ PMAXUW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMAXUW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMAXUW translates the given x86 PMAXUW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMAXUW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMAXUW: not yet implemented")
@@ -5090,8 +4868,8 @@ func (f *Func) emitInstPMAXUW(inst *Inst) error {
 
 // --- [ PMINSB ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMINSB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMINSB translates the given x86 PMINSB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMINSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMINSB: not yet implemented")
@@ -5099,8 +4877,8 @@ func (f *Func) emitInstPMINSB(inst *Inst) error {
 
 // --- [ PMINSD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMINSD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMINSD translates the given x86 PMINSD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMINSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMINSD: not yet implemented")
@@ -5108,8 +4886,8 @@ func (f *Func) emitInstPMINSD(inst *Inst) error {
 
 // --- [ PMINSW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMINSW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMINSW translates the given x86 PMINSW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMINSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMINSW: not yet implemented")
@@ -5117,8 +4895,8 @@ func (f *Func) emitInstPMINSW(inst *Inst) error {
 
 // --- [ PMINUB ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMINUB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMINUB translates the given x86 PMINUB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMINUB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMINUB: not yet implemented")
@@ -5126,8 +4904,8 @@ func (f *Func) emitInstPMINUB(inst *Inst) error {
 
 // --- [ PMINUD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMINUD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMINUD translates the given x86 PMINUD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMINUD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMINUD: not yet implemented")
@@ -5135,8 +4913,8 @@ func (f *Func) emitInstPMINUD(inst *Inst) error {
 
 // --- [ PMINUW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMINUW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMINUW translates the given x86 PMINUW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMINUW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMINUW: not yet implemented")
@@ -5144,8 +4922,8 @@ func (f *Func) emitInstPMINUW(inst *Inst) error {
 
 // --- [ PMOVMSKB ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVMSKB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVMSKB translates the given x86 PMOVMSKB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVMSKB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVMSKB: not yet implemented")
@@ -5153,8 +4931,8 @@ func (f *Func) emitInstPMOVMSKB(inst *Inst) error {
 
 // --- [ PMOVSXBD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVSXBD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVSXBD translates the given x86 PMOVSXBD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVSXBD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVSXBD: not yet implemented")
@@ -5162,8 +4940,8 @@ func (f *Func) emitInstPMOVSXBD(inst *Inst) error {
 
 // --- [ PMOVSXBQ ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVSXBQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVSXBQ translates the given x86 PMOVSXBQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVSXBQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVSXBQ: not yet implemented")
@@ -5171,8 +4949,8 @@ func (f *Func) emitInstPMOVSXBQ(inst *Inst) error {
 
 // --- [ PMOVSXBW ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVSXBW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVSXBW translates the given x86 PMOVSXBW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVSXBW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVSXBW: not yet implemented")
@@ -5180,8 +4958,8 @@ func (f *Func) emitInstPMOVSXBW(inst *Inst) error {
 
 // --- [ PMOVSXDQ ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVSXDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVSXDQ translates the given x86 PMOVSXDQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVSXDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVSXDQ: not yet implemented")
@@ -5189,8 +4967,8 @@ func (f *Func) emitInstPMOVSXDQ(inst *Inst) error {
 
 // --- [ PMOVSXWD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVSXWD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVSXWD translates the given x86 PMOVSXWD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVSXWD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVSXWD: not yet implemented")
@@ -5198,8 +4976,8 @@ func (f *Func) emitInstPMOVSXWD(inst *Inst) error {
 
 // --- [ PMOVSXWQ ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVSXWQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVSXWQ translates the given x86 PMOVSXWQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVSXWQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVSXWQ: not yet implemented")
@@ -5207,8 +4985,8 @@ func (f *Func) emitInstPMOVSXWQ(inst *Inst) error {
 
 // --- [ PMOVZXBD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVZXBD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVZXBD translates the given x86 PMOVZXBD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVZXBD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVZXBD: not yet implemented")
@@ -5216,8 +4994,8 @@ func (f *Func) emitInstPMOVZXBD(inst *Inst) error {
 
 // --- [ PMOVZXBQ ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVZXBQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVZXBQ translates the given x86 PMOVZXBQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVZXBQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVZXBQ: not yet implemented")
@@ -5225,8 +5003,8 @@ func (f *Func) emitInstPMOVZXBQ(inst *Inst) error {
 
 // --- [ PMOVZXBW ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVZXBW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVZXBW translates the given x86 PMOVZXBW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVZXBW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVZXBW: not yet implemented")
@@ -5234,8 +5012,8 @@ func (f *Func) emitInstPMOVZXBW(inst *Inst) error {
 
 // --- [ PMOVZXDQ ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVZXDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVZXDQ translates the given x86 PMOVZXDQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVZXDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVZXDQ: not yet implemented")
@@ -5243,8 +5021,8 @@ func (f *Func) emitInstPMOVZXDQ(inst *Inst) error {
 
 // --- [ PMOVZXWD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVZXWD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVZXWD translates the given x86 PMOVZXWD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVZXWD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVZXWD: not yet implemented")
@@ -5252,8 +5030,8 @@ func (f *Func) emitInstPMOVZXWD(inst *Inst) error {
 
 // --- [ PMOVZXWQ ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMOVZXWQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMOVZXWQ translates the given x86 PMOVZXWQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMOVZXWQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMOVZXWQ: not yet implemented")
@@ -5261,8 +5039,8 @@ func (f *Func) emitInstPMOVZXWQ(inst *Inst) error {
 
 // --- [ PMULDQ ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMULDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMULDQ translates the given x86 PMULDQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMULDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMULDQ: not yet implemented")
@@ -5270,8 +5048,8 @@ func (f *Func) emitInstPMULDQ(inst *Inst) error {
 
 // --- [ PMULHRSW ] ------------------------------------------------------------
 
-// emitInst translates the given x86 PMULHRSW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMULHRSW translates the given x86 PMULHRSW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMULHRSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMULHRSW: not yet implemented")
@@ -5279,8 +5057,8 @@ func (f *Func) emitInstPMULHRSW(inst *Inst) error {
 
 // --- [ PMULHUW ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PMULHUW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMULHUW translates the given x86 PMULHUW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMULHUW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMULHUW: not yet implemented")
@@ -5288,8 +5066,8 @@ func (f *Func) emitInstPMULHUW(inst *Inst) error {
 
 // --- [ PMULHW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMULHW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMULHW translates the given x86 PMULHW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMULHW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMULHW: not yet implemented")
@@ -5297,8 +5075,8 @@ func (f *Func) emitInstPMULHW(inst *Inst) error {
 
 // --- [ PMULLD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMULLD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMULLD translates the given x86 PMULLD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMULLD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMULLD: not yet implemented")
@@ -5306,8 +5084,8 @@ func (f *Func) emitInstPMULLD(inst *Inst) error {
 
 // --- [ PMULLW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PMULLW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMULLW translates the given x86 PMULLW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMULLW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMULLW: not yet implemented")
@@ -5315,8 +5093,8 @@ func (f *Func) emitInstPMULLW(inst *Inst) error {
 
 // --- [ PMULUDQ ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PMULUDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPMULUDQ translates the given x86 PMULUDQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPMULUDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPMULUDQ: not yet implemented")
@@ -5324,8 +5102,8 @@ func (f *Func) emitInstPMULUDQ(inst *Inst) error {
 
 // --- [ POP ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 POP instruction to LLVM IR, emitting code
-// to f.
+// emitInstPOP translates the given x86 POP instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPOP(inst *Inst) error {
 	v := f.pop()
 	f.defArg(inst.Arg(0), v)
@@ -5346,8 +5124,8 @@ func (f *Func) pop() value.Value {
 
 // --- [ POPA ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 POPA instruction to LLVM IR, emitting code
-// to f.
+// emitInstPOPA translates the given x86 POPA instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPOPA(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPOPA: not yet implemented")
@@ -5355,8 +5133,8 @@ func (f *Func) emitInstPOPA(inst *Inst) error {
 
 // --- [ POPAD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 POPAD instruction to LLVM IR, emitting code
-// to f.
+// emitInstPOPAD translates the given x86 POPAD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPOPAD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPOPAD: not yet implemented")
@@ -5364,8 +5142,8 @@ func (f *Func) emitInstPOPAD(inst *Inst) error {
 
 // --- [ POPCNT ] --------------------------------------------------------------
 
-// emitInst translates the given x86 POPCNT instruction to LLVM IR, emitting
-// code to f.
+// emitInstPOPCNT translates the given x86 POPCNT instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPOPCNT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPOPCNT: not yet implemented")
@@ -5373,8 +5151,8 @@ func (f *Func) emitInstPOPCNT(inst *Inst) error {
 
 // --- [ POPF ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 POPF instruction to LLVM IR, emitting code
-// to f.
+// emitInstPOPF translates the given x86 POPF instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPOPF(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPOPF: not yet implemented")
@@ -5382,8 +5160,8 @@ func (f *Func) emitInstPOPF(inst *Inst) error {
 
 // --- [ POPFD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 POPFD instruction to LLVM IR, emitting code
-// to f.
+// emitInstPOPFD translates the given x86 POPFD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPOPFD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPOPFD: not yet implemented")
@@ -5391,8 +5169,8 @@ func (f *Func) emitInstPOPFD(inst *Inst) error {
 
 // --- [ POPFQ ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 POPFQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstPOPFQ translates the given x86 POPFQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPOPFQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPOPFQ: not yet implemented")
@@ -5400,8 +5178,8 @@ func (f *Func) emitInstPOPFQ(inst *Inst) error {
 
 // --- [ POR ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 POR instruction to LLVM IR, emitting code
-// to f.
+// emitInstPOR translates the given x86 POR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPOR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPOR: not yet implemented")
@@ -5409,8 +5187,8 @@ func (f *Func) emitInstPOR(inst *Inst) error {
 
 // --- [ PREFETCHNTA ] ---------------------------------------------------------
 
-// emitInst translates the given x86 PREFETCHNTA instruction to LLVM IR,
-// emitting code to f.
+// emitInstPREFETCHNTA translates the given x86 PREFETCHNTA instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstPREFETCHNTA(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPREFETCHNTA: not yet implemented")
@@ -5418,8 +5196,8 @@ func (f *Func) emitInstPREFETCHNTA(inst *Inst) error {
 
 // --- [ PREFETCHT0 ] ----------------------------------------------------------
 
-// emitInst translates the given x86 PREFETCHT0 instruction to LLVM IR, emitting
-// code to f.
+// emitInstPREFETCHT0 translates the given x86 PREFETCHT0 instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstPREFETCHT0(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPREFETCHT0: not yet implemented")
@@ -5427,8 +5205,8 @@ func (f *Func) emitInstPREFETCHT0(inst *Inst) error {
 
 // --- [ PREFETCHT1 ] ----------------------------------------------------------
 
-// emitInst translates the given x86 PREFETCHT1 instruction to LLVM IR, emitting
-// code to f.
+// emitInstPREFETCHT1 translates the given x86 PREFETCHT1 instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstPREFETCHT1(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPREFETCHT1: not yet implemented")
@@ -5436,8 +5214,8 @@ func (f *Func) emitInstPREFETCHT1(inst *Inst) error {
 
 // --- [ PREFETCHT2 ] ----------------------------------------------------------
 
-// emitInst translates the given x86 PREFETCHT2 instruction to LLVM IR, emitting
-// code to f.
+// emitInstPREFETCHT2 translates the given x86 PREFETCHT2 instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstPREFETCHT2(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPREFETCHT2: not yet implemented")
@@ -5445,8 +5223,8 @@ func (f *Func) emitInstPREFETCHT2(inst *Inst) error {
 
 // --- [ PREFETCHW ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PREFETCHW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPREFETCHW translates the given x86 PREFETCHW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPREFETCHW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPREFETCHW: not yet implemented")
@@ -5454,8 +5232,8 @@ func (f *Func) emitInstPREFETCHW(inst *Inst) error {
 
 // --- [ PSADBW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PSADBW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSADBW translates the given x86 PSADBW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSADBW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSADBW: not yet implemented")
@@ -5463,8 +5241,8 @@ func (f *Func) emitInstPSADBW(inst *Inst) error {
 
 // --- [ PSHUFB ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PSHUFB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSHUFB translates the given x86 PSHUFB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSHUFB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSHUFB: not yet implemented")
@@ -5472,8 +5250,8 @@ func (f *Func) emitInstPSHUFB(inst *Inst) error {
 
 // --- [ PSHUFD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PSHUFD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSHUFD translates the given x86 PSHUFD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSHUFD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSHUFD: not yet implemented")
@@ -5481,8 +5259,8 @@ func (f *Func) emitInstPSHUFD(inst *Inst) error {
 
 // --- [ PSHUFHW ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PSHUFHW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSHUFHW translates the given x86 PSHUFHW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSHUFHW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSHUFHW: not yet implemented")
@@ -5490,8 +5268,8 @@ func (f *Func) emitInstPSHUFHW(inst *Inst) error {
 
 // --- [ PSHUFLW ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PSHUFLW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSHUFLW translates the given x86 PSHUFLW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSHUFLW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSHUFLW: not yet implemented")
@@ -5499,8 +5277,8 @@ func (f *Func) emitInstPSHUFLW(inst *Inst) error {
 
 // --- [ PSHUFW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PSHUFW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSHUFW translates the given x86 PSHUFW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSHUFW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSHUFW: not yet implemented")
@@ -5508,8 +5286,8 @@ func (f *Func) emitInstPSHUFW(inst *Inst) error {
 
 // --- [ PSIGNB ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PSIGNB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSIGNB translates the given x86 PSIGNB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSIGNB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSIGNB: not yet implemented")
@@ -5517,8 +5295,8 @@ func (f *Func) emitInstPSIGNB(inst *Inst) error {
 
 // --- [ PSIGND ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PSIGND instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSIGND translates the given x86 PSIGND instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSIGND(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSIGND: not yet implemented")
@@ -5526,8 +5304,8 @@ func (f *Func) emitInstPSIGND(inst *Inst) error {
 
 // --- [ PSIGNW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PSIGNW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSIGNW translates the given x86 PSIGNW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSIGNW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSIGNW: not yet implemented")
@@ -5535,8 +5313,8 @@ func (f *Func) emitInstPSIGNW(inst *Inst) error {
 
 // --- [ PSLLD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSLLD instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSLLD translates the given x86 PSLLD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSLLD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSLLD: not yet implemented")
@@ -5544,8 +5322,8 @@ func (f *Func) emitInstPSLLD(inst *Inst) error {
 
 // --- [ PSLLDQ ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PSLLDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSLLDQ translates the given x86 PSLLDQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSLLDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSLLDQ: not yet implemented")
@@ -5553,8 +5331,8 @@ func (f *Func) emitInstPSLLDQ(inst *Inst) error {
 
 // --- [ PSLLQ ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSLLQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSLLQ translates the given x86 PSLLQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSLLQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSLLQ: not yet implemented")
@@ -5562,8 +5340,8 @@ func (f *Func) emitInstPSLLQ(inst *Inst) error {
 
 // --- [ PSLLW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSLLW instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSLLW translates the given x86 PSLLW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSLLW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSLLW: not yet implemented")
@@ -5571,8 +5349,8 @@ func (f *Func) emitInstPSLLW(inst *Inst) error {
 
 // --- [ PSRAD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSRAD instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSRAD translates the given x86 PSRAD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSRAD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSRAD: not yet implemented")
@@ -5580,8 +5358,8 @@ func (f *Func) emitInstPSRAD(inst *Inst) error {
 
 // --- [ PSRAW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSRAW instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSRAW translates the given x86 PSRAW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSRAW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSRAW: not yet implemented")
@@ -5589,8 +5367,8 @@ func (f *Func) emitInstPSRAW(inst *Inst) error {
 
 // --- [ PSRLD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSRLD instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSRLD translates the given x86 PSRLD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSRLD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSRLD: not yet implemented")
@@ -5598,8 +5376,8 @@ func (f *Func) emitInstPSRLD(inst *Inst) error {
 
 // --- [ PSRLDQ ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PSRLDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSRLDQ translates the given x86 PSRLDQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSRLDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSRLDQ: not yet implemented")
@@ -5607,8 +5385,8 @@ func (f *Func) emitInstPSRLDQ(inst *Inst) error {
 
 // --- [ PSRLQ ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSRLQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSRLQ translates the given x86 PSRLQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSRLQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSRLQ: not yet implemented")
@@ -5616,8 +5394,8 @@ func (f *Func) emitInstPSRLQ(inst *Inst) error {
 
 // --- [ PSRLW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSRLW instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSRLW translates the given x86 PSRLW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSRLW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSRLW: not yet implemented")
@@ -5625,8 +5403,8 @@ func (f *Func) emitInstPSRLW(inst *Inst) error {
 
 // --- [ PSUBB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSUBB instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSUBB translates the given x86 PSUBB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSUBB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSUBB: not yet implemented")
@@ -5634,8 +5412,8 @@ func (f *Func) emitInstPSUBB(inst *Inst) error {
 
 // --- [ PSUBD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSUBD instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSUBD translates the given x86 PSUBD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSUBD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSUBD: not yet implemented")
@@ -5643,8 +5421,8 @@ func (f *Func) emitInstPSUBD(inst *Inst) error {
 
 // --- [ PSUBQ ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSUBQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSUBQ translates the given x86 PSUBQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSUBQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSUBQ: not yet implemented")
@@ -5652,8 +5430,8 @@ func (f *Func) emitInstPSUBQ(inst *Inst) error {
 
 // --- [ PSUBSB ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PSUBSB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSUBSB translates the given x86 PSUBSB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSUBSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSUBSB: not yet implemented")
@@ -5661,8 +5439,8 @@ func (f *Func) emitInstPSUBSB(inst *Inst) error {
 
 // --- [ PSUBSW ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PSUBSW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSUBSW translates the given x86 PSUBSW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSUBSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSUBSW: not yet implemented")
@@ -5670,8 +5448,8 @@ func (f *Func) emitInstPSUBSW(inst *Inst) error {
 
 // --- [ PSUBUSB ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PSUBUSB instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSUBUSB translates the given x86 PSUBUSB instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSUBUSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSUBUSB: not yet implemented")
@@ -5679,8 +5457,8 @@ func (f *Func) emitInstPSUBUSB(inst *Inst) error {
 
 // --- [ PSUBUSW ] -------------------------------------------------------------
 
-// emitInst translates the given x86 PSUBUSW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPSUBUSW translates the given x86 PSUBUSW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPSUBUSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSUBUSW: not yet implemented")
@@ -5688,8 +5466,8 @@ func (f *Func) emitInstPSUBUSW(inst *Inst) error {
 
 // --- [ PSUBW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PSUBW instruction to LLVM IR, emitting code
-// to f.
+// emitInstPSUBW translates the given x86 PSUBW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPSUBW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPSUBW: not yet implemented")
@@ -5697,8 +5475,8 @@ func (f *Func) emitInstPSUBW(inst *Inst) error {
 
 // --- [ PTEST ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PTEST instruction to LLVM IR, emitting code
-// to f.
+// emitInstPTEST translates the given x86 PTEST instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPTEST(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPTEST: not yet implemented")
@@ -5706,8 +5484,8 @@ func (f *Func) emitInstPTEST(inst *Inst) error {
 
 // --- [ PUNPCKHBW ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PUNPCKHBW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPUNPCKHBW translates the given x86 PUNPCKHBW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPUNPCKHBW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUNPCKHBW: not yet implemented")
@@ -5715,8 +5493,8 @@ func (f *Func) emitInstPUNPCKHBW(inst *Inst) error {
 
 // --- [ PUNPCKHDQ ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PUNPCKHDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPUNPCKHDQ translates the given x86 PUNPCKHDQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPUNPCKHDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUNPCKHDQ: not yet implemented")
@@ -5724,8 +5502,8 @@ func (f *Func) emitInstPUNPCKHDQ(inst *Inst) error {
 
 // --- [ PUNPCKHQDQ ] ----------------------------------------------------------
 
-// emitInst translates the given x86 PUNPCKHQDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPUNPCKHQDQ translates the given x86 PUNPCKHQDQ instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstPUNPCKHQDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUNPCKHQDQ: not yet implemented")
@@ -5733,8 +5511,8 @@ func (f *Func) emitInstPUNPCKHQDQ(inst *Inst) error {
 
 // --- [ PUNPCKHWD ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PUNPCKHWD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPUNPCKHWD translates the given x86 PUNPCKHWD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPUNPCKHWD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUNPCKHWD: not yet implemented")
@@ -5742,8 +5520,8 @@ func (f *Func) emitInstPUNPCKHWD(inst *Inst) error {
 
 // --- [ PUNPCKLBW ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PUNPCKLBW instruction to LLVM IR, emitting
-// code to f.
+// emitInstPUNPCKLBW translates the given x86 PUNPCKLBW instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPUNPCKLBW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUNPCKLBW: not yet implemented")
@@ -5751,8 +5529,8 @@ func (f *Func) emitInstPUNPCKLBW(inst *Inst) error {
 
 // --- [ PUNPCKLDQ ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PUNPCKLDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPUNPCKLDQ translates the given x86 PUNPCKLDQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPUNPCKLDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUNPCKLDQ: not yet implemented")
@@ -5760,8 +5538,8 @@ func (f *Func) emitInstPUNPCKLDQ(inst *Inst) error {
 
 // --- [ PUNPCKLQDQ ] ----------------------------------------------------------
 
-// emitInst translates the given x86 PUNPCKLQDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPUNPCKLQDQ translates the given x86 PUNPCKLQDQ instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstPUNPCKLQDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUNPCKLQDQ: not yet implemented")
@@ -5769,8 +5547,8 @@ func (f *Func) emitInstPUNPCKLQDQ(inst *Inst) error {
 
 // --- [ PUNPCKLWD ] -----------------------------------------------------------
 
-// emitInst translates the given x86 PUNPCKLWD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPUNPCKLWD translates the given x86 PUNPCKLWD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPUNPCKLWD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUNPCKLWD: not yet implemented")
@@ -5778,8 +5556,8 @@ func (f *Func) emitInstPUNPCKLWD(inst *Inst) error {
 
 // --- [ PUSH ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 PUSH instruction to LLVM IR, emitting code
-// to f.
+// emitInstPUSH translates the given x86 PUSH instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPUSH(inst *Inst) error {
 	v := f.useArg(inst.Arg(0))
 	f.push(v)
@@ -5800,8 +5578,8 @@ func (f *Func) push(v value.Value) {
 
 // --- [ PUSHA ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PUSHA instruction to LLVM IR, emitting code
-// to f.
+// emitInstPUSHA translates the given x86 PUSHA instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPUSHA(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUSHA: not yet implemented")
@@ -5809,8 +5587,8 @@ func (f *Func) emitInstPUSHA(inst *Inst) error {
 
 // --- [ PUSHAD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PUSHAD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPUSHAD translates the given x86 PUSHAD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPUSHAD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUSHAD: not yet implemented")
@@ -5818,8 +5596,8 @@ func (f *Func) emitInstPUSHAD(inst *Inst) error {
 
 // --- [ PUSHF ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 PUSHF instruction to LLVM IR, emitting code
-// to f.
+// emitInstPUSHF translates the given x86 PUSHF instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPUSHF(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUSHF: not yet implemented")
@@ -5827,8 +5605,8 @@ func (f *Func) emitInstPUSHF(inst *Inst) error {
 
 // --- [ PUSHFD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PUSHFD instruction to LLVM IR, emitting
-// code to f.
+// emitInstPUSHFD translates the given x86 PUSHFD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPUSHFD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUSHFD: not yet implemented")
@@ -5836,8 +5614,8 @@ func (f *Func) emitInstPUSHFD(inst *Inst) error {
 
 // --- [ PUSHFQ ] --------------------------------------------------------------
 
-// emitInst translates the given x86 PUSHFQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstPUSHFQ translates the given x86 PUSHFQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstPUSHFQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPUSHFQ: not yet implemented")
@@ -5845,8 +5623,8 @@ func (f *Func) emitInstPUSHFQ(inst *Inst) error {
 
 // --- [ PXOR ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 PXOR instruction to LLVM IR, emitting code
-// to f.
+// emitInstPXOR translates the given x86 PXOR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstPXOR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstPXOR: not yet implemented")
@@ -5854,8 +5632,8 @@ func (f *Func) emitInstPXOR(inst *Inst) error {
 
 // --- [ RCL ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 RCL instruction to LLVM IR, emitting code
-// to f.
+// emitInstRCL translates the given x86 RCL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstRCL(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRCL: not yet implemented")
@@ -5863,8 +5641,8 @@ func (f *Func) emitInstRCL(inst *Inst) error {
 
 // --- [ RCPPS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 RCPPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstRCPPS translates the given x86 RCPPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstRCPPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRCPPS: not yet implemented")
@@ -5872,8 +5650,8 @@ func (f *Func) emitInstRCPPS(inst *Inst) error {
 
 // --- [ RCPSS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 RCPSS instruction to LLVM IR, emitting code
-// to f.
+// emitInstRCPSS translates the given x86 RCPSS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstRCPSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRCPSS: not yet implemented")
@@ -5881,8 +5659,8 @@ func (f *Func) emitInstRCPSS(inst *Inst) error {
 
 // --- [ RCR ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 RCR instruction to LLVM IR, emitting code
-// to f.
+// emitInstRCR translates the given x86 RCR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstRCR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRCR: not yet implemented")
@@ -5890,8 +5668,8 @@ func (f *Func) emitInstRCR(inst *Inst) error {
 
 // --- [ RDFSBASE ] ------------------------------------------------------------
 
-// emitInst translates the given x86 RDFSBASE instruction to LLVM IR, emitting
-// code to f.
+// emitInstRDFSBASE translates the given x86 RDFSBASE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstRDFSBASE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRDFSBASE: not yet implemented")
@@ -5899,8 +5677,8 @@ func (f *Func) emitInstRDFSBASE(inst *Inst) error {
 
 // --- [ RDGSBASE ] ------------------------------------------------------------
 
-// emitInst translates the given x86 RDGSBASE instruction to LLVM IR, emitting
-// code to f.
+// emitInstRDGSBASE translates the given x86 RDGSBASE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstRDGSBASE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRDGSBASE: not yet implemented")
@@ -5908,8 +5686,8 @@ func (f *Func) emitInstRDGSBASE(inst *Inst) error {
 
 // --- [ RDMSR ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 RDMSR instruction to LLVM IR, emitting code
-// to f.
+// emitInstRDMSR translates the given x86 RDMSR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstRDMSR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRDMSR: not yet implemented")
@@ -5917,8 +5695,8 @@ func (f *Func) emitInstRDMSR(inst *Inst) error {
 
 // --- [ RDPMC ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 RDPMC instruction to LLVM IR, emitting code
-// to f.
+// emitInstRDPMC translates the given x86 RDPMC instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstRDPMC(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRDPMC: not yet implemented")
@@ -5926,8 +5704,8 @@ func (f *Func) emitInstRDPMC(inst *Inst) error {
 
 // --- [ RDRAND ] --------------------------------------------------------------
 
-// emitInst translates the given x86 RDRAND instruction to LLVM IR, emitting
-// code to f.
+// emitInstRDRAND translates the given x86 RDRAND instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstRDRAND(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRDRAND: not yet implemented")
@@ -5935,8 +5713,8 @@ func (f *Func) emitInstRDRAND(inst *Inst) error {
 
 // --- [ RDTSC ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 RDTSC instruction to LLVM IR, emitting code
-// to f.
+// emitInstRDTSC translates the given x86 RDTSC instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstRDTSC(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRDTSC: not yet implemented")
@@ -5944,26 +5722,17 @@ func (f *Func) emitInstRDTSC(inst *Inst) error {
 
 // --- [ RDTSCP ] --------------------------------------------------------------
 
-// emitInst translates the given x86 RDTSCP instruction to LLVM IR, emitting
-// code to f.
+// emitInstRDTSCP translates the given x86 RDTSCP instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstRDTSCP(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRDTSCP: not yet implemented")
 }
 
-// --- [ RET ] -----------------------------------------------------------------
-
-// emitInst translates the given x86 RET instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) emitInstRET(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstRET: not yet implemented")
-}
-
 // --- [ ROL ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 ROL instruction to LLVM IR, emitting code
-// to f.
+// emitInstROL translates the given x86 ROL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstROL(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstROL: not yet implemented")
@@ -5971,8 +5740,8 @@ func (f *Func) emitInstROL(inst *Inst) error {
 
 // --- [ ROR ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 ROR instruction to LLVM IR, emitting code
-// to f.
+// emitInstROR translates the given x86 ROR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstROR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstROR: not yet implemented")
@@ -5980,8 +5749,8 @@ func (f *Func) emitInstROR(inst *Inst) error {
 
 // --- [ ROUNDPD ] -------------------------------------------------------------
 
-// emitInst translates the given x86 ROUNDPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstROUNDPD translates the given x86 ROUNDPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstROUNDPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstROUNDPD: not yet implemented")
@@ -5989,8 +5758,8 @@ func (f *Func) emitInstROUNDPD(inst *Inst) error {
 
 // --- [ ROUNDPS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 ROUNDPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstROUNDPS translates the given x86 ROUNDPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstROUNDPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstROUNDPS: not yet implemented")
@@ -5998,8 +5767,8 @@ func (f *Func) emitInstROUNDPS(inst *Inst) error {
 
 // --- [ ROUNDSD ] -------------------------------------------------------------
 
-// emitInst translates the given x86 ROUNDSD instruction to LLVM IR, emitting
-// code to f.
+// emitInstROUNDSD translates the given x86 ROUNDSD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstROUNDSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstROUNDSD: not yet implemented")
@@ -6007,8 +5776,8 @@ func (f *Func) emitInstROUNDSD(inst *Inst) error {
 
 // --- [ ROUNDSS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 ROUNDSS instruction to LLVM IR, emitting
-// code to f.
+// emitInstROUNDSS translates the given x86 ROUNDSS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstROUNDSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstROUNDSS: not yet implemented")
@@ -6016,8 +5785,8 @@ func (f *Func) emitInstROUNDSS(inst *Inst) error {
 
 // --- [ RSM ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 RSM instruction to LLVM IR, emitting code
-// to f.
+// emitInstRSM translates the given x86 RSM instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstRSM(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRSM: not yet implemented")
@@ -6025,8 +5794,8 @@ func (f *Func) emitInstRSM(inst *Inst) error {
 
 // --- [ RSQRTPS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 RSQRTPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstRSQRTPS translates the given x86 RSQRTPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstRSQRTPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRSQRTPS: not yet implemented")
@@ -6034,8 +5803,8 @@ func (f *Func) emitInstRSQRTPS(inst *Inst) error {
 
 // --- [ RSQRTSS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 RSQRTSS instruction to LLVM IR, emitting
-// code to f.
+// emitInstRSQRTSS translates the given x86 RSQRTSS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstRSQRTSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstRSQRTSS: not yet implemented")
@@ -6043,8 +5812,8 @@ func (f *Func) emitInstRSQRTSS(inst *Inst) error {
 
 // --- [ SAHF ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 SAHF instruction to LLVM IR, emitting code
-// to f.
+// emitInstSAHF translates the given x86 SAHF instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSAHF(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSAHF: not yet implemented")
@@ -6052,8 +5821,8 @@ func (f *Func) emitInstSAHF(inst *Inst) error {
 
 // --- [ SAR ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 SAR instruction to LLVM IR, emitting code
-// to f.
+// emitInstSAR translates the given x86 SAR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSAR(inst *Inst) error {
 	// shift arithmetic right (SAR)
 	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
@@ -6064,8 +5833,8 @@ func (f *Func) emitInstSAR(inst *Inst) error {
 
 // --- [ SBB ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 SBB instruction to LLVM IR, emitting code
-// to f.
+// emitInstSBB translates the given x86 SBB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSBB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSBB: not yet implemented")
@@ -6073,8 +5842,8 @@ func (f *Func) emitInstSBB(inst *Inst) error {
 
 // --- [ SCASB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 SCASB instruction to LLVM IR, emitting code
-// to f.
+// emitInstSCASB translates the given x86 SCASB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSCASB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSCASB: not yet implemented")
@@ -6082,8 +5851,8 @@ func (f *Func) emitInstSCASB(inst *Inst) error {
 
 // --- [ SCASD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 SCASD instruction to LLVM IR, emitting code
-// to f.
+// emitInstSCASD translates the given x86 SCASD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSCASD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSCASD: not yet implemented")
@@ -6091,8 +5860,8 @@ func (f *Func) emitInstSCASD(inst *Inst) error {
 
 // --- [ SCASQ ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 SCASQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstSCASQ translates the given x86 SCASQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSCASQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSCASQ: not yet implemented")
@@ -6100,8 +5869,8 @@ func (f *Func) emitInstSCASQ(inst *Inst) error {
 
 // --- [ SCASW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 SCASW instruction to LLVM IR, emitting code
-// to f.
+// emitInstSCASW translates the given x86 SCASW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSCASW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSCASW: not yet implemented")
@@ -6109,8 +5878,8 @@ func (f *Func) emitInstSCASW(inst *Inst) error {
 
 // --- [ SFENCE ] --------------------------------------------------------------
 
-// emitInst translates the given x86 SFENCE instruction to LLVM IR, emitting
-// code to f.
+// emitInstSFENCE translates the given x86 SFENCE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSFENCE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSFENCE: not yet implemented")
@@ -6118,8 +5887,8 @@ func (f *Func) emitInstSFENCE(inst *Inst) error {
 
 // --- [ SGDT ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 SGDT instruction to LLVM IR, emitting code
-// to f.
+// emitInstSGDT translates the given x86 SGDT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSGDT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSGDT: not yet implemented")
@@ -6127,8 +5896,8 @@ func (f *Func) emitInstSGDT(inst *Inst) error {
 
 // --- [ SHL ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 SHL instruction to LLVM IR, emitting code
-// to f.
+// emitInstSHL translates the given x86 SHL instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSHL(inst *Inst) error {
 	// shift logical left (SHL)
 	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
@@ -6139,8 +5908,8 @@ func (f *Func) emitInstSHL(inst *Inst) error {
 
 // --- [ SHLD ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 SHLD instruction to LLVM IR, emitting code
-// to f.
+// emitInstSHLD translates the given x86 SHLD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSHLD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSHLD: not yet implemented")
@@ -6148,8 +5917,8 @@ func (f *Func) emitInstSHLD(inst *Inst) error {
 
 // --- [ SHR ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 SHR instruction to LLVM IR, emitting code
-// to f.
+// emitInstSHR translates the given x86 SHR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSHR(inst *Inst) error {
 	// shift logical right (SHR)
 	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
@@ -6160,8 +5929,8 @@ func (f *Func) emitInstSHR(inst *Inst) error {
 
 // --- [ SHRD ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 SHRD instruction to LLVM IR, emitting code
-// to f.
+// emitInstSHRD translates the given x86 SHRD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSHRD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSHRD: not yet implemented")
@@ -6169,8 +5938,8 @@ func (f *Func) emitInstSHRD(inst *Inst) error {
 
 // --- [ SHUFPD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 SHUFPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstSHUFPD translates the given x86 SHUFPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSHUFPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSHUFPD: not yet implemented")
@@ -6178,8 +5947,8 @@ func (f *Func) emitInstSHUFPD(inst *Inst) error {
 
 // --- [ SHUFPS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 SHUFPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstSHUFPS translates the given x86 SHUFPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSHUFPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSHUFPS: not yet implemented")
@@ -6187,8 +5956,8 @@ func (f *Func) emitInstSHUFPS(inst *Inst) error {
 
 // --- [ SIDT ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 SIDT instruction to LLVM IR, emitting code
-// to f.
+// emitInstSIDT translates the given x86 SIDT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSIDT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSIDT: not yet implemented")
@@ -6196,8 +5965,8 @@ func (f *Func) emitInstSIDT(inst *Inst) error {
 
 // --- [ SLDT ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 SLDT instruction to LLVM IR, emitting code
-// to f.
+// emitInstSLDT translates the given x86 SLDT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSLDT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSLDT: not yet implemented")
@@ -6205,8 +5974,8 @@ func (f *Func) emitInstSLDT(inst *Inst) error {
 
 // --- [ SMSW ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 SMSW instruction to LLVM IR, emitting code
-// to f.
+// emitInstSMSW translates the given x86 SMSW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSMSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSMSW: not yet implemented")
@@ -6214,8 +5983,8 @@ func (f *Func) emitInstSMSW(inst *Inst) error {
 
 // --- [ SQRTPD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 SQRTPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstSQRTPD translates the given x86 SQRTPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSQRTPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSQRTPD: not yet implemented")
@@ -6223,8 +5992,8 @@ func (f *Func) emitInstSQRTPD(inst *Inst) error {
 
 // --- [ SQRTPS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 SQRTPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstSQRTPS translates the given x86 SQRTPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSQRTPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSQRTPS: not yet implemented")
@@ -6232,8 +6001,8 @@ func (f *Func) emitInstSQRTPS(inst *Inst) error {
 
 // --- [ SQRTSD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 SQRTSD instruction to LLVM IR, emitting
-// code to f.
+// emitInstSQRTSD translates the given x86 SQRTSD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSQRTSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSQRTSD: not yet implemented")
@@ -6241,8 +6010,8 @@ func (f *Func) emitInstSQRTSD(inst *Inst) error {
 
 // --- [ SQRTSS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 SQRTSS instruction to LLVM IR, emitting
-// code to f.
+// emitInstSQRTSS translates the given x86 SQRTSS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSQRTSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSQRTSS: not yet implemented")
@@ -6250,8 +6019,8 @@ func (f *Func) emitInstSQRTSS(inst *Inst) error {
 
 // --- [ STC ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 STC instruction to LLVM IR, emitting code
-// to f.
+// emitInstSTC translates the given x86 STC instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSTC(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSTC: not yet implemented")
@@ -6259,8 +6028,8 @@ func (f *Func) emitInstSTC(inst *Inst) error {
 
 // --- [ STD ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 STD instruction to LLVM IR, emitting code
-// to f.
+// emitInstSTD translates the given x86 STD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSTD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSTD: not yet implemented")
@@ -6268,8 +6037,8 @@ func (f *Func) emitInstSTD(inst *Inst) error {
 
 // --- [ STI ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 STI instruction to LLVM IR, emitting code
-// to f.
+// emitInstSTI translates the given x86 STI instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSTI(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSTI: not yet implemented")
@@ -6277,8 +6046,8 @@ func (f *Func) emitInstSTI(inst *Inst) error {
 
 // --- [ STMXCSR ] -------------------------------------------------------------
 
-// emitInst translates the given x86 STMXCSR instruction to LLVM IR, emitting
-// code to f.
+// emitInstSTMXCSR translates the given x86 STMXCSR instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSTMXCSR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSTMXCSR: not yet implemented")
@@ -6286,8 +6055,8 @@ func (f *Func) emitInstSTMXCSR(inst *Inst) error {
 
 // --- [ STOSB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 STOSB instruction to LLVM IR, emitting code
-// to f.
+// emitInstSTOSB translates the given x86 STOSB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSTOSB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSTOSB: not yet implemented")
@@ -6295,8 +6064,8 @@ func (f *Func) emitInstSTOSB(inst *Inst) error {
 
 // --- [ STOSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 STOSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstSTOSD translates the given x86 STOSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSTOSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSTOSD: not yet implemented")
@@ -6304,8 +6073,8 @@ func (f *Func) emitInstSTOSD(inst *Inst) error {
 
 // --- [ STOSQ ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 STOSQ instruction to LLVM IR, emitting code
-// to f.
+// emitInstSTOSQ translates the given x86 STOSQ instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSTOSQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSTOSQ: not yet implemented")
@@ -6313,8 +6082,8 @@ func (f *Func) emitInstSTOSQ(inst *Inst) error {
 
 // --- [ STOSW ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 STOSW instruction to LLVM IR, emitting code
-// to f.
+// emitInstSTOSW translates the given x86 STOSW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSTOSW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSTOSW: not yet implemented")
@@ -6322,8 +6091,8 @@ func (f *Func) emitInstSTOSW(inst *Inst) error {
 
 // --- [ STR ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 STR instruction to LLVM IR, emitting code
-// to f.
+// emitInstSTR translates the given x86 STR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSTR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSTR: not yet implemented")
@@ -6331,8 +6100,8 @@ func (f *Func) emitInstSTR(inst *Inst) error {
 
 // --- [ SUB ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 SUB instruction to LLVM IR, emitting code
-// to f.
+// emitInstSUB translates the given x86 SUB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSUB(inst *Inst) error {
 	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
 	result := f.cur.NewSub(x, y)
@@ -6342,8 +6111,8 @@ func (f *Func) emitInstSUB(inst *Inst) error {
 
 // --- [ SUBPD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 SUBPD instruction to LLVM IR, emitting code
-// to f.
+// emitInstSUBPD translates the given x86 SUBPD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSUBPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSUBPD: not yet implemented")
@@ -6351,8 +6120,8 @@ func (f *Func) emitInstSUBPD(inst *Inst) error {
 
 // --- [ SUBPS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 SUBPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstSUBPS translates the given x86 SUBPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSUBPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSUBPS: not yet implemented")
@@ -6360,8 +6129,8 @@ func (f *Func) emitInstSUBPS(inst *Inst) error {
 
 // --- [ SUBSD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 SUBSD instruction to LLVM IR, emitting code
-// to f.
+// emitInstSUBSD translates the given x86 SUBSD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSUBSD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSUBSD: not yet implemented")
@@ -6369,8 +6138,8 @@ func (f *Func) emitInstSUBSD(inst *Inst) error {
 
 // --- [ SUBSS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 SUBSS instruction to LLVM IR, emitting code
-// to f.
+// emitInstSUBSS translates the given x86 SUBSS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstSUBSS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSUBSS: not yet implemented")
@@ -6378,8 +6147,8 @@ func (f *Func) emitInstSUBSS(inst *Inst) error {
 
 // --- [ SWAPGS ] --------------------------------------------------------------
 
-// emitInst translates the given x86 SWAPGS instruction to LLVM IR, emitting
-// code to f.
+// emitInstSWAPGS translates the given x86 SWAPGS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSWAPGS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSWAPGS: not yet implemented")
@@ -6387,8 +6156,8 @@ func (f *Func) emitInstSWAPGS(inst *Inst) error {
 
 // --- [ SYSCALL ] -------------------------------------------------------------
 
-// emitInst translates the given x86 SYSCALL instruction to LLVM IR, emitting
-// code to f.
+// emitInstSYSCALL translates the given x86 SYSCALL instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSYSCALL(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSYSCALL: not yet implemented")
@@ -6396,8 +6165,8 @@ func (f *Func) emitInstSYSCALL(inst *Inst) error {
 
 // --- [ SYSENTER ] ------------------------------------------------------------
 
-// emitInst translates the given x86 SYSENTER instruction to LLVM IR, emitting
-// code to f.
+// emitInstSYSENTER translates the given x86 SYSENTER instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSYSENTER(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSYSENTER: not yet implemented")
@@ -6405,8 +6174,8 @@ func (f *Func) emitInstSYSENTER(inst *Inst) error {
 
 // --- [ SYSEXIT ] -------------------------------------------------------------
 
-// emitInst translates the given x86 SYSEXIT instruction to LLVM IR, emitting
-// code to f.
+// emitInstSYSEXIT translates the given x86 SYSEXIT instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSYSEXIT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSYSEXIT: not yet implemented")
@@ -6414,8 +6183,8 @@ func (f *Func) emitInstSYSEXIT(inst *Inst) error {
 
 // --- [ SYSRET ] --------------------------------------------------------------
 
-// emitInst translates the given x86 SYSRET instruction to LLVM IR, emitting
-// code to f.
+// emitInstSYSRET translates the given x86 SYSRET instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstSYSRET(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstSYSRET: not yet implemented")
@@ -6423,8 +6192,8 @@ func (f *Func) emitInstSYSRET(inst *Inst) error {
 
 // --- [ TEST ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 TEST instruction to LLVM IR, emitting code
-// to f.
+// emitInstTEST translates the given x86 TEST instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstTEST(inst *Inst) error {
 	// result = x AND y; set PF, ZF, and SF according to result.
 	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
@@ -6452,8 +6221,8 @@ func (f *Func) emitInstTEST(inst *Inst) error {
 
 // --- [ TZCNT ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 TZCNT instruction to LLVM IR, emitting code
-// to f.
+// emitInstTZCNT translates the given x86 TZCNT instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstTZCNT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstTZCNT: not yet implemented")
@@ -6461,8 +6230,8 @@ func (f *Func) emitInstTZCNT(inst *Inst) error {
 
 // --- [ UCOMISD ] -------------------------------------------------------------
 
-// emitInst translates the given x86 UCOMISD instruction to LLVM IR, emitting
-// code to f.
+// emitInstUCOMISD translates the given x86 UCOMISD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstUCOMISD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstUCOMISD: not yet implemented")
@@ -6470,8 +6239,8 @@ func (f *Func) emitInstUCOMISD(inst *Inst) error {
 
 // --- [ UCOMISS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 UCOMISS instruction to LLVM IR, emitting
-// code to f.
+// emitInstUCOMISS translates the given x86 UCOMISS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstUCOMISS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstUCOMISS: not yet implemented")
@@ -6479,8 +6248,8 @@ func (f *Func) emitInstUCOMISS(inst *Inst) error {
 
 // --- [ UD1 ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 UD1 instruction to LLVM IR, emitting code
-// to f.
+// emitInstUD1 translates the given x86 UD1 instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstUD1(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstUD1: not yet implemented")
@@ -6488,8 +6257,8 @@ func (f *Func) emitInstUD1(inst *Inst) error {
 
 // --- [ UD2 ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 UD2 instruction to LLVM IR, emitting code
-// to f.
+// emitInstUD2 translates the given x86 UD2 instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstUD2(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstUD2: not yet implemented")
@@ -6497,8 +6266,8 @@ func (f *Func) emitInstUD2(inst *Inst) error {
 
 // --- [ UNPCKHPD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 UNPCKHPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstUNPCKHPD translates the given x86 UNPCKHPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstUNPCKHPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstUNPCKHPD: not yet implemented")
@@ -6506,8 +6275,8 @@ func (f *Func) emitInstUNPCKHPD(inst *Inst) error {
 
 // --- [ UNPCKHPS ] ------------------------------------------------------------
 
-// emitInst translates the given x86 UNPCKHPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstUNPCKHPS translates the given x86 UNPCKHPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstUNPCKHPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstUNPCKHPS: not yet implemented")
@@ -6515,8 +6284,8 @@ func (f *Func) emitInstUNPCKHPS(inst *Inst) error {
 
 // --- [ UNPCKLPD ] ------------------------------------------------------------
 
-// emitInst translates the given x86 UNPCKLPD instruction to LLVM IR, emitting
-// code to f.
+// emitInstUNPCKLPD translates the given x86 UNPCKLPD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstUNPCKLPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstUNPCKLPD: not yet implemented")
@@ -6524,8 +6293,8 @@ func (f *Func) emitInstUNPCKLPD(inst *Inst) error {
 
 // --- [ UNPCKLPS ] ------------------------------------------------------------
 
-// emitInst translates the given x86 UNPCKLPS instruction to LLVM IR, emitting
-// code to f.
+// emitInstUNPCKLPS translates the given x86 UNPCKLPS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstUNPCKLPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstUNPCKLPS: not yet implemented")
@@ -6533,8 +6302,8 @@ func (f *Func) emitInstUNPCKLPS(inst *Inst) error {
 
 // --- [ VERR ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 VERR instruction to LLVM IR, emitting code
-// to f.
+// emitInstVERR translates the given x86 VERR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstVERR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstVERR: not yet implemented")
@@ -6542,8 +6311,8 @@ func (f *Func) emitInstVERR(inst *Inst) error {
 
 // --- [ VERW ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 VERW instruction to LLVM IR, emitting code
-// to f.
+// emitInstVERW translates the given x86 VERW instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstVERW(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstVERW: not yet implemented")
@@ -6551,8 +6320,8 @@ func (f *Func) emitInstVERW(inst *Inst) error {
 
 // --- [ VMOVDQA ] -------------------------------------------------------------
 
-// emitInst translates the given x86 VMOVDQA instruction to LLVM IR, emitting
-// code to f.
+// emitInstVMOVDQA translates the given x86 VMOVDQA instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstVMOVDQA(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstVMOVDQA: not yet implemented")
@@ -6560,8 +6329,8 @@ func (f *Func) emitInstVMOVDQA(inst *Inst) error {
 
 // --- [ VMOVDQU ] -------------------------------------------------------------
 
-// emitInst translates the given x86 VMOVDQU instruction to LLVM IR, emitting
-// code to f.
+// emitInstVMOVDQU translates the given x86 VMOVDQU instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstVMOVDQU(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstVMOVDQU: not yet implemented")
@@ -6569,8 +6338,8 @@ func (f *Func) emitInstVMOVDQU(inst *Inst) error {
 
 // --- [ VMOVNTDQ ] ------------------------------------------------------------
 
-// emitInst translates the given x86 VMOVNTDQ instruction to LLVM IR, emitting
-// code to f.
+// emitInstVMOVNTDQ translates the given x86 VMOVNTDQ instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstVMOVNTDQ(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstVMOVNTDQ: not yet implemented")
@@ -6578,8 +6347,8 @@ func (f *Func) emitInstVMOVNTDQ(inst *Inst) error {
 
 // --- [ VMOVNTDQA ] -----------------------------------------------------------
 
-// emitInst translates the given x86 VMOVNTDQA instruction to LLVM IR, emitting
-// code to f.
+// emitInstVMOVNTDQA translates the given x86 VMOVNTDQA instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstVMOVNTDQA(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstVMOVNTDQA: not yet implemented")
@@ -6587,8 +6356,8 @@ func (f *Func) emitInstVMOVNTDQA(inst *Inst) error {
 
 // --- [ VZEROUPPER ] ----------------------------------------------------------
 
-// emitInst translates the given x86 VZEROUPPER instruction to LLVM IR, emitting
-// code to f.
+// emitInstVZEROUPPER translates the given x86 VZEROUPPER instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstVZEROUPPER(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstVZEROUPPER: not yet implemented")
@@ -6596,8 +6365,8 @@ func (f *Func) emitInstVZEROUPPER(inst *Inst) error {
 
 // --- [ WBINVD ] --------------------------------------------------------------
 
-// emitInst translates the given x86 WBINVD instruction to LLVM IR, emitting
-// code to f.
+// emitInstWBINVD translates the given x86 WBINVD instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstWBINVD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstWBINVD: not yet implemented")
@@ -6605,8 +6374,8 @@ func (f *Func) emitInstWBINVD(inst *Inst) error {
 
 // --- [ WRFSBASE ] ------------------------------------------------------------
 
-// emitInst translates the given x86 WRFSBASE instruction to LLVM IR, emitting
-// code to f.
+// emitInstWRFSBASE translates the given x86 WRFSBASE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstWRFSBASE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstWRFSBASE: not yet implemented")
@@ -6614,8 +6383,8 @@ func (f *Func) emitInstWRFSBASE(inst *Inst) error {
 
 // --- [ WRGSBASE ] ------------------------------------------------------------
 
-// emitInst translates the given x86 WRGSBASE instruction to LLVM IR, emitting
-// code to f.
+// emitInstWRGSBASE translates the given x86 WRGSBASE instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstWRGSBASE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstWRGSBASE: not yet implemented")
@@ -6623,8 +6392,8 @@ func (f *Func) emitInstWRGSBASE(inst *Inst) error {
 
 // --- [ WRMSR ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 WRMSR instruction to LLVM IR, emitting code
-// to f.
+// emitInstWRMSR translates the given x86 WRMSR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstWRMSR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstWRMSR: not yet implemented")
@@ -6632,8 +6401,8 @@ func (f *Func) emitInstWRMSR(inst *Inst) error {
 
 // --- [ XABORT ] --------------------------------------------------------------
 
-// emitInst translates the given x86 XABORT instruction to LLVM IR, emitting
-// code to f.
+// emitInstXABORT translates the given x86 XABORT instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXABORT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXABORT: not yet implemented")
@@ -6641,8 +6410,8 @@ func (f *Func) emitInstXABORT(inst *Inst) error {
 
 // --- [ XADD ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 XADD instruction to LLVM IR, emitting code
-// to f.
+// emitInstXADD translates the given x86 XADD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstXADD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXADD: not yet implemented")
@@ -6650,8 +6419,8 @@ func (f *Func) emitInstXADD(inst *Inst) error {
 
 // --- [ XBEGIN ] --------------------------------------------------------------
 
-// emitInst translates the given x86 XBEGIN instruction to LLVM IR, emitting
-// code to f.
+// emitInstXBEGIN translates the given x86 XBEGIN instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXBEGIN(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXBEGIN: not yet implemented")
@@ -6659,8 +6428,8 @@ func (f *Func) emitInstXBEGIN(inst *Inst) error {
 
 // --- [ XCHG ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 XCHG instruction to LLVM IR, emitting code
-// to f.
+// emitInstXCHG translates the given x86 XCHG instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstXCHG(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXCHG: not yet implemented")
@@ -6668,8 +6437,8 @@ func (f *Func) emitInstXCHG(inst *Inst) error {
 
 // --- [ XEND ] ----------------------------------------------------------------
 
-// emitInst translates the given x86 XEND instruction to LLVM IR, emitting code
-// to f.
+// emitInstXEND translates the given x86 XEND instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstXEND(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXEND: not yet implemented")
@@ -6677,8 +6446,8 @@ func (f *Func) emitInstXEND(inst *Inst) error {
 
 // --- [ XGETBV ] --------------------------------------------------------------
 
-// emitInst translates the given x86 XGETBV instruction to LLVM IR, emitting
-// code to f.
+// emitInstXGETBV translates the given x86 XGETBV instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXGETBV(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXGETBV: not yet implemented")
@@ -6686,8 +6455,8 @@ func (f *Func) emitInstXGETBV(inst *Inst) error {
 
 // --- [ XLATB ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 XLATB instruction to LLVM IR, emitting code
-// to f.
+// emitInstXLATB translates the given x86 XLATB instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstXLATB(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXLATB: not yet implemented")
@@ -6695,8 +6464,8 @@ func (f *Func) emitInstXLATB(inst *Inst) error {
 
 // --- [ XOR ] -----------------------------------------------------------------
 
-// emitInst translates the given x86 XOR instruction to LLVM IR, emitting code
-// to f.
+// emitInstXOR translates the given x86 XOR instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstXOR(inst *Inst) error {
 	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
 	result := f.cur.NewXor(x, y)
@@ -6706,8 +6475,8 @@ func (f *Func) emitInstXOR(inst *Inst) error {
 
 // --- [ XORPD ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 XORPD instruction to LLVM IR, emitting code
-// to f.
+// emitInstXORPD translates the given x86 XORPD instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstXORPD(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXORPD: not yet implemented")
@@ -6715,8 +6484,8 @@ func (f *Func) emitInstXORPD(inst *Inst) error {
 
 // --- [ XORPS ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 XORPS instruction to LLVM IR, emitting code
-// to f.
+// emitInstXORPS translates the given x86 XORPS instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstXORPS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXORPS: not yet implemented")
@@ -6724,8 +6493,8 @@ func (f *Func) emitInstXORPS(inst *Inst) error {
 
 // --- [ XRSTOR ] --------------------------------------------------------------
 
-// emitInst translates the given x86 XRSTOR instruction to LLVM IR, emitting
-// code to f.
+// emitInstXRSTOR translates the given x86 XRSTOR instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXRSTOR(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXRSTOR: not yet implemented")
@@ -6733,8 +6502,8 @@ func (f *Func) emitInstXRSTOR(inst *Inst) error {
 
 // --- [ XRSTOR64 ] ------------------------------------------------------------
 
-// emitInst translates the given x86 XRSTOR64 instruction to LLVM IR, emitting
-// code to f.
+// emitInstXRSTOR64 translates the given x86 XRSTOR64 instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXRSTOR64(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXRSTOR64: not yet implemented")
@@ -6742,8 +6511,8 @@ func (f *Func) emitInstXRSTOR64(inst *Inst) error {
 
 // --- [ XRSTORS ] -------------------------------------------------------------
 
-// emitInst translates the given x86 XRSTORS instruction to LLVM IR, emitting
-// code to f.
+// emitInstXRSTORS translates the given x86 XRSTORS instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXRSTORS(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXRSTORS: not yet implemented")
@@ -6751,8 +6520,8 @@ func (f *Func) emitInstXRSTORS(inst *Inst) error {
 
 // --- [ XRSTORS64 ] -----------------------------------------------------------
 
-// emitInst translates the given x86 XRSTORS64 instruction to LLVM IR, emitting
-// code to f.
+// emitInstXRSTORS64 translates the given x86 XRSTORS64 instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXRSTORS64(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXRSTORS64: not yet implemented")
@@ -6760,8 +6529,8 @@ func (f *Func) emitInstXRSTORS64(inst *Inst) error {
 
 // --- [ XSAVE ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 XSAVE instruction to LLVM IR, emitting code
-// to f.
+// emitInstXSAVE translates the given x86 XSAVE instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstXSAVE(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXSAVE: not yet implemented")
@@ -6769,8 +6538,8 @@ func (f *Func) emitInstXSAVE(inst *Inst) error {
 
 // --- [ XSAVE64 ] -------------------------------------------------------------
 
-// emitInst translates the given x86 XSAVE64 instruction to LLVM IR, emitting
-// code to f.
+// emitInstXSAVE64 translates the given x86 XSAVE64 instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXSAVE64(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXSAVE64: not yet implemented")
@@ -6778,8 +6547,8 @@ func (f *Func) emitInstXSAVE64(inst *Inst) error {
 
 // --- [ XSAVEC ] --------------------------------------------------------------
 
-// emitInst translates the given x86 XSAVEC instruction to LLVM IR, emitting
-// code to f.
+// emitInstXSAVEC translates the given x86 XSAVEC instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXSAVEC(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXSAVEC: not yet implemented")
@@ -6787,8 +6556,8 @@ func (f *Func) emitInstXSAVEC(inst *Inst) error {
 
 // --- [ XSAVEC64 ] ------------------------------------------------------------
 
-// emitInst translates the given x86 XSAVEC64 instruction to LLVM IR, emitting
-// code to f.
+// emitInstXSAVEC64 translates the given x86 XSAVEC64 instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXSAVEC64(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXSAVEC64: not yet implemented")
@@ -6796,8 +6565,8 @@ func (f *Func) emitInstXSAVEC64(inst *Inst) error {
 
 // --- [ XSAVEOPT ] ------------------------------------------------------------
 
-// emitInst translates the given x86 XSAVEOPT instruction to LLVM IR, emitting
-// code to f.
+// emitInstXSAVEOPT translates the given x86 XSAVEOPT instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXSAVEOPT(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXSAVEOPT: not yet implemented")
@@ -6805,8 +6574,8 @@ func (f *Func) emitInstXSAVEOPT(inst *Inst) error {
 
 // --- [ XSAVEOPT64 ] ----------------------------------------------------------
 
-// emitInst translates the given x86 XSAVEOPT64 instruction to LLVM IR, emitting
-// code to f.
+// emitInstXSAVEOPT64 translates the given x86 XSAVEOPT64 instruction to LLVM
+// IR, emitting code to f.
 func (f *Func) emitInstXSAVEOPT64(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXSAVEOPT64: not yet implemented")
@@ -6814,8 +6583,8 @@ func (f *Func) emitInstXSAVEOPT64(inst *Inst) error {
 
 // --- [ XSAVES ] --------------------------------------------------------------
 
-// emitInst translates the given x86 XSAVES instruction to LLVM IR, emitting
-// code to f.
+// emitInstXSAVES translates the given x86 XSAVES instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXSAVES(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXSAVES: not yet implemented")
@@ -6823,8 +6592,8 @@ func (f *Func) emitInstXSAVES(inst *Inst) error {
 
 // --- [ XSAVES64 ] ------------------------------------------------------------
 
-// emitInst translates the given x86 XSAVES64 instruction to LLVM IR, emitting
-// code to f.
+// emitInstXSAVES64 translates the given x86 XSAVES64 instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXSAVES64(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXSAVES64: not yet implemented")
@@ -6832,8 +6601,8 @@ func (f *Func) emitInstXSAVES64(inst *Inst) error {
 
 // --- [ XSETBV ] --------------------------------------------------------------
 
-// emitInst translates the given x86 XSETBV instruction to LLVM IR, emitting
-// code to f.
+// emitInstXSETBV translates the given x86 XSETBV instruction to LLVM IR,
+// emitting code to f.
 func (f *Func) emitInstXSETBV(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXSETBV: not yet implemented")
@@ -6841,8 +6610,8 @@ func (f *Func) emitInstXSETBV(inst *Inst) error {
 
 // --- [ XTEST ] ---------------------------------------------------------------
 
-// emitInst translates the given x86 XTEST instruction to LLVM IR, emitting code
-// to f.
+// emitInstXTEST translates the given x86 XTEST instruction to LLVM IR, emitting
+// code to f.
 func (f *Func) emitInstXTEST(inst *Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstXTEST: not yet implemented")

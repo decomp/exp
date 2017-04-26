@@ -2702,6 +2702,11 @@ func (f *Func) emitInstFIDIVR(inst *Inst) error {
 // emitInstFILD translates the given x86 FILD instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstFILD(inst *Inst) error {
+	// FILD - Load Integer
+	//
+	//    FILD a1
+	//
+	// Push a1 onto the FPU register stack.
 	pretty.Println("inst:", inst)
 	panic("emitInstFILD: not yet implemented")
 }
@@ -4256,8 +4261,11 @@ func (f *Func) emitInstMWAIT(inst *Inst) error {
 // emitInstNEG translates the given x86 NEG instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstNEG(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstNEG: not yet implemented")
+	x := f.useArg(inst.Arg(0))
+	zero := constant.NewInt(0, x.Type())
+	result := f.cur.NewSub(zero, x)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ NOP ] -----------------------------------------------------------------
@@ -5949,8 +5957,22 @@ func (f *Func) emitInstSHL(inst *Inst) error {
 // emitInstSHLD translates the given x86 SHLD instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstSHLD(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSHLD: not yet implemented")
+	// SHLD - Double Precision Shift Left
+	//
+	//    SHLD a1, a2, a3
+	//
+	// Shift a1 to left a3 places while shifting bits from a2 in from the right.
+	a1, a2, a3 := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1)), f.useArg(inst.Arg(2))
+	tmp1 := f.cur.NewZExt(a1, types.I64)
+	n32 := constant.NewInt(32, types.I64)
+	high := f.cur.NewShl(tmp1, n32)
+	low := f.cur.NewZExt(a2, types.I64)
+	tmp3 := f.cur.NewOr(high, low)
+	tmp4 := f.cur.NewShl(tmp3, a3)
+	tmp5 := f.cur.NewLShr(tmp4, n32)
+	result := f.cur.NewTrunc(tmp5, types.I32)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ SHR ] -----------------------------------------------------------------

@@ -247,6 +247,8 @@ func (f *Func) useMemElem(mem *Mem, elem types.Type) value.Value {
 // defMem stores the value to the given memory reference, emitting code to f.
 func (f *Func) defMem(mem *Mem, v value.Value) {
 	dst := f.mem(mem)
+	// Bitcast pointer to appropriate size.
+	dst = f.castToPtr(dst, mem.parent)
 	f.cur.NewStore(v, dst)
 }
 
@@ -386,38 +388,42 @@ func (f *Func) mem(mem *Mem) value.Value {
 // derrived from src and instruction prefixes, with instruction prefix takes
 // precedence.
 func (f *Func) castToPtr(src value.Value, parent *Inst) value.Value {
-	elem := src.Type()
-	for _, prefix := range parent.Prefix[:] {
-		// The first zero in the array marks the end of the prefixes.
-		if prefix == 0 {
-			break
+	var elem types.Type
+	if typ, ok := src.Type().(*types.PointerType); ok {
+		elem = typ.Elem
+	}
+	// Derive element size from the parent instruction.
+	var bits int
+	if parent != nil {
+		if parent.MemBytes != 0 {
+			bits = parent.MemBytes * 8
 		}
-		// Validate that implied prefixes are supported.
-		implied := prefix&x86asm.PrefixImplicit != 0
-		if implied {
-			switch prefix & 0x0FFF {
-			case x86asm.PrefixData16:
-				switch parent.Op {
-				case x86asm.MOV, x86asm.MOVSW:
-					// supported.
-				default:
-					panic(fmt.Errorf("support for implied prefix %v (0x%04X) not yet implemented for %v instruction", prefix, uint16(prefix), parent.Op))
-				}
-			default:
-				panic(fmt.Errorf("support for prefix %v (0x%04X) not yet implemented", prefix, uint16(prefix)))
+		for _, prefix := range parent.Prefix[:] {
+			// The first zero in the array marks the end of the prefixes.
+			if prefix == 0 {
+				break
 			}
-		} else {
-			switch prefix & 0x0FFF {
+			switch prefix &^ x86asm.PrefixImplicit {
 			case x86asm.PrefixData16:
-				elem = types.I16
-				panic(fmt.Errorf("inst prefix: %v", parent))
+				bits = 16
 			default:
 				panic(fmt.Errorf("support for prefix %v (0x%04X) not yet implemented", prefix, uint16(prefix)))
 			}
 		}
 	}
-	if !types.IsPointer(elem) {
-		return f.cur.NewBitCast(src, types.NewPointer(elem))
+	if bits != 0 {
+		elem = types.NewInt(bits)
+	}
+	if !types.IsPointer(src.Type()) || bits != 0 {
+		typ := types.NewPointer(elem)
+		var s string
+		if v, ok := src.(value.Named); ok {
+			if name := v.GetName(); len(name) > 0 {
+				s = fmt.Sprintf(" %q", name)
+			}
+		}
+		dbg.Printf("casting%s to pointer type: %v", s, typ)
+		return f.cur.NewBitCast(src, typ)
 	}
 	return src
 }
@@ -555,7 +561,12 @@ func (f *Func) getFunc(arg *Arg) (value.Named, *types.FuncType, ir.CallConv, boo
 	// Handle function pointers in structures.
 	switch a := arg.Arg.(type) {
 	case x86asm.Mem:
-		if context, ok := f.d.contexts[arg.parent.addr]; ok {
+		if a.Base != 0 {
+			context, ok := f.d.contexts[arg.parent.addr]
+			if !ok {
+				pretty.Println(arg.Arg)
+				panic(fmt.Errorf("unable to locate context for %v register used at %v", a.Base, arg.parent.addr))
+			}
 			if c, ok := context.Regs[Register(a.Base)]; ok {
 				if addr, ok := c["addr"]; ok {
 					v := f.useAddr(bin.Address(addr))
@@ -569,6 +580,7 @@ func (f *Func) getFunc(arg *Arg) (value.Named, *types.FuncType, ir.CallConv, boo
 							return v, sig, ir.CallConvNone, true
 						}
 					}
+					panic(fmt.Errorf("invalid callee type; expected pointer to function type, got %v", v.Type()))
 				}
 			}
 		}

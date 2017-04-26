@@ -73,7 +73,7 @@ func extract(lstPath string) error {
 		// Functions (and basic blocks).
 		regFunc = `[.]text[:]00([0-9a-fA-F]+)[^\n]+proc[ \t]near`
 		// Basic blocks.
-		regFallthrough = `[ \t]+(ja|jb|jbe|jecxz|jg|jge|jl|jle|jnb|jns|jnz|jp|js|jz)[ \t]+[^\n]*\n[.]text[:]00([0-9a-fA-F]+)`
+		regFallthrough = `[ \t]+(loop|loope|loopne|ja|jb|jbe|jecxz|jg|jge|jl|jle|jnb|jns|jnz|jp|js|jz)[ \t]+[^\n]*\n[.]text[:]00([0-9a-fA-F]+)`
 		regTarget      = `[.]text[:]00([0-9a-fA-F]+)[ \t][$@_a-zA-Z][$@_a-zA-Z0-9]+:`
 		// Data.
 		regJumpTable     = `[.]text[:]00([0-9a-fA-F]+)[^\n]*;[ \t]jump[ \t]table`

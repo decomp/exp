@@ -44,7 +44,14 @@ func (f *Func) emitTerm(term *Inst) error {
 
 	// Translate terminator.
 	switch term.Op {
-	// Conditional branch terminators.
+	// Loop terminators.
+	case x86asm.LOOP:
+		return f.emitTermLOOP(term)
+	case x86asm.LOOPE:
+		return f.emitTermLOOPE(term)
+	case x86asm.LOOPNE:
+		return f.emitTermLOOPNE(term)
+	// Conditional jump terminators.
 	case x86asm.JA:
 		return f.emitTermJA(term)
 	case x86asm.JAE:
@@ -83,7 +90,7 @@ func (f *Func) emitTerm(term *Inst) error {
 		return f.emitTermJRCXZ(term)
 	case x86asm.JS:
 		return f.emitTermJS(term)
-	// Unconditional branch terminators.
+	// Unconditional jump terminators.
 	case x86asm.JMP:
 		return f.emitTermJMP(term)
 	// Return terminators.

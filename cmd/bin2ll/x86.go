@@ -113,8 +113,16 @@ func (d *disassembler) decodeBlock(addr bin.Address) (*BasicBlock, error) {
 // isTerm reports whether the given instruction is a terminating instruction.
 func (inst *Inst) isTerm() bool {
 	switch inst.Op {
-	case x86asm.JA, x86asm.JAE, x86asm.JB, x86asm.JBE, x86asm.JCXZ, x86asm.JE, x86asm.JECXZ, x86asm.JG, x86asm.JGE, x86asm.JL, x86asm.JLE, x86asm.JMP, x86asm.JNE, x86asm.JNO, x86asm.JNP, x86asm.JNS, x86asm.JO, x86asm.JP, x86asm.JRCXZ, x86asm.JS:
+	// Loop terminators.
+	case x86asm.LOOP, x86asm.LOOPE, x86asm.LOOPNE:
 		return true
+	// Conditional jump terminators.
+	case x86asm.JA, x86asm.JAE, x86asm.JB, x86asm.JBE, x86asm.JCXZ, x86asm.JE, x86asm.JECXZ, x86asm.JG, x86asm.JGE, x86asm.JL, x86asm.JLE, x86asm.JNE, x86asm.JNO, x86asm.JNP, x86asm.JNS, x86asm.JO, x86asm.JP, x86asm.JRCXZ, x86asm.JS:
+		return true
+	// Unconditional jump terminators.
+	case x86asm.JMP:
+		return true
+	// Return terminators.
 	case x86asm.RET:
 		return true
 	}
@@ -138,7 +146,7 @@ func (d *disassembler) targets(entry bin.Address, term *Inst) []bin.Address {
 		return []bin.Address{term.addr}
 	}
 	switch term.Op {
-	case x86asm.JA, x86asm.JAE, x86asm.JB, x86asm.JBE, x86asm.JCXZ, x86asm.JE, x86asm.JECXZ, x86asm.JG, x86asm.JGE, x86asm.JL, x86asm.JLE, x86asm.JNE, x86asm.JNO, x86asm.JNP, x86asm.JNS, x86asm.JO, x86asm.JP, x86asm.JRCXZ, x86asm.JS:
+	case x86asm.LOOP, x86asm.LOOPE, x86asm.LOOPNE, x86asm.JA, x86asm.JAE, x86asm.JB, x86asm.JBE, x86asm.JCXZ, x86asm.JE, x86asm.JECXZ, x86asm.JG, x86asm.JGE, x86asm.JL, x86asm.JLE, x86asm.JNE, x86asm.JNO, x86asm.JNP, x86asm.JNS, x86asm.JO, x86asm.JP, x86asm.JRCXZ, x86asm.JS:
 		// target branch of conditional branching instruction.
 		next := term.addr + bin.Address(term.Len)
 		targetsTrue := d.getAddrs(next, term.Args[0])

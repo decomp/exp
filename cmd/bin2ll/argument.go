@@ -25,6 +25,14 @@ type Arg struct {
 	parent *Inst
 }
 
+// NewArg returns a new x86 argument with the given parent instruction.
+func NewArg(arg x86asm.Arg, parent *Inst) *Arg {
+	return &Arg{
+		Arg:    arg,
+		parent: parent,
+	}
+}
+
 // Arg returns the i:th argument of the instruction.
 func (inst *Inst) Arg(i int) *Arg {
 	return &Arg{

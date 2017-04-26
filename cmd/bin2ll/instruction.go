@@ -559,12 +559,6 @@ func (f *Func) emitInst(inst *Inst) error {
 		return f.emitInstLODSQ(inst)
 	case x86asm.LODSW:
 		return f.emitInstLODSW(inst)
-	case x86asm.LOOP:
-		return f.emitInstLOOP(inst)
-	case x86asm.LOOPE:
-		return f.emitInstLOOPE(inst)
-	case x86asm.LOOPNE:
-		return f.emitInstLOOPNE(inst)
 	case x86asm.LRET:
 		return f.emitInstLRET(inst)
 	case x86asm.LSL:
@@ -2303,11 +2297,17 @@ func (f *Func) emitInstDAS(inst *Inst) error {
 // emitInstDEC translates the given x86 DEC instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstDEC(inst *Inst) error {
-	x := f.useArg(inst.Arg(0))
-	one := constant.NewInt(1, types.I32)
-	result := f.cur.NewSub(x, one)
-	f.defArg(inst.Arg(0), result)
+	f.dec(inst.Arg(0))
 	return nil
+}
+
+// dec decrements the given argument by 1, stores and returns the result.
+func (f *Func) dec(arg *Arg) value.Value {
+	x := f.useArg(arg)
+	one := constant.NewInt(1, x.Type())
+	result := f.cur.NewSub(x, one)
+	f.defArg(arg, result)
+	return result
 }
 
 // --- [ DIV ] -----------------------------------------------------------------
@@ -3636,8 +3636,9 @@ func (f *Func) emitInstLODSB(inst *Inst) error {
 // emitInstLODSD translates the given x86 LODSD instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstLODSD(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstLODSD: not yet implemented")
+	src := f.useArg(inst.Arg(1))
+	f.defArgElem(inst.Arg(0), src, types.I32)
+	return nil
 }
 
 // --- [ LODSQ ] ---------------------------------------------------------------
@@ -3645,8 +3646,9 @@ func (f *Func) emitInstLODSD(inst *Inst) error {
 // emitInstLODSQ translates the given x86 LODSQ instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstLODSQ(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstLODSQ: not yet implemented")
+	src := f.useArg(inst.Arg(1))
+	f.defArgElem(inst.Arg(0), src, types.I64)
+	return nil
 }
 
 // --- [ LODSW ] ---------------------------------------------------------------
@@ -3654,35 +3656,9 @@ func (f *Func) emitInstLODSQ(inst *Inst) error {
 // emitInstLODSW translates the given x86 LODSW instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstLODSW(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstLODSW: not yet implemented")
-}
-
-// --- [ LOOP ] ----------------------------------------------------------------
-
-// emitInstLOOP translates the given x86 LOOP instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstLOOP(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstLOOP: not yet implemented")
-}
-
-// --- [ LOOPE ] ---------------------------------------------------------------
-
-// emitInstLOOPE translates the given x86 LOOPE instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstLOOPE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstLOOPE: not yet implemented")
-}
-
-// --- [ LOOPNE ] --------------------------------------------------------------
-
-// emitInstLOOPNE translates the given x86 LOOPNE instruction to LLVM IR,
-// emitting code to f.
-func (f *Func) emitInstLOOPNE(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstLOOPNE: not yet implemented")
+	src := f.useArg(inst.Arg(1))
+	f.defArgElem(inst.Arg(0), src, types.I16)
+	return nil
 }
 
 // --- [ LRET ] ----------------------------------------------------------------
@@ -5794,8 +5770,19 @@ func (f *Func) emitInstROL(inst *Inst) error {
 // emitInstROR translates the given x86 ROR instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstROR(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstROR: not yet implemented")
+	// rotate right (ROR)
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	low := f.cur.NewLShr(x, y)
+	typ, ok := y.Type().(*types.IntType)
+	if !ok {
+		panic(fmt.Errorf("invalid count operand type; expected *types.IntType, got %T", y.Type()))
+	}
+	bits := constant.NewInt(int64(typ.Size), typ)
+	shift := f.cur.NewSub(bits, y)
+	high := f.cur.NewShl(x, shift)
+	result := f.cur.NewOr(low, high)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ ROUNDPD ] -------------------------------------------------------------
@@ -6109,8 +6096,9 @@ func (f *Func) emitInstSTMXCSR(inst *Inst) error {
 // emitInstSTOSB translates the given x86 STOSB instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstSTOSB(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSTOSB: not yet implemented")
+	src := f.useArg(inst.Arg(1))
+	f.defArgElem(inst.Arg(0), src, types.I8)
+	return nil
 }
 
 // --- [ STOSD ] ---------------------------------------------------------------
@@ -6118,8 +6106,9 @@ func (f *Func) emitInstSTOSB(inst *Inst) error {
 // emitInstSTOSD translates the given x86 STOSD instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstSTOSD(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSTOSD: not yet implemented")
+	src := f.useArg(inst.Arg(1))
+	f.defArgElem(inst.Arg(0), src, types.I32)
+	return nil
 }
 
 // --- [ STOSQ ] ---------------------------------------------------------------
@@ -6127,8 +6116,9 @@ func (f *Func) emitInstSTOSD(inst *Inst) error {
 // emitInstSTOSQ translates the given x86 STOSQ instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstSTOSQ(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSTOSQ: not yet implemented")
+	src := f.useArg(inst.Arg(1))
+	f.defArgElem(inst.Arg(0), src, types.I64)
+	return nil
 }
 
 // --- [ STOSW ] ---------------------------------------------------------------
@@ -6136,8 +6126,9 @@ func (f *Func) emitInstSTOSQ(inst *Inst) error {
 // emitInstSTOSW translates the given x86 STOSW instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstSTOSW(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSTOSW: not yet implemented")
+	src := f.useArg(inst.Arg(1))
+	f.defArgElem(inst.Arg(0), src, types.I16)
+	return nil
 }
 
 // --- [ STR ] -----------------------------------------------------------------
@@ -6509,8 +6500,16 @@ func (f *Func) emitInstXGETBV(inst *Inst) error {
 // emitInstXLATB translates the given x86 XLATB instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstXLATB(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstXLATB: not yet implemented")
+	// Set AL to memory byte DS:[(E)BX + unsigned AL].
+	mem := inst.Mem(0)
+	if mem.Mem.Index != 0 {
+		panic(fmt.Errorf("invalid index of XLAT memory reference; expected 0, got %v", mem.Mem.Index))
+	}
+	mem.Mem.Scale = 1
+	mem.Mem.Index = x86asm.AL
+	v := f.useMemElem(mem, types.I8)
+	f.defReg(AL, v)
+	return nil
 }
 
 // --- [ XOR ] -----------------------------------------------------------------

@@ -5,6 +5,7 @@ import (
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	"github.com/pkg/errors"
 )
@@ -120,8 +121,10 @@ func (f *Func) emitTermJCXZ(term *Inst) error {
 func (f *Func) emitTermJECXZ(term *Inst) error {
 	// Jump if ECX register is zero.
 	//    (ECX=0)
-	pretty.Println("term:", term)
-	panic("emitTermJECXZ: not yet implemented")
+	ecx := f.useReg(ECX)
+	zero := constant.NewInt(0, types.I32)
+	cond := f.cur.NewICmp(ir.IntEQ, ecx, zero)
+	return f.emitTermJcc(term.Arg(0), cond)
 }
 
 // --- [ JNO ] -----------------------------------------------------------------

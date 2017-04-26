@@ -25,18 +25,34 @@ func (f *Func) emitInst(inst *Inst) error {
 	dbg.Println("lifting instruction:", inst.Inst)
 
 	// Check if prefix is present.
+	var (
+		hasREP  bool
+		hasREPN bool
+	)
 	for _, prefix := range inst.Prefix[:] {
 		// The first zero in the array marks the end of the prefixes.
 		if prefix == 0 {
 			break
 		}
-		switch prefix {
-		case x86asm.PrefixData16, x86asm.PrefixData16 | x86asm.PrefixImplicit:
+		switch prefix &^ x86asm.PrefixImplicit {
+		case x86asm.PrefixData16:
 			// prefix already supported.
+		case x86asm.PrefixREP:
+			hasREP = true
+		case x86asm.PrefixREPN:
+			hasREPN = true
 		default:
 			pretty.Println("instruction with prefix:", inst)
-			panic(fmt.Errorf("support for %v instruction with prefix not yet implemented", inst.Op))
+			panic(fmt.Errorf("support for %v instruction with prefix %v (0x%04X) not yet implemented", inst.Op, prefix, uint16(prefix)))
 		}
+	}
+
+	// Repeat instruction.
+	switch {
+	case hasREP:
+		return f.emitREPInst(inst)
+	case hasREPN:
+		return f.emitREPNInst(inst)
 	}
 
 	// Translate instruction.
@@ -3610,8 +3626,9 @@ func (f *Func) emitInstLMSW(inst *Inst) error {
 // emitInstLODSB translates the given x86 LODSB instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) emitInstLODSB(inst *Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstLODSB: not yet implemented")
+	src := f.useArg(inst.Arg(1))
+	f.defArgElem(inst.Arg(0), src, types.I8)
+	return nil
 }
 
 // --- [ LODSD ] ---------------------------------------------------------------
@@ -3827,7 +3844,7 @@ func (f *Func) emitInstMONITOR(inst *Inst) error {
 // code to f.
 func (f *Func) emitInstMOV(inst *Inst) error {
 	src := f.useArg(inst.Arg(1))
-	f.defArgElem(inst.Arg(0), src, src.Type())
+	f.defArg(inst.Arg(0), src)
 	return nil
 }
 

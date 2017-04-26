@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/decomp/exp/bin"
@@ -388,9 +389,13 @@ func (f *Func) mem(mem *Mem) value.Value {
 // derrived from src and instruction prefixes, with instruction prefix takes
 // precedence.
 func (f *Func) castToPtr(src value.Value, parent *Inst) value.Value {
-	var elem types.Type
+	elem := src.Type()
+	var preBits int
 	if typ, ok := src.Type().(*types.PointerType); ok {
 		elem = typ.Elem
+		if elem, ok := elem.(*types.IntType); ok {
+			preBits = elem.Size
+		}
 	}
 	// Derive element size from the parent instruction.
 	var bits int
@@ -406,6 +411,8 @@ func (f *Func) castToPtr(src value.Value, parent *Inst) value.Value {
 			switch prefix &^ x86asm.PrefixImplicit {
 			case x86asm.PrefixData16:
 				bits = 16
+			case x86asm.PrefixREP, x86asm.PrefixREPN:
+				// nothing to do.
 			default:
 				panic(fmt.Errorf("support for prefix %v (0x%04X) not yet implemented", prefix, uint16(prefix)))
 			}
@@ -414,7 +421,11 @@ func (f *Func) castToPtr(src value.Value, parent *Inst) value.Value {
 	if bits != 0 {
 		elem = types.NewInt(bits)
 	}
-	if !types.IsPointer(src.Type()) || bits != 0 {
+	needCast := !types.IsPointer(src.Type())
+	if bits != 0 && preBits != 0 && bits != preBits {
+		needCast = true
+	}
+	if needCast {
 		typ := types.NewPointer(elem)
 		var s string
 		if v, ok := src.(value.Named); ok {
@@ -512,13 +523,47 @@ func (f *Func) addr(addr bin.Address) (value.Named, bool) {
 	if block, ok := f.blocks[addr]; ok {
 		return block, true
 	}
-	if g, ok := f.d.globals[addr]; ok {
+	// Direct or indirect access to global variable.
+	if g, ok := f.global(addr); ok {
 		return g, true
 	}
 	if fn, ok := f.d.funcs[addr]; ok {
 		return fn.Function, true
 	}
 	// TODO: Add support for lookup of more globally addressable values.
+	return nil, false
+}
+
+// global returns a pointer to the LLVM IR value associated with the given
+// global variable address, and a boolean value indicating success.
+func (f *Func) global(addr bin.Address) (value.Named, bool) {
+	// Early return if direct access to global variable.
+	if src, ok := f.d.globals[addr]; ok {
+		return src, true
+	}
+
+	// Use binary search if indirect access to global variable (e.g. struct
+	// field, array element).
+	var globalAddrs []bin.Address
+	for globalAddr := range f.d.globals {
+		globalAddrs = append(globalAddrs, globalAddr)
+	}
+	sort.Sort(bin.Addresses(globalAddrs))
+	less := func(i int) bool {
+		return addr < globalAddrs[i]
+	}
+	index := sort.Search(len(globalAddrs), less)
+	index--
+	if 0 <= index && index < len(globalAddrs) {
+		start := globalAddrs[index]
+		g := f.d.globals[start]
+		size := f.d.sizeOfType(g.Typ.Elem)
+		end := start + bin.Address(size)
+		if start <= addr && addr < end {
+			offset := int64(addr - start)
+			return f.getElementPtr(g, offset), true
+		}
+	}
 	return nil, false
 }
 

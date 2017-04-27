@@ -1,16 +1,59 @@
 // Package bin provides a uniform representation of binary executables.
 package bin
 
+import (
+	"fmt"
+	"sort"
+)
+
 // A File is a binary exectuable.
 type File struct {
 	// Machine architecture specifying the assembly instruction set.
 	Arch Arch
 	// Entry point of the executable.
 	Entry Address
-	// Segments of the exectuable.
-	Segments []*Segment
 	// Sections of the exectuable.
 	Sections []*Section
+	// Segments of the exectuable.
+	Segments []*Section
+}
+
+// Data returns the data starting at the specified address of the binary
+// executable.
+func (file *File) Data(addr Address) []byte {
+	if len(file.Sections) > 0 {
+		data, ok := locateData(addr, file.Sections)
+		if ok {
+			return data
+		}
+	}
+	if len(file.Segments) > 0 {
+		data, ok := locateData(addr, file.Segments)
+		if ok {
+			return data
+		}
+	}
+	panic(fmt.Errorf("unable to locate data at address %v", addr))
+}
+
+// locateData tries to locate the data starting at the specified address by
+// searching through the given sections. The boolean return value indicates
+// success.
+func locateData(addr Address, sects []*Section) ([]byte, bool) {
+	// Find the first section who's end address is greater than addr.
+	less := func(i int) bool {
+		sect := sects[i]
+		return addr < sect.Addr+Address(len(sect.Data))
+	}
+	index := sort.Search(len(sects), less)
+	if 0 <= index && index < len(sects) {
+		sect := sects[index]
+		if sect.Addr <= addr && addr < sect.Addr+Address(len(sect.Data)) {
+			offset := addr - sect.Addr
+			return sect.Data[offset:], true
+		}
+	}
+	return nil, false
 }
 
 // Arch represents the set of machine architectures.
@@ -26,19 +69,9 @@ const (
 	ArchX86_64
 )
 
-// A Segment represents a continuous segment of memory.
-type Segment struct {
-	// Start address of the segment.
-	Addr Address
-	// Segment contents.
-	Data []byte
-	// Access permissions of the segment in memory.
-	Perm Perm
-}
-
 // A Section represents a continuous section of memory.
 type Section struct {
-	// Section name.
+	// Section name; or empty if memory segments.
 	Name string
 	// Start address of the section.
 	Addr Address

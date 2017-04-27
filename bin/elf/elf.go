@@ -88,7 +88,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			return nil, errors.WithStack(err)
 		}
 		perm := parsePerm(prog.Flags)
-		seg := &bin.Segment{
+		seg := &bin.Section{
 			Addr: bin.Address(prog.Vaddr),
 			Data: data,
 			Perm: perm,

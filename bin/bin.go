@@ -53,12 +53,12 @@ type Perm uint8
 
 // Access permissions.
 const (
-	// PermR specifies that the memory is readable.
-	PermR Perm = 1 << iota
-	// PermW specifies that the memory is writeable.
-	PermW
 	// PermX specifies that the memory is executable.
-	PermX
+	PermX Perm = 0x1
+	// PermW specifies that the memory is writeable.
+	PermW Perm = 0x2
+	// PermR specifies that the memory is readable.
+	PermR Perm = 0x4
 )
 
 // String returns the string representation of the access permissions.

@@ -38,7 +38,7 @@ Convert binary executables to equivalent LLVM IR assembly (*.exe -> *.ll).
 
 Usage:
 
-	bin2ll [OPTION]... FILE.ll
+	bin2ll [OPTION]... FILE.exe
 
 Flags:
 `

@@ -4,6 +4,7 @@ package pe
 import (
 	"debug/pe"
 	"fmt"
+	"sort"
 
 	"github.com/decomp/exp/bin"
 	"github.com/pkg/errors"
@@ -18,7 +19,7 @@ func Parse(path string) (*bin.File, error) {
 	}
 	defer f.Close()
 
-	// Determine machine architecture.
+	// Parse machine architecture.
 	file := &bin.File{}
 	switch f.FileHeader.Machine {
 	case pe.IMAGE_FILE_MACHINE_I386:
@@ -29,7 +30,7 @@ func Parse(path string) (*bin.File, error) {
 		panic(fmt.Errorf("support for machine architecture %v not yet implemented", f.FileHeader.Machine))
 	}
 
-	// Parse optional header.
+	// Parse entry address.
 	var (
 		imageBase uint64
 		//idataBase uint64
@@ -56,7 +57,6 @@ func Parse(path string) (*bin.File, error) {
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		// Parse access permissions.
 		perm := parsePerm(s.Characteristics)
 		sect := &bin.Section{
 			Name: s.Name,
@@ -66,6 +66,13 @@ func Parse(path string) (*bin.File, error) {
 		}
 		file.Sections = append(file.Sections, sect)
 	}
+	less := func(i, j int) bool {
+		if file.Sections[i].Addr == file.Sections[j].Addr {
+			return file.Sections[i].Name < file.Sections[j].Name
+		}
+		return file.Sections[i].Addr < file.Sections[j].Addr
+	}
+	sort.Slice(file.Sections, less)
 
 	// TODO: Parse imports.
 

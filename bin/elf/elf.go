@@ -3,21 +3,43 @@ package elf
 
 import (
 	"debug/elf"
+	"io"
 	"io/ioutil"
+	"os"
 	"sort"
 
 	"github.com/decomp/exp/bin"
 	"github.com/pkg/errors"
 )
 
-// Parse parses the given ELF binary executable.
-func Parse(path string) (*bin.File, error) {
-	// Open ELF file.
-	f, err := elf.Open(path)
+// Register ELF format.
+func init() {
+	// Executable and Linkable Format (ELF)
+	//
+	//    7F 45 4C 46  |.ELF|
+	const magic = "\x7FELF"
+	bin.RegisterFormat("elf", magic, Parse)
+}
+
+// ParseFile parses the given ELF binary executable, reading from path.
+func ParseFile(path string) (*bin.File, error) {
+	f, err := os.Open(path)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	defer f.Close()
+	return Parse(f)
+}
+
+// Parse parses the given ELF binary executable, reading from r.
+//
+// Users are responsible for closing r.
+func Parse(r io.ReaderAt) (*bin.File, error) {
+	// Open ELF file.
+	f, err := elf.NewFile(r)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 
 	// Parse machine architecture.
 	file := &bin.File{}

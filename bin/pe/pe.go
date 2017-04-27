@@ -4,20 +4,42 @@ package pe
 import (
 	"debug/pe"
 	"fmt"
+	"io"
+	"os"
 	"sort"
 
 	"github.com/decomp/exp/bin"
 	"github.com/pkg/errors"
 )
 
-// Parse parses the given PE binary executable.
-func Parse(path string) (*bin.File, error) {
-	// Open PE file.
-	f, err := pe.Open(path)
+// Register PE format.
+func init() {
+	// Portable Executable (PE) format.
+	//
+	//    4D 5A  |MZ|
+	const magic = "MZ"
+	bin.RegisterFormat("pe", magic, Parse)
+}
+
+// ParseFile parses the given PE binary executable, reading from path.
+func ParseFile(path string) (*bin.File, error) {
+	f, err := os.Open(path)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	defer f.Close()
+	return Parse(f)
+}
+
+// Parse parses the given PE binary executable, reading from r.
+//
+// Users are responsible for closing r.
+func Parse(r io.ReaderAt) (*bin.File, error) {
+	// Open PE file.
+	f, err := pe.NewFile(r)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 
 	// Parse machine architecture.
 	file := &bin.File{}

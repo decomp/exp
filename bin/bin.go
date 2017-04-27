@@ -30,10 +30,10 @@ const (
 type Segment struct {
 	// Start address of the segment.
 	Addr Address
-	// Access permissions of the segment in memory.
-	Perm Perm
 	// Segment contents.
 	Data []byte
+	// Access permissions of the segment in memory.
+	Perm Perm
 }
 
 // A Section represents a continuous section of memory.
@@ -42,10 +42,10 @@ type Section struct {
 	Name string
 	// Start address of the section.
 	Addr Address
-	// Access permissions of the section in memory.
-	Perm Perm
 	// Section contents.
 	Data []byte
+	// Access permissions of the section in memory.
+	Perm Perm
 }
 
 // Perm specifies the access permissions of a segment or section in memory.
@@ -53,26 +53,26 @@ type Perm uint8
 
 // Access permissions.
 const (
-	// PermRead specifies that the memory is readable.
-	PermRead Perm = 1 << iota
-	// PermWrite specifies that the memory is writeable.
-	PermWrite
-	// PermExecute specifies that the memory is executable.
-	PermExecute
+	// PermR specifies that the memory is readable.
+	PermR Perm = 1 << iota
+	// PermW specifies that the memory is writeable.
+	PermW
+	// PermX specifies that the memory is executable.
+	PermX
 )
 
 // String returns the string representation of the access permissions.
 func (perm Perm) String() string {
 	r := "-"
-	if perm&PermRead != 0 {
+	if perm&PermR != 0 {
 		r = "r"
 	}
 	w := "-"
-	if perm&PermWrite != 0 {
+	if perm&PermW != 0 {
 		w = "w"
 	}
 	x := "-"
-	if perm&PermExecute != 0 {
+	if perm&PermX != 0 {
 		x = "x"
 	}
 	return r + w + x

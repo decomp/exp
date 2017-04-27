@@ -1,4 +1,4 @@
-// Package elf provides access to ELF binary executables.
+// Package elf provides access to Executable and Linkable Format (ELF) files.
 package elf
 
 import (
@@ -48,6 +48,8 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		file.Arch = bin.ArchX86_32
 	case elf.EM_X86_64:
 		file.Arch = bin.ArchX86_64
+	case elf.EM_PPC:
+		file.Arch = bin.ArchPowerPC_32
 	}
 
 	// Parse entry address.

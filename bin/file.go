@@ -67,11 +67,26 @@ const (
 	// ArchX86_64 represents the 64-bit x86-64 machine architecture, as used by
 	// Intel and AMD.
 	ArchX86_64
+	// ArchPowerPC represents the 32-bit PowerPC machine architecture.
+	ArchPowerPC_32
 )
+
+// String returns a string representation of the machine architecture.
+func (arch Arch) String() string {
+	m := map[Arch]string{
+		ArchX86_32:     "32-bit x86",
+		ArchX86_64:     "64-bit x86-64",
+		ArchPowerPC_32: "32-bit PowerPC",
+	}
+	if s, ok := m[arch]; ok {
+		return s
+	}
+	return fmt.Sprintf("unknown machine architecture %v", uint(arch))
+}
 
 // A Section represents a continuous section of memory.
 type Section struct {
-	// Section name; or empty if memory segments.
+	// Section name; or empty if unnamed section or memory segment.
 	Name string
 	// Start address of the section.
 	Addr Address

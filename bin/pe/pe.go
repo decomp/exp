@@ -1,4 +1,4 @@
-// Package pe provides access to PE binary executables.
+// Package pe provides access to PE (Portable Executable) files.
 package pe
 
 import (
@@ -48,6 +48,8 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		file.Arch = bin.ArchX86_32
 	case pe.IMAGE_FILE_MACHINE_AMD64:
 		file.Arch = bin.ArchX86_64
+	case pe.IMAGE_FILE_MACHINE_POWERPC:
+		file.Arch = bin.ArchPowerPC_32
 	default:
 		panic(fmt.Errorf("support for machine architecture %v not yet implemented", f.FileHeader.Machine))
 	}

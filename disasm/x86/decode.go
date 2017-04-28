@@ -1,61 +1,13 @@
-// Package x86 implements a disassembler for the x86 architecture.
 package x86
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"sort"
 
 	"github.com/decomp/exp/bin"
-	"github.com/decomp/exp/disasm"
-	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
 	"golang.org/x/arch/x86/x86asm"
 )
-
-// TODO: Remove loggers once the library matures.
-
-// Loggers.
-var (
-	// dbg represents a logger with the "x86:" prefix, which logs debug
-	// messages to standard error.
-	dbg = log.New(os.Stderr, term.BlueBold("x86:")+" ", 0)
-	// warn represents a logger with the "warning:" prefix, which logs warning
-	// messages to standard error.
-	warn = log.New(os.Stderr, term.RedBold("warning:")+" ", 0)
-)
-
-// A Disasm tracks information required to disassemble a binary executable.
-//
-// Data should only be written to this structure during initialization. After
-// initialization the structure is considered in read-only mode to allow for
-// concurrent decoding of functions.
-type Disasm struct {
-	*disasm.Disasm
-	// Processor mode.
-	Mode int
-	// CPU contexts.
-	Contexts Contexts
-}
-
-// NewDisasm creates a new Disasm for accessing the assembly instructions of the
-// given binary executable.
-func NewDisasm(file *bin.File) *Disasm {
-	dis := &Disasm{
-		Disasm:   disasm.New(file),
-		Contexts: make(Contexts),
-	}
-	switch dis.File.Arch {
-	case bin.ArchX86_32:
-		dis.Mode = 32
-	case bin.ArchX86_64:
-		dis.Mode = 64
-	default:
-		panic(fmt.Errorf("support for machine architecture %v not yet implemented", dis.File.Arch))
-	}
-	return dis
-}
 
 // A Func is a function.
 type Func struct {

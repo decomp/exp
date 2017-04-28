@@ -157,7 +157,7 @@ type disassembler struct {
 	// Map from basic block address (function chunk) to function address, to
 	// which the basic block belongs.
 	chunkFunc map[bin.Address]bin.Address
-	// CPU contexts
+	// CPU contexts.
 	contexts Contexts
 	// TODO: Remove.
 	decodedBlock map[bin.Address]bool

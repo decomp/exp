@@ -43,8 +43,24 @@ type Lifter struct {
 // NewLifter creates a new Lifter for accessing the assembly instructions of the
 // given binary executable, and the information contained within associated JSON
 // and LLVM IR files.
+//
+// Associated files of the generic disassembler.
+//
+//    funcs.json
+//    blocks.json
+//    tables.json
+//    chunks.json
+//    data.json
+//
+// Associated files of the x86 disassembler.
+//
+//    contexts.json
+//
+// Associated files of the x86 to LLVM IR lifter.
+//
+//    info.ll
 func NewLifter(file *bin.File) (*Lifter, error) {
-	// Prepare lifter.
+	// Prepare x86 to LLVM IR lifter.
 	dis, err := x86.NewDisasm(file)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -57,11 +73,7 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 
 	// Parse associated LLVM IR information.
 	llPath := "info.ll"
-	if !osutil.Exists(llPath) {
-		warn.Printf("unable to locate LLVM IR file %q", llPath)
-		return l, nil
-	}
-	module, err := asm.ParseFile(llPath)
+	module, err := parseModule(llPath)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -98,6 +110,13 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 	return l, nil
 }
 
-type Func struct {
-	*ir.Function
+// ### [ Helper functions ] ####################################################
+
+// parseModule parses and returns the given LLVM IR module.
+func parseModule(llPath string) (*ir.Module, error) {
+	if !osutil.Exists(llPath) {
+		warn.Printf("unable to locate LLVM IR file %q", llPath)
+		return &ir.Module{}, nil
+	}
+	return asm.ParseFile(llPath)
 }

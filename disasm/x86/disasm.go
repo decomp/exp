@@ -41,8 +41,20 @@ type Disasm struct {
 
 // NewDisasm creates a new Disasm for accessing the assembly instructions of the
 // given binary executable.
+//
+// Associated files of the generic disassembler.
+//
+//    funcs.json
+//    blocks.json
+//    tables.json
+//    chunks.json
+//    data.json
+//
+// Associated files of the x86 disassembler.
+//
+//    contexts.json
 func NewDisasm(file *bin.File) (*Disasm, error) {
-	// Prepare disassembler.
+	// Prepare x86 disassembler.
 	d, err := disasm.New(file)
 	if err != nil {
 		return nil, errors.WithStack(err)

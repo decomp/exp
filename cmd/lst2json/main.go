@@ -76,10 +76,10 @@ func extract(lstPath string) error {
 		regFallthrough = `[ \t]+(loop|loope|loopne|ja|jb|jbe|jecxz|jg|jge|jl|jle|jnb|jns|jnz|jp|js|jz)[ \t]+[^\n]*\n[.]text[:]00([0-9a-fA-F]+)`
 		regTarget      = `[.]text[:]00([0-9a-fA-F]+)[ \t][$@_a-zA-Z][$@_a-zA-Z0-9]+:`
 		// Data.
-		regJumpTable     = `[.]text[:]00([0-9a-fA-F]+)[^\n]*;[ \t]jump[ \t]table`
-		regIndirectTable = `[.]text[:]00([0-9a-fA-F]+)[^\n]*;[ \t]indirect[ \t]table`
-		regJumpPastData  = `[ \t]+jmp[ \t]+[^\n]*\n[.]text[:]00([0-9a-fA-F]+)[ \t]+; ---------------------------------------------------------------------------[\n][.]text[:]00([0-9a-fA-F]+)[ \t]+`
-		regAlign         = `; ---------------------------------------------------------------------------[\n][.]text[:]00([0-9a-fA-F]+)[ \t]+align[ \t]+`
+		regJumpTable     = `[a-zA-Z]+[:]00([0-9a-fA-F]+)[^\n]*;[ \t]jump[ \t]table`
+		regIndirectTable = `[a-zA-Z]+[:]00([0-9a-fA-F]+)[^\n]*;[ \t]indirect[ \t]table`
+		regJumpPastData  = `[ \t]+jmp[ \t]+[^\n]*\n[.][a-zA-Z]+[a-zA-Z]+[:]00([0-9a-fA-F]+)[ \t]+; ---------------------------------------------------------------------------[\n][.][a-zA-Z]+[:]00([0-9a-fA-F]+)[ \t]+`
+		regAlign         = `; ---------------------------------------------------------------------------[\n][.][a-zA-Z]+[:]00([0-9a-fA-F]+)[ \t]+align[ \t]+`
 	)
 
 	// Function, basic block and data addresses.
@@ -253,7 +253,7 @@ func locateTargets(input []byte, tableAddrs map[bin.Address]bool) (map[bin.Addre
 	for tableAddr := range tableAddrs {
 		present := make(map[bin.Address]bool)
 		s := fmt.Sprintf("%06X", uint64(tableAddr))
-		regTargets := `[.]text[:]00` + s + `[^\n]*? dd (([^\n]*?offset[ \t]loc_([0-9a-fA-F]+))+)`
+		regTargets := `[.][a-zA-Z]+[:]00` + s + `[^\n]*? dd (([^\n]*?offset[ \t]loc_([0-9a-fA-F]+))+)`
 		re, err := regexp.Compile(regTargets)
 		if err != nil {
 			return nil, errors.WithStack(err)

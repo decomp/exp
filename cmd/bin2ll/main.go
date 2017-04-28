@@ -1,4 +1,4 @@
-// The bin2ll tool converts binary executables to equivalent LLVM IR assembly
+// The bin2ll tool lifts binary executables to equivalent LLVM IR assembly
 // (*.exe -> *.ll).
 package main
 
@@ -14,6 +14,10 @@ import (
 	"sort"
 
 	"github.com/decomp/exp/bin"
+	_ "github.com/decomp/exp/bin/elf" // register ELF decoder
+	_ "github.com/decomp/exp/bin/pe"  // register PE decoder
+	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
+	"github.com/decomp/exp/lift"
 	"github.com/llir/llvm/asm"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/metadata"
@@ -34,11 +38,11 @@ var (
 
 func usage() {
 	const use = `
-Convert binary executables to equivalent LLVM IR assembly (*.exe -> *.ll).
+Lift binary executables to equivalent LLVM IR assembly (*.exe -> *.ll).
 
 Usage:
 
-	bin2ll [OPTION]... FILE.exe
+	bin2ll [OPTION]... FILE
 
 Flags:
 `
@@ -49,20 +53,20 @@ Flags:
 func main() {
 	// Parse command line arguments.
 	var (
-		// blockAddr specifies a basic block address to decompile.
+		// blockAddr specifies a basic block address to lift.
 		blockAddr bin.Address
 		// TODO: Remove -first flag and firstAddr.
-		// firstAddr specifies the first function address to decompile.
+		// firstAddr specifies the first function address to lift.
 		firstAddr bin.Address
-		// funcAddr specifies a function address to decompile.
+		// funcAddr specifies a function address to lift.
 		funcAddr bin.Address
 		// quiet specifies whether to suppress non-error messages.
 		quiet bool
 	)
 	flag.Usage = usage
-	flag.Var(&blockAddr, "block", "basic block address to decompile")
-	flag.Var(&firstAddr, "first", "first function address to decompile")
-	flag.Var(&funcAddr, "func", "function address to decompile")
+	flag.Var(&blockAddr, "block", "basic block address to lift")
+	flag.Var(&firstAddr, "first", "first function address to lift")
+	flag.Var(&funcAddr, "func", "function address to lift")
 	flag.BoolVar(&quiet, "q", false, "suppress non-error messages")
 	flag.Parse()
 	if flag.NArg() != 1 {
@@ -76,48 +80,47 @@ func main() {
 		warn.SetOutput(ioutil.Discard)
 	}
 
-	// Convert binary into LLVM IR assembly.
-	d, err := parseFile(binPath)
+	// Prepare x86 to LLVM IR lifter for the binary executable.
+	l, err := newLifter(binPath)
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
-	defer d.file.Close()
 
-	// TODO: Remove -block. Used for debugging.
+	// Lift basic block.
 	if blockAddr != 0 {
-		bb, err := d.decodeBlock(blockAddr)
+		block, err := l.DecodeBlock(blockAddr)
 		if err != nil {
 			log.Fatalf("%+v", err)
 		}
-		printBlock(bb)
-		//fmt.Println("targets from basic block address:", bb.addr)
-		//targets := d.targets(bb.term)
-		//for _, target := range targets {
-		//	fmt.Println(target)
-		//}
+		_ = block
 		return
 	}
 
-	// Translate functions from x86 machine code to LLVM IR assembly.
-	funcAddrs := d.funcAddrs
+	// Lift function specified by `-func` flag.
+	funcAddrs := l.FuncAddrs
 	if funcAddr != 0 {
 		funcAddrs = []bin.Address{funcAddr}
 	}
+
+	// Lift functions.
 	for _, funcAddr := range funcAddrs {
-		if firstAddr != 0 && funcAddr < firstAddr {
-			// skip functions with lower address than the first function.
-			continue
-		}
-		f, err := d.decodeFunc(funcAddr)
+		f, err := l.DecodeFunc(funcAddr)
 		if err != nil {
 			log.Fatalf("%+v", err)
 		}
-		if err := d.translateFunc(f); err != nil {
-			log.Fatalf("%+v", err)
-		}
-		printFunc(f)
-		fmt.Println(f.Function)
+		_ = f
 	}
+}
+
+// newLifter returns a new x86 to LLVM IR lifter for the given binary
+// executable.
+func newLifter(binPath string) (*lift.Lifter, error) {
+	// Parse binary executable.
+	file, err := bin.ParseFile(binPath)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return lift.NewLifter(file)
 }
 
 // A disassembler tracks information required to disassemble x86 executables.

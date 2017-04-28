@@ -93,10 +93,15 @@ func (dis *Disasm) isTailCall(funcEntry bin.Address, target bin.Address) bool {
 		return false
 	}
 	if funcAddr, ok := dis.Chunks[target]; ok {
-		// Target part of function chunk.
-		return funcAddr != funcEntry
+		if funcAddr == funcEntry {
+			// Target part of function chunk.
+			return false
+		}
 	}
-	// Tail call target.
+	if !dis.IsFunc(target) {
+		panic(fmt.Errorf("tail call to non-function address %v from function at %v", target, funcEntry))
+	}
+	// Target is a tail call.
 	return true
 }
 

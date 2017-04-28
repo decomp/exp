@@ -62,12 +62,12 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	)
 	switch opt := f.OptionalHeader.(type) {
 	case *pe.OptionalHeader32:
-		file.Entry = bin.Address(opt.AddressOfEntryPoint + opt.ImageBase)
+		file.Entry = bin.Address(opt.ImageBase + opt.AddressOfEntryPoint)
 		imageBase = uint64(opt.ImageBase)
 		//idataBase = uint64(opt.DataDirectory[12].VirtualAddress)
 		//idataSize = uint64(opt.DataDirectory[12].Size)
 	case *pe.OptionalHeader64:
-		file.Entry = bin.Address(opt.AddressOfEntryPoint) + bin.Address(opt.ImageBase)
+		file.Entry = bin.Address(opt.ImageBase) + bin.Address(opt.AddressOfEntryPoint)
 		imageBase = uint64(opt.ImageBase)
 		//idataBase = uint64(opt.DataDirectory[12].VirtualAddress)
 		//idataSize = uint64(opt.DataDirectory[12].Size)
@@ -77,6 +77,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 
 	// Parse sections.
 	for _, s := range f.Sections {
+		addr := bin.Address(imageBase) + bin.Address(s.VirtualAddress)
 		data, err := s.Data()
 		if err != nil {
 			return nil, errors.WithStack(err)
@@ -84,7 +85,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		perm := parsePerm(s.Characteristics)
 		sect := &bin.Section{
 			Name: s.Name,
-			Addr: bin.Address(s.VirtualAddress) + bin.Address(imageBase),
+			Addr: addr,
 			Data: data,
 			Perm: perm,
 		}

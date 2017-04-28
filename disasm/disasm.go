@@ -120,6 +120,18 @@ func New(file *bin.File) (*Disasm, error) {
 	return dis, nil
 }
 
+// IsFunc reports whether the given address is the entry address of a function.
+func (dis *Disasm) IsFunc(addr bin.Address) bool {
+	less := func(i int) bool {
+		return addr <= dis.FuncAddrs[i]
+	}
+	index := sort.Search(len(dis.FuncAddrs), less)
+	if index < len(dis.FuncAddrs) {
+		return dis.FuncAddrs[index] == addr
+	}
+	return false
+}
+
 // A Fragment represents a sequence of bytes (either code or data).
 type Fragment struct {
 	// Start address of fragment.

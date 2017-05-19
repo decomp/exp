@@ -3,27 +3,21 @@
 package main
 
 import (
-	"bufio"
 	"debug/pe"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"sort"
 
 	"github.com/decomp/exp/bin"
 	_ "github.com/decomp/exp/bin/elf" // register ELF decoder
 	_ "github.com/decomp/exp/bin/pe"  // register PE decoder
 	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
 	"github.com/decomp/exp/lift"
-	"github.com/llir/llvm/asm"
 	"github.com/llir/llvm/ir"
-	"github.com/llir/llvm/ir/metadata"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
-	"golang.org/x/arch/x86/x86asm"
 )
 
 // Loggers.
@@ -166,218 +160,8 @@ type disassembler struct {
 	decodedBlock map[bin.Address]bool
 }
 
-// parseFile parses the given PE file and associated JSON files, containing
-// information required to disassemble the x86 executables.
-func parseFile(binPath string) (*disassembler, error) {
-	// Parse PE executable.
-	file, err := pe.Open(binPath)
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	d := &disassembler{
-		file:         file,
-		tables:       make(map[bin.Address][]bin.Address),
-		chunkFunc:    make(map[bin.Address]bin.Address),
-		decodedBlock: make(map[bin.Address]bool),
-	}
-	switch opt := file.OptionalHeader.(type) {
-	case *pe.OptionalHeader32:
-		d.mode = 32
-		d.imageBase = uint64(opt.ImageBase)
-		d.codeBase = uint64(opt.BaseOfCode)
-		d.codeSize = uint64(opt.SizeOfCode)
-		d.idataBase = uint64(opt.DataDirectory[12].VirtualAddress)
-		d.idataSize = uint64(opt.DataDirectory[12].Size)
-		d.entry = bin.Address(opt.AddressOfEntryPoint)
-	case *pe.OptionalHeader64:
-		d.mode = 64
-		d.imageBase = opt.ImageBase
-		d.codeBase = uint64(opt.BaseOfCode)
-		d.codeSize = uint64(opt.SizeOfCode)
-		d.idataBase = uint64(opt.DataDirectory[12].VirtualAddress)
-		d.idataSize = uint64(opt.DataDirectory[12].Size)
-		d.entry = bin.Address(opt.AddressOfEntryPoint)
-	default:
-		panic(fmt.Errorf("support for optional header type %T not yet implemented", opt))
-	}
-	dbg.Println("executable entry address:", d.entry)
-
-	// Parse function addresses.
-	funcAddrs, err := parseAddrs("funcs.json")
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	sort.Sort(bin.Addresses(funcAddrs))
-	d.funcAddrs = funcAddrs
-
-	// Parse basic block addresses.
-	blockAddrs, err := parseAddrs("blocks.json")
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	sort.Sort(bin.Addresses(blockAddrs))
-	d.blockAddrs = blockAddrs
-
-	// Parse data addresses (e.g. jump tables).
-	dataAddrs, err := parseAddrs("data.json")
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	sort.Sort(bin.Addresses(dataAddrs))
-
-	// Parse jump table targets.
-	if err := parseJSON("tables.json", &d.tables); err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	// Parse function chunks.
-	if err := parseJSON("chunks.json", &d.chunkFunc); err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	// Append basic blocks as code chunks.
-	for _, blockAddr := range blockAddrs {
-		chunk := Chunk{
-			kind: kindCode,
-			addr: blockAddr,
-		}
-		d.chunks = append(d.chunks, chunk)
-	}
-
-	// Append data as data chunks.
-	for _, dataAddr := range dataAddrs {
-		chunk := Chunk{
-			kind: kindData,
-			addr: dataAddr,
-		}
-		d.chunks = append(d.chunks, chunk)
-	}
-	less := func(i, j int) bool {
-		return d.chunks[i].addr < d.chunks[j].addr
-	}
-	sort.Slice(d.chunks, less)
-
-	// Functions.
-	d.funcs = make(map[bin.Address]*Func)
-	if err := parseSigs("sigs.ll", d.funcs, d); err != nil {
-		return nil, errors.WithStack(err)
-	}
-	if err := parseSigs("imports.ll", d.funcs, d); err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	// Global variables.
-	d.globals = make(map[bin.Address]*ir.Global)
-	module, err := asm.ParseFile("globals.ll")
-	if err != nil {
-		return nil, errors.WithStack(err)
-	}
-	for _, g := range module.Globals {
-		node, ok := g.Metadata["addr"]
-		if !ok {
-			return nil, errors.Errorf(`unable to locate "addr" metadata for global variable %q`, g.Name)
-		}
-		var addr bin.Address
-		if err := metadata.Unmarshal(node, &addr); err != nil {
-			return nil, errors.WithStack(err)
-		}
-		d.globals[addr] = g
-	}
-
-	// Parse CPU contexts.
-	if err := parseJSON("contexts.json", &d.contexts); err != nil {
-		return nil, errors.WithStack(err)
-	}
-
-	return d, nil
-}
-
-// parseSigs parses the function signatures of the given LLVM IR assembly file.
-func parseSigs(llPath string, funcs map[bin.Address]*Func, d *disassembler) error {
-	module, err := asm.ParseFile(llPath)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	for _, f := range module.Funcs {
-		// Parse function address metadata.
-		node, ok := f.Metadata["addr"]
-		if !ok {
-			return errors.Errorf(`unable to locate "addr" metadata for function %q`, f.Name)
-		}
-		var entry bin.Address
-		if err := metadata.Unmarshal(node, &entry); err != nil {
-			return errors.WithStack(err)
-		}
-		fn := &Func{
-			Function:    f,
-			entry:       entry,
-			bbs:         make(map[bin.Address]*BasicBlock),
-			blocks:      make(map[bin.Address]*ir.BasicBlock),
-			regs:        make(map[x86asm.Reg]*ir.InstAlloca),
-			statusFlags: make(map[StatusFlag]*ir.InstAlloca),
-			locals:      make(map[string]*ir.InstAlloca),
-			d:           d,
-		}
-		funcs[entry] = fn
-	}
-	return nil
-}
-
-/*
-// parseContexts parses the given JSON file and returns the CPU contexts
-// contained within.
-func parseContexts(jsonPath string) (Contexts, error) {
-	contexts := make(Contexts)
-	m := make(map[string]map[string]map[string]string)
-	if err := parseJSON(jsonPath, &m); err != nil {
-		return nil, errors.WithStack(err)
-	}
-	for addrKey, regContextVal := range m {
-		var addr bin.Address
-		if err := addr.Set(addrKey); err != nil {
-			return nil, errors.WithStack(err)
-		}
-		regContext := make(map[x86asm.Reg]Context)
-		for regKey, contextVal := range regContextVal {
-			reg := parseReg(regKey)
-			context := make(Context)
-			for key, val := range contextVal {
-				x, err := bin.ParseUint64(val)
-				if err != nil {
-					return nil, errors.WithStack(err)
-				}
-				context[key] = x
-			}
-			regContext[reg] = context
-		}
-		contexts[addr] = regContext
-	}
-	return contexts, nil
-}
-*/
-
-// vaddr returns the virtual address for the specified offset from the image
-// base.
-func (d *disassembler) vaddr(offset uint64) bin.Address {
-	return bin.Address(d.imageBase + offset)
-}
-
-// data returns access to the data of the executable starting at the given
-// address.
 func (d *disassembler) data(addr bin.Address) ([]byte, error) {
-	for _, section := range d.file.Sections {
-		start := d.vaddr(uint64(section.VirtualAddress))
-		end := start + bin.Address(section.Size)
-		if start <= addr && addr < end {
-			offset := uint64(addr - start)
-			data, err := section.Data()
-			if err != nil {
-				return nil, errors.Errorf("unable to access data of section %q; %v", section.Name, err)
-			}
-			return data[offset:], nil
-		}
-	}
-	return nil, errors.Errorf("unable to locate section for address %v", addr)
+	panic("not yet implemented")
 }
 
 // Chunk represents a chunk of bytes.
@@ -397,27 +181,3 @@ const (
 	kindCode
 	kindData
 )
-
-// ### [ Helper functions ] ####################################################
-
-// parseAddrs parses the given JSON file and returns the list of addresses
-// contained within.
-func parseAddrs(jsonPath string) ([]bin.Address, error) {
-	var addrs []bin.Address
-	if err := parseJSON(jsonPath, &addrs); err != nil {
-		return nil, errors.WithStack(err)
-	}
-	return addrs, nil
-}
-
-// parseJSON parses the given JSON file and stores the result into v.
-func parseJSON(jsonPath string, v interface{}) error {
-	f, err := os.Open(jsonPath)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-	defer f.Close()
-	br := bufio.NewReader(f)
-	dec := json.NewDecoder(br)
-	return dec.Decode(v)
-}

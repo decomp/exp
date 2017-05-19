@@ -2,13 +2,17 @@
 package pe
 
 import (
+	"bytes"
 	"debug/pe"
+	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
 	"sort"
 
 	"github.com/decomp/exp/bin"
+	"github.com/kr/pretty"
 	"github.com/pkg/errors"
 )
 
@@ -56,21 +60,35 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 
 	// Parse entry address.
 	var (
+		// Image base address.
 		imageBase uint64
-		//idataBase uint64
-		//idataSize uint64
+		// Import table RVA and size.
+		itRVA  uint64
+		itSize uint64
+		// Import address table (IAT) RVA and size.
+		iatRVA  uint64
+		iatSize uint64
+	)
+	// Data directory indices.
+	const (
+		ImportTableIndex        = 1
+		ImportAddressTableIndex = 12
 	)
 	switch opt := f.OptionalHeader.(type) {
 	case *pe.OptionalHeader32:
 		file.Entry = bin.Address(opt.ImageBase + opt.AddressOfEntryPoint)
 		imageBase = uint64(opt.ImageBase)
-		//idataBase = uint64(opt.DataDirectory[12].VirtualAddress)
-		//idataSize = uint64(opt.DataDirectory[12].Size)
+		itRVA = uint64(opt.DataDirectory[ImportTableIndex].VirtualAddress)
+		itSize = uint64(opt.DataDirectory[ImportTableIndex].Size)
+		iatRVA = uint64(opt.DataDirectory[ImportAddressTableIndex].VirtualAddress)
+		iatSize = uint64(opt.DataDirectory[ImportAddressTableIndex].Size)
 	case *pe.OptionalHeader64:
 		file.Entry = bin.Address(opt.ImageBase) + bin.Address(opt.AddressOfEntryPoint)
 		imageBase = uint64(opt.ImageBase)
-		//idataBase = uint64(opt.DataDirectory[12].VirtualAddress)
-		//idataSize = uint64(opt.DataDirectory[12].Size)
+		itRVA = uint64(opt.DataDirectory[ImportTableIndex].VirtualAddress)
+		itSize = uint64(opt.DataDirectory[ImportTableIndex].Size)
+		iatRVA = uint64(opt.DataDirectory[ImportAddressTableIndex].VirtualAddress)
+		iatSize = uint64(opt.DataDirectory[ImportAddressTableIndex].Size)
 	default:
 		panic(fmt.Errorf("support for optional header type %T not yet implemented", opt))
 	}
@@ -99,9 +117,69 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	}
 	sort.Slice(file.Sections, less)
 
-	// TODO: Parse imports.
+	// Parse import address table (IAT).
+	fmt.Println("iat")
+	if iatSize != 0 {
+		iatAddr := bin.Address(imageBase + iatRVA)
+		fmt.Println("iat addr:", iatAddr)
+		data := file.Data(iatAddr)
+		data = data[:iatSize]
+		fmt.Println(hex.Dump(data))
+	}
+
+	// Parse import table.
+	fmt.Println("it")
+	var imps []importDesc
+	if itSize != 0 {
+		itAddr := bin.Address(imageBase + itRVA)
+		fmt.Println("it addr:", itAddr)
+		data := file.Data(itAddr)
+		data = data[:itSize]
+		fmt.Println(hex.Dump(data))
+		r := bytes.NewReader(data)
+		zero := importDesc{}
+		for {
+			var imp importDesc
+			if err := binary.Read(r, binary.LittleEndian, &imp); err != nil {
+				return nil, errors.WithStack(err)
+			}
+			pretty.Println("imp:", imp)
+			if imp == zero {
+				break
+			}
+			imps = append(imps, imp)
+		}
+		pretty.Println("imps:", imps)
+	}
+
+	panic("bar")
 
 	return file, nil
+}
+
+// ref: https://msdn.microsoft.com/en-us/library/ms809762.aspx
+
+// An importDesc is an import descriptor.
+type importDesc struct {
+	// Import name table RVA.
+	ImportNameTableRVA uint32
+	// Time stamp.
+	Date uint32
+	// Forward chain; index into importAddressTableRVA for forwarding a function
+	// to another DLL.
+	ForwardChain uint32
+	// DLL name RVA.
+	DLLNameRVA uint32
+	// Import address table RVA.
+	ImportAddressTableRVA uint32
+}
+
+// An importName specifies the name of an import.
+type importName struct {
+	// Approximate ordinal number (used by loader to initiate binary search).
+	Ordinal uint16
+	// Name of the import.
+	Name string
 }
 
 // parsePerm returns the memory access permissions represented by the given PE

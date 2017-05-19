@@ -1,3 +1,4 @@
+// Package lift implements x86 to LLVM IR lifting.
 package lift
 
 import (

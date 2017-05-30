@@ -1,11 +1,3 @@
-// TODO: Add support for extracting information from function chunks.
-//
-// Example.
-//
-//    .text:00416481 ; START OF FUNCTION CHUNK FOR engine_4163AC
-//
-//    .text:004163AC ; FUNCTION CHUNK	AT .text:00416481 SIZE 00000007	BYTES
-
 // The lst2json tool extracts information for decomp from IDA assembly listings
 // (*.lst -> *.json).
 package main
@@ -161,6 +153,12 @@ func extract(lstPath string) error {
 		return errors.WithStack(err)
 	}
 
+	// Locate function chunks.
+	chunks, err := locateFuncChunks(input)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	// Store JSON files.
 	if err := storeJSON("funcs.json", funcAddrs); err != nil {
 		return errors.WithStack(err)
@@ -178,6 +176,9 @@ func extract(lstPath string) error {
 		return errors.WithStack(err)
 	}
 	if err := storeJSON("imports.json", imports); err != nil {
+		return errors.WithStack(err)
+	}
+	if err := storeJSON("chunks.json", chunks); err != nil {
 		return errors.WithStack(err)
 	}
 
@@ -244,6 +245,32 @@ func locateImports(input []byte) (map[bin.Address]FuncSig, error) {
 		sigs[addr] = sig
 	}
 	return sigs, nil
+}
+
+// locateFuncChunks locates addresses of function chunks belonging to parent
+// functions.
+func locateFuncChunks(input []byte) (map[bin.Address]bin.Address, error) {
+	const regFuncChunk = `[.]text[:]00([0-9a-fA-F]+)[ \t];[ \t]FUNCTION[ \t]CHUNK[ \t]AT[ \t][.]text[:]00([0-9a-fA-F]+)`
+	re, err := regexp.Compile(regFuncChunk)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	chunks := make(map[bin.Address]bin.Address)
+	subs := re.FindAllSubmatch(input, -1)
+	for _, sub := range subs {
+		// Parent function address.
+		var parent bin.Address
+		// Function chunk address.
+		var chunk bin.Address
+		if err := parent.Set(fmt.Sprintf("0x%s", sub[1])); err != nil {
+			return nil, errors.WithStack(err)
+		}
+		if err := chunk.Set(fmt.Sprintf("0x%s", sub[2])); err != nil {
+			return nil, errors.WithStack(err)
+		}
+		chunks[chunk] = parent
+	}
+	return chunks, nil
 }
 
 // locateTargets locates the targets of jump tables in the input IDA assembly

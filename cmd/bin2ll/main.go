@@ -54,6 +54,9 @@ func main() {
 		firstAddr bin.Address
 		// funcAddr specifies a function address to lift.
 		funcAddr bin.Address
+		// TODO: Remove -last flag and lastAddr.
+		// lastAddr specifies the last function address to disassemble.
+		lastAddr bin.Address
 		// quiet specifies whether to suppress non-error messages.
 		quiet bool
 	)
@@ -61,6 +64,7 @@ func main() {
 	flag.Var(&blockAddr, "block", "basic block address to lift")
 	flag.Var(&firstAddr, "first", "first function address to lift")
 	flag.Var(&funcAddr, "func", "function address to lift")
+	flag.Var(&lastAddr, "last", "last function address to lift")
 	flag.BoolVar(&quiet, "q", false, "suppress non-error messages")
 	flag.Parse()
 	if flag.NArg() != 1 {
@@ -98,6 +102,14 @@ func main() {
 
 	// Lift functions.
 	for _, funcAddr := range funcAddrs {
+		if firstAddr != 0 && funcAddr < firstAddr {
+			// skip functions before first address.
+			continue
+		}
+		if lastAddr != 0 && funcAddr >= lastAddr {
+			// skip functions after last address.
+			break
+		}
 		f, err := l.DecodeFunc(funcAddr)
 		if err != nil {
 			log.Fatalf("%+v", err)

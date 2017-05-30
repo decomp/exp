@@ -100,7 +100,7 @@ func main() {
 		funcAddrs = []bin.Address{funcAddr}
 	}
 
-	// Lift functions.
+	// Create function lifters.
 	for _, funcAddr := range funcAddrs {
 		if firstAddr != 0 && funcAddr < firstAddr {
 			// skip functions before first address.
@@ -110,11 +110,20 @@ func main() {
 			// skip functions after last address.
 			break
 		}
-		f, err := l.DecodeFunc(funcAddr)
+		asmFunc, err := l.DecodeFunc(funcAddr)
 		if err != nil {
 			log.Fatalf("%+v", err)
 		}
-		_ = f
+		f := l.NewFunc(asmFunc)
+		l.Funcs[funcAddr] = f
+	}
+
+	for _, funcAddr := range funcAddrs {
+		f, ok := l.Funcs[funcAddr]
+		if !ok {
+			continue
+		}
+		f.Lift()
 	}
 }
 

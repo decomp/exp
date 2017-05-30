@@ -13,6 +13,7 @@ import (
 
 	"github.com/decomp/exp/bin"
 	"github.com/kr/pretty"
+	"github.com/mewkiz/pkg/pathutil"
 	"github.com/pkg/errors"
 )
 
@@ -46,7 +47,9 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	}
 
 	// Parse machine architecture.
-	file := &bin.File{}
+	file := &bin.File{
+		Imports: make(map[bin.Address]string),
+	}
 	switch f.FileHeader.Machine {
 	case pe.IMAGE_FILE_MACHINE_I386:
 		file.Arch = bin.ArchX86_32
@@ -127,32 +130,72 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		fmt.Println(hex.Dump(data))
 	}
 
-	// Parse import table.
-	fmt.Println("it")
-	var imps []importDesc
-	if itSize != 0 {
-		itAddr := bin.Address(imageBase + itRVA)
-		fmt.Println("it addr:", itAddr)
-		data := file.Data(itAddr)
-		data = data[:itSize]
-		fmt.Println(hex.Dump(data))
-		r := bytes.NewReader(data)
-		zero := importDesc{}
-		for {
-			var imp importDesc
-			if err := binary.Read(r, binary.LittleEndian, &imp); err != nil {
-				return nil, errors.WithStack(err)
-			}
-			pretty.Println("imp:", imp)
-			if imp == zero {
-				break
-			}
-			imps = append(imps, imp)
-		}
-		pretty.Println("imps:", imps)
+	// Early return if import table not present.
+	if itSize == 0 {
+		return file, nil
 	}
 
-	panic("bar")
+	// Parse import table.
+	fmt.Println("it")
+	itAddr := bin.Address(imageBase + itRVA)
+	fmt.Println("it addr:", itAddr)
+	data := file.Data(itAddr)
+	data = data[:itSize]
+	fmt.Println(hex.Dump(data))
+	br := bytes.NewReader(data)
+	zero := importDesc{}
+	var impDescs []importDesc
+	for {
+		var impDesc importDesc
+		if err := binary.Read(br, binary.LittleEndian, &impDesc); err != nil {
+			return nil, errors.WithStack(err)
+		}
+		if impDesc == zero {
+			break
+		}
+		impDescs = append(impDescs, impDesc)
+	}
+	pretty.Println("impDescs:", impDescs)
+
+	for _, impDesc := range impDescs {
+		pretty.Println("impDesc:", impDesc)
+		dllNameAddr := bin.Address(imageBase) + bin.Address(impDesc.DLLNameRVA)
+		data := file.Data(dllNameAddr)
+		dllName := parseString(data)
+		fmt.Println("dll name:", dllName)
+		// Parse import name table and import address table.
+		impNameTableAddr := bin.Address(imageBase) + bin.Address(impDesc.ImportNameTableRVA)
+		impAddrTableAddr := bin.Address(imageBase) + bin.Address(impDesc.ImportAddressTableRVA)
+		inAddr := impNameTableAddr
+		iaAddr := impAddrTableAddr
+		for {
+			impNameRVA, n := readUintptr(file, inAddr)
+			if impNameRVA == 0 {
+				break
+			}
+			impAddr := iaAddr
+			inAddr += bin.Address(n)
+			iaAddr += bin.Address(n)
+			fmt.Println("impAddr:", impAddr)
+			if impNameRVA&0x80000000 != 0 {
+				// ordinal
+				ordinal := impNameRVA &^ 0x80000000
+				fmt.Println("===> ordinal", ordinal)
+				impName := fmt.Sprintf("%s_ordinal_%d", pathutil.TrimExt(dllName), ordinal)
+				file.Imports[impAddr] = impName
+				continue
+			}
+			impNameAddr := bin.Address(imageBase + impNameRVA)
+			data := file.Data(impNameAddr)
+			ordinal := binary.LittleEndian.Uint16(data)
+			data = data[2:]
+			impName := parseString(data)
+			fmt.Println("ordinal:", ordinal)
+			fmt.Println("impName:", impName)
+			file.Imports[impAddr] = impName
+		}
+		fmt.Println()
+	}
 
 	return file, nil
 }
@@ -205,4 +248,36 @@ func parsePerm(char uint32) bin.Perm {
 		perm |= bin.PermX
 	}
 	return perm
+}
+
+// ### [ Helper functions ] ####################################################
+
+// parseString parses the NULL-terminated string in the given data.
+func parseString(data []byte) string {
+	pos := bytes.IndexByte(data, '\x00')
+	if pos == -1 {
+		panic(fmt.Errorf("unable to locate NULL-terminated string in % 02X", data))
+	}
+	return string(data[:pos])
+}
+
+// readUintptr reads a little-endian encoded value of pointer size based on the
+// CPU architecture, and returns the number of bytes read.
+func readUintptr(file *bin.File, addr bin.Address) (uint64, int) {
+	bits := file.Arch.BitSize()
+	data := file.Data(addr)
+	switch bits {
+	case 32:
+		if len(data) < 4 {
+			panic(fmt.Errorf("data length too short; expected >= 4 bytes, got %d", len(data)))
+		}
+		return uint64(binary.LittleEndian.Uint32(data)), 4
+	case 64:
+		if len(data) < 8 {
+			panic(fmt.Errorf("data length too short; expected >= 8 bytes, got %d", len(data)))
+		}
+		return binary.LittleEndian.Uint64(data), 8
+	default:
+		panic(fmt.Errorf("support for machine architecture with bit size %d not yet implemented", bits))
+	}
 }

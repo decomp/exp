@@ -129,6 +129,9 @@ func (dis *Disasm) IsFunc(addr bin.Address) bool {
 	if index < len(dis.FuncAddrs) {
 		return dis.FuncAddrs[index] == addr
 	}
+	if _, ok := dis.File.Imports[addr]; ok {
+		return true
+	}
 	return false
 }
 

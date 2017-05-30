@@ -16,6 +16,8 @@ type File struct {
 	Sections []*Section
 	// Segments of the exectuable.
 	Segments []*Section
+	// Imports.
+	Imports map[Address]string
 }
 
 // Data returns the data starting at the specified address of the binary
@@ -71,6 +73,21 @@ const (
 	ArchPowerPC_32
 )
 
+// BitSize returns the bit size of the machine architecture.
+func (arch Arch) BitSize() int {
+	m := map[Arch]int{
+		// 32-bit architectures.
+		ArchX86_32:     32,
+		ArchPowerPC_32: 32,
+		// 64-bit architectures.
+		ArchX86_64: 64,
+	}
+	if n, ok := m[arch]; ok {
+		return n
+	}
+	panic(fmt.Errorf("support for machine architecture %v not yet implemented", uint(arch)))
+}
+
 // String returns a string representation of the machine architecture.
 func (arch Arch) String() string {
 	m := map[Arch]string{
@@ -81,7 +98,7 @@ func (arch Arch) String() string {
 	if s, ok := m[arch]; ok {
 		return s
 	}
-	return fmt.Sprintf("unknown machine architecture %v", uint(arch))
+	panic(fmt.Errorf("support for machine architecture %v not yet implemented", uint(arch)))
 }
 
 // A Section represents a continuous section of memory.

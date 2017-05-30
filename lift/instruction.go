@@ -8,8 +8,9 @@ import (
 
 // liftInst lifts the instruction from input assembly to LLVM IR.
 func (f *Func) liftInst(inst *x86.Inst) {
+	dbg.Printf("lifting instruction at %v", inst.Addr)
 	switch inst.Op {
 	default:
-		panic(fmt.Errorf("support for instruction %v not yet implemented", inst.Op))
+		panic(fmt.Errorf("support for x86 instruction opcode %v not yet implemented", inst.Op))
 	}
 }

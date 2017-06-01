@@ -33,14 +33,14 @@ type Arg struct {
 	x86asm.Arg
 	// Parent instruction; used to calculate relative offsets and retrieve
 	// symbolic execution information.
-	parent *Inst
+	Parent *Inst
 }
 
 // NewArg returns a new x86 argument with the given parent instruction.
 func NewArg(arg x86asm.Arg, parent *Inst) *Arg {
 	return &Arg{
 		Arg:    arg,
-		parent: parent,
+		Parent: parent,
 	}
 }
 
@@ -51,7 +51,7 @@ type Reg struct {
 	// x86 register.
 	x86asm.Reg
 	// Parent instruction; used to retrieve symbolic execution information.
-	parent *Inst
+	Parent *Inst
 }
 
 // NewReg returns a new x86 register argument with the given parent instruction.
@@ -62,7 +62,7 @@ func NewReg(arg x86asm.Arg, parent *Inst) *Reg {
 	}
 	return &Reg{
 		Reg:    reg,
-		parent: parent,
+		Parent: parent,
 	}
 }
 
@@ -73,7 +73,7 @@ type Mem struct {
 	// x86 memory reference.
 	x86asm.Mem
 	// Parent instruction; used to retrieve symbolic execution information.
-	parent *Inst
+	Parent *Inst
 }
 
 // NewMem returns a new memory reference argument with the given parent
@@ -85,23 +85,23 @@ func NewMem(arg x86asm.Arg, parent *Inst) *Mem {
 	}
 	return &Mem{
 		Mem:    mem,
-		parent: parent,
+		Parent: parent,
 	}
 }
 
 // Segment returns the segment register of the memory reference.
 func (mem *Mem) Segment() *Reg {
-	return NewReg(mem.Mem.Segment, mem.parent)
+	return NewReg(mem.Mem.Segment, mem.Parent)
 }
 
 // Base returns the base register of the memory reference.
 func (mem *Mem) Base() *Reg {
-	return NewReg(mem.Mem.Base, mem.parent)
+	return NewReg(mem.Mem.Base, mem.Parent)
 }
 
 // Index returns the index register of the memory reference.
 func (mem *Mem) Index() *Reg {
-	return NewReg(mem.Mem.Index, mem.parent)
+	return NewReg(mem.Mem.Index, mem.Parent)
 }
 
 // ### [ Helper functions ] ####################################################

@@ -3,7 +3,10 @@ package lift
 import (
 	"fmt"
 
+	"golang.org/x/arch/x86/x86asm"
+
 	"github.com/decomp/exp/disasm/x86"
+	"github.com/llir/llvm/ir/types"
 )
 
 // liftTerm lifts the terminator from input assembly to LLVM IR.
@@ -63,10 +66,24 @@ func (f *Func) liftTerm(term *x86.Inst) {
 		case x86asm.JMP:
 			return f.liftTermJMP(term)
 		// Return terminators.
-		case x86asm.RET:
-			return f.liftTermRET(term)
 	*/
+	case x86asm.RET:
+		f.liftTermRET(term)
 	default:
 		panic(fmt.Errorf("support for x86 terminator opcode %v not yet implemented", term.Op))
 	}
+}
+
+// --- [ RET ] -----------------------------------------------------------------
+
+// liftTermRET lifts the given x86 RET terminator to LLVM IR, emitting code to
+// f.
+func (f *Func) liftTermRET(term *x86.Inst) {
+	// Handle return values of non-void functions (passed through EAX).
+	if !types.Equal(f.Sig.Ret, types.Void) {
+		result := f.useReg(x86.EAX)
+		f.cur.NewRet(result)
+		return
+	}
+	f.cur.NewRet(nil)
 }

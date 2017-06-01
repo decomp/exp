@@ -1,5 +1,3 @@
-//+build ignore
-
 package lift
 
 import (
@@ -120,7 +118,7 @@ func (f *Func) liftTermJCXZ(term *x86.Inst) error {
 func (f *Func) liftTermJECXZ(term *x86.Inst) error {
 	// Jump if ECX register is zero.
 	//    (ECX=0)
-	ecx := f.useReg(ECX)
+	ecx := f.useReg(x86.ECX)
 	zero := constant.NewInt(0, types.I32)
 	cond := f.cur.NewICmp(ir.IntEQ, ecx, zero)
 	return f.liftTermJcc(term.Arg(0), cond)
@@ -283,9 +281,9 @@ func (f *Func) liftTermJE(term *x86.Inst) error {
 
 // liftTermJcc lifts the given x86 SETcc instruction to LLVM IR, emitting code
 // to f.
-func (f *Func) liftTermJcc(arg *Arg, cond value.Value) error {
+func (f *Func) liftTermJcc(arg *x86.Arg, cond value.Value) error {
 	// Target branch of conditional jump.
-	nextAddr := arg.parent.addr + bin.Address(arg.parent.Len)
+	nextAddr := arg.Parent.Addr + bin.Address(arg.Parent.Len)
 	targetAddr, ok := f.getAddr(arg)
 	if !ok {
 		return errors.Errorf("unable to locate address for terminator argument %v", arg)

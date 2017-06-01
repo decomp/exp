@@ -1,10 +1,9 @@
-//+build ignore
-
-package main
+package lift
 
 import (
 	"fmt"
 
+	"github.com/decomp/exp/disasm/x86"
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
@@ -24,9 +23,9 @@ import (
 // ref: $ 4.2 REP/REPE/REPZ/REPNE/REPNZ - Repeat String Operation Prefix, Intel
 // 64 and IA-32 Architectures Software Developer's Manual
 
-// emitREPInst translates the given REP prefixed x86 instruction to LLVM IR,
-// emitting code to f.
-func (f *Func) emitREPInst(inst *Inst) error {
+// liftREPInst lifs the given REP prefixed x86 instruction to LLVM IR, emitting
+// code to f.
+func (f *Func) liftREPInst(inst *x86.Inst) error {
 	loop := &ir.BasicBlock{}
 	body := &ir.BasicBlock{}
 	exit := &ir.BasicBlock{}
@@ -36,7 +35,7 @@ func (f *Func) emitREPInst(inst *Inst) error {
 	f.cur.NewBr(loop)
 	// Generate loop basic block.
 	f.cur = loop
-	ecx := f.useReg(ECX)
+	ecx := f.useReg(x86.ECX)
 	zero := constant.NewInt(0, types.I32)
 	cond := f.cur.NewICmp(ir.IntNE, ecx, zero)
 	f.cur.NewCondBr(cond, body, exit)
@@ -44,25 +43,25 @@ func (f *Func) emitREPInst(inst *Inst) error {
 	f.cur = body
 	switch inst.Op {
 	case x86asm.MOVSD:
-		if err := f.emitInstMOVSD(inst); err != nil {
+		if err := f.liftInstMOVSD(inst); err != nil {
 			return errors.WithStack(err)
 		}
 	default:
 		panic(fmt.Errorf("support for REP prefixed %v instruction not yet implemented", inst.Op))
 	}
-	ecx = f.useReg(ECX)
+	ecx = f.useReg(x86.ECX)
 	one := constant.NewInt(1, types.I32)
 	tmp := f.cur.NewSub(ecx, one)
-	f.defReg(ECX, tmp)
+	f.defReg(x86.ECX, tmp)
 	f.cur.NewBr(loop)
 	// Generate exit block.
 	f.cur = exit
 	return nil
 }
 
-// emitREPNInst translates the given REPN prefixed x86 instruction to LLVM IR,
+// liftREPNInst lifts the given REPN prefixed x86 instruction to LLVM IR,
 // emitting code to f.
-func (f *Func) emitREPNInst(inst *Inst) error {
+func (f *Func) liftREPNInst(inst *x86.Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitREPNInst: not yet implemented")
 }

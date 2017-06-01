@@ -1,5 +1,3 @@
-//+build ignore
-
 package lift
 
 import (
@@ -26,7 +24,7 @@ import (
 func (f *Func) liftTermLOOP(term *x86.Inst) error {
 	// Loop if ECX register is not zero.
 	//    (ECX≠0)
-	ecx := f.dec(NewArg(x86asm.ECX, term))
+	ecx := f.dec(x86.NewArg(x86asm.ECX, term))
 	zero := constant.NewInt(0, types.I32)
 	cond := f.cur.NewICmp(ir.IntNE, ecx, zero)
 	return f.liftTermJcc(term.Arg(0), cond)
@@ -39,7 +37,7 @@ func (f *Func) liftTermLOOP(term *x86.Inst) error {
 func (f *Func) liftTermLOOPE(term *x86.Inst) error {
 	// Loop if equal and ECX register is not zero.
 	//    (ECX≠0 and ZF=1)
-	ecx := f.dec(NewArg(x86asm.ECX, term))
+	ecx := f.dec(x86.NewArg(x86asm.ECX, term))
 	zero := constant.NewInt(0, types.I32)
 	zf := f.useStatus(ZF)
 	cond1 := f.cur.NewICmp(ir.IntNE, ecx, zero)
@@ -50,12 +48,12 @@ func (f *Func) liftTermLOOPE(term *x86.Inst) error {
 
 // --- [ LOOPNE ] --------------------------------------------------------------
 
-// liftTermLOOPNE lifts the given x86 LOOPNE instruction to LLVM IR, liftting
+// liftTermLOOPNE lifts the given x86 LOOPNE instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) liftTermLOOPNE(term *x86.Inst) error {
 	// Loop if not equal and ECX register is not zero.
 	//    (ECX≠0 and ZF=0)
-	ecx := f.dec(NewArg(x86asm.ECX, term))
+	ecx := f.dec(x86.NewArg(x86asm.ECX, term))
 	zero := constant.NewInt(0, types.I32)
 	zf := f.useStatus(ZF)
 	cond1 := f.cur.NewICmp(ir.IntNE, ecx, zero)

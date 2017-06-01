@@ -10,7 +10,7 @@ import (
 
 // String returns the string representation of the instruction.
 func (inst *Inst) String() string {
-	if inst.isDummyTerm() {
+	if inst.IsDummyTerm() {
 		return fmt.Sprintf("; fallthrough %v", inst.Addr)
 	}
 	return inst.Inst.String()
@@ -35,11 +35,11 @@ func (term *Inst) isTerm() bool {
 	return false
 }
 
-// isDummyTerm reports whether the given instruction is a dummy terminating
+// IsDummyTerm reports whether the given instruction is a dummy terminating
 // instruction. Dummy terminators are used when a basic block is missing a
 // terminator and falls through into the succeeding basic block, the address of
 // which is denoted by term.Addr.
-func (term *Inst) isDummyTerm() bool {
+func (term *Inst) IsDummyTerm() bool {
 	zero := x86asm.Inst{}
 	return term.Inst == zero
 }
@@ -48,7 +48,7 @@ func (term *Inst) isDummyTerm() bool {
 // denotes the entry address of the function containing the terminator
 // instruction.
 func (dis *Disasm) Targets(term *Inst, funcEntry bin.Address) []bin.Address {
-	if term.isDummyTerm() {
+	if term.IsDummyTerm() {
 		// Dummy terminator; fall through into the succeeding basic block, the
 		// address of which is denoted by term.Addr.
 		return []bin.Address{term.Addr}

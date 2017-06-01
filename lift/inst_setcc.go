@@ -1,8 +1,7 @@
-//+build ignore
-
-package main
+package lift
 
 import (
+	"github.com/decomp/exp/disasm/x86"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
@@ -47,9 +46,9 @@ import (
 
 // --- [ SETA ] ----------------------------------------------------------------
 
-// emitInstSETA translates the given x86 SETA instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETA(inst *Inst) error {
+// liftInstSETA lifts the given x86 SETA instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETA(inst *x86.Inst) error {
 	// Set byte if above.
 	//    (CF=0 and ZF=0)
 	cf := f.useStatus(CF)
@@ -57,26 +56,26 @@ func (f *Func) emitInstSETA(inst *Inst) error {
 	cond1 := f.cur.NewICmp(ir.IntEQ, cf, constant.False)
 	cond2 := f.cur.NewICmp(ir.IntEQ, zf, constant.False)
 	cond := f.cur.NewAnd(cond1, cond2)
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETAE ] ---------------------------------------------------------------
 
-// emitInstSETAE translates the given x86 SETAE instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETAE(inst *Inst) error {
+// liftInstSETAE lifts the given x86 SETAE instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETAE(inst *x86.Inst) error {
 	// Set byte if above or equal.
 	//    (CF=0)
 	cf := f.useStatus(CF)
 	cond := f.cur.NewICmp(ir.IntEQ, cf, constant.False)
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETBE ] ---------------------------------------------------------------
 
-// emitInstSETBE translates the given x86 SETBE instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETBE(inst *Inst) error {
+// liftInstSETBE lifts the given x86 SETBE instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETBE(inst *x86.Inst) error {
 	// Set byte if below or equal.
 	//    (CF=1 or ZF=1)
 	cf := f.useStatus(CF)
@@ -84,124 +83,124 @@ func (f *Func) emitInstSETBE(inst *Inst) error {
 	cond1 := cf
 	cond2 := zf
 	cond := f.cur.NewOr(cond1, cond2)
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETB ] ----------------------------------------------------------------
 
-// emitInstSETB translates the given x86 SETB instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETB(inst *Inst) error {
+// liftInstSETB lifts the given x86 SETB instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETB(inst *x86.Inst) error {
 	// Set byte if below.
 	//    (CF=1)
 	cf := f.useStatus(CF)
 	cond := cf
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETNO ] ---------------------------------------------------------------
 
-// emitInstSETNO translates the given x86 SETNO instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETNO(inst *Inst) error {
+// liftInstSETNO lifts the given x86 SETNO instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETNO(inst *x86.Inst) error {
 	// Set byte if not overflow.
 	//    (OF=0)
 	of := f.useStatus(OF)
 	cond := f.cur.NewICmp(ir.IntEQ, of, constant.False)
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETO ] ----------------------------------------------------------------
 
-// emitInstSETO translates the given x86 SETO instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETO(inst *Inst) error {
+// liftInstSETO lifts the given x86 SETO instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETO(inst *x86.Inst) error {
 	// Set byte if overflow.
 	//    (OF=1)
 	of := f.useStatus(OF)
 	cond := of
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETNP ] ---------------------------------------------------------------
 
-// emitInstSETNP translates the given x86 SETNP instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETNP(inst *Inst) error {
+// liftInstSETNP lifts the given x86 SETNP instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETNP(inst *x86.Inst) error {
 	// Set byte if not parity.
 	//    (PF=0)
 	pf := f.useStatus(PF)
 	cond := f.cur.NewICmp(ir.IntEQ, pf, constant.False)
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETP ] ----------------------------------------------------------------
 
-// emitInstSETP translates the given x86 SETP instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETP(inst *Inst) error {
+// liftInstSETP lifts the given x86 SETP instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETP(inst *x86.Inst) error {
 	// Set byte if parity.
 	//    (PF=1)
 	pf := f.useStatus(PF)
 	cond := pf
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETNS ] ---------------------------------------------------------------
 
-// emitInstSETNS translates the given x86 SETNS instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETNS(inst *Inst) error {
+// liftInstSETNS lifts the given x86 SETNS instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETNS(inst *x86.Inst) error {
 	// Set byte if not sign.
 	//    (SF=0)
 	sf := f.useStatus(SF)
 	cond := f.cur.NewICmp(ir.IntEQ, sf, constant.False)
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETS ] ----------------------------------------------------------------
 
-// emitInstSETS translates the given x86 SETS instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETS(inst *Inst) error {
+// liftInstSETS lifts the given x86 SETS instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETS(inst *x86.Inst) error {
 	// Set byte if sign.
 	//    (SF=1)
 	sf := f.useStatus(SF)
 	cond := sf
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETGE ] ---------------------------------------------------------------
 
-// emitInstSETGE translates the given x86 SETGE instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETGE(inst *Inst) error {
+// liftInstSETGE lifts the given x86 SETGE instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETGE(inst *x86.Inst) error {
 	// Set byte if greater or equal.
 	//    (SF=OF)
 	sf := f.useStatus(SF)
 	of := f.useStatus(OF)
 	cond := f.cur.NewICmp(ir.IntEQ, sf, of)
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETL ] ----------------------------------------------------------------
 
-// emitInstSETL translates the given x86 SETL instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETL(inst *Inst) error {
+// liftInstSETL lifts the given x86 SETL instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETL(inst *x86.Inst) error {
 	// Set byte if less.
 	//    (SF≠OF)
 	sf := f.useStatus(SF)
 	of := f.useStatus(OF)
 	cond := f.cur.NewICmp(ir.IntNE, sf, of)
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETG ] ----------------------------------------------------------------
 
-// emitInstSETG translates the given x86 SETG instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETG(inst *Inst) error {
+// liftInstSETG lifts the given x86 SETG instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETG(inst *x86.Inst) error {
 	// Set byte if greater.
 	//    (ZF=0 and SF=OF)
 	zf := f.useStatus(ZF)
@@ -210,26 +209,26 @@ func (f *Func) emitInstSETG(inst *Inst) error {
 	cond1 := f.cur.NewICmp(ir.IntEQ, zf, constant.False)
 	cond2 := f.cur.NewICmp(ir.IntEQ, sf, of)
 	cond := f.cur.NewAnd(cond1, cond2)
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETNE ] ---------------------------------------------------------------
 
-// emitInstSETNE translates the given x86 SETNE instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETNE(inst *Inst) error {
+// liftInstSETNE lifts the given x86 SETNE instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETNE(inst *x86.Inst) error {
 	// Set byte if not equal.
 	//    (ZF=0)
 	zf := f.useStatus(ZF)
 	cond := f.cur.NewICmp(ir.IntEQ, zf, constant.False)
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETLE ] ---------------------------------------------------------------
 
-// emitInstSETLE translates the given x86 SETLE instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETLE(inst *Inst) error {
+// liftInstSETLE lifts the given x86 SETLE instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETLE(inst *x86.Inst) error {
 	// Set byte if less or equal.
 	//    (ZF=1 or SF≠OF)
 	zf := f.useStatus(ZF)
@@ -238,26 +237,26 @@ func (f *Func) emitInstSETLE(inst *Inst) error {
 	cond1 := zf
 	cond2 := f.cur.NewICmp(ir.IntNE, sf, of)
 	cond := f.cur.NewOr(cond1, cond2)
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // --- [ SETE ] ----------------------------------------------------------------
 
-// emitInstSETE translates the given x86 SETE instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETE(inst *Inst) error {
+// liftInstSETE lifts the given x86 SETE instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETE(inst *x86.Inst) error {
 	// Set byte if equal.
 	//    (ZF=1)
 	zf := f.useStatus(ZF)
 	cond := zf
-	return f.emitInstSETcc(inst.Arg(0), cond)
+	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
 // === [ Helper functions ] ====================================================
 
-// emitInstSETcc translates the given x86 SETcc instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) emitInstSETcc(arg *Arg, cond value.Value) error {
+// liftInstSETcc lifts the given x86 SETcc instruction to LLVM IR, emitting code
+// to f.
+func (f *Func) liftInstSETcc(arg *x86.Arg, cond value.Value) error {
 	targetTrue := &ir.BasicBlock{}
 	exit := &ir.BasicBlock{}
 	f.AppendBlock(targetTrue)

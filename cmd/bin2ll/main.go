@@ -3,7 +3,6 @@
 package main
 
 import (
-	"debug/pe"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -15,7 +14,6 @@ import (
 	_ "github.com/decomp/exp/bin/pe"  // register PE decoder
 	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
 	"github.com/decomp/exp/lift"
-	"github.com/llir/llvm/ir"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
 )
@@ -138,68 +136,3 @@ func newLifter(binPath string) (*lift.Lifter, error) {
 	}
 	return lift.NewLifter(file)
 }
-
-// A disassembler tracks information required to disassemble x86 executables.
-//
-// Information to this structure should be written exactly once, during
-// initialization. After initialization the structure is considered in read-only
-// mode to allow for concurrent decoding of functions.
-type disassembler struct {
-	// PE file.
-	file *pe.File
-	// Processor mode (16, 32 or 64).
-	mode int
-	// Image base address.
-	imageBase uint64
-	// .text section base address.
-	codeBase uint64
-	// .text section size.
-	codeSize uint64
-	// .idata section base address.
-	idataBase uint64
-	// .idata section size.
-	idataSize uint64
-	// Entry address.
-	entry bin.Address
-	// Function addresses.
-	funcAddrs []bin.Address
-	// Basic block addresses.
-	blockAddrs []bin.Address
-	// Map from jump table address to target addresses.
-	tables map[bin.Address][]bin.Address
-	// Chunks of bytes.
-	chunks []Chunk
-	// Functions.
-	funcs map[bin.Address]*Func
-	// Global variables.
-	globals map[bin.Address]*ir.Global
-	// Map from basic block address (function chunk) to function address, to
-	// which the basic block belongs.
-	chunkFunc map[bin.Address]bin.Address
-	// CPU contexts.
-	contexts Contexts
-	// TODO: Remove.
-	decodedBlock map[bin.Address]bool
-}
-
-func (d *disassembler) data(addr bin.Address) ([]byte, error) {
-	panic("not yet implemented")
-}
-
-// Chunk represents a chunk of bytes.
-type Chunk struct {
-	// Chunk kind.
-	kind kind
-	// Chunk address.
-	addr bin.Address
-}
-
-// kind represents the set of chunk kinds.
-type kind uint
-
-// Chunk kinds.
-const (
-	kindNone kind = iota
-	kindCode
-	kindData
-)

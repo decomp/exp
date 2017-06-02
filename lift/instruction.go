@@ -3306,13 +3306,19 @@ func (f *Func) liftInstIDIV(inst *x86.Inst) error {
 // liftInstIMUL lifts the given x86 IMUL instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) liftInstIMUL(inst *x86.Inst) error {
-	// TODO: Add support for one-operand form IMUL.
-	// TODO: Add support for three-operand form IMUL.
-
 	// IMUL - Signed Multiply
-
-	// Two-operand form.
-	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	var x, y value.Value
+	switch {
+	case inst.Args[2] != nil:
+		// Three-operand form.
+		x, y = f.useArg(inst.Arg(1)), f.useArg(inst.Arg(2))
+	case inst.Args[1] != nil:
+		// Two-operand form.
+		x, y = f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	case inst.Args[0] != nil:
+		// TODO: Add support for one-operand form IMUL.
+		panic("not yet implemented; IMUL one-operand form")
+	}
 	result := f.cur.NewMul(x, y)
 	f.defArg(inst.Arg(0), result)
 	return nil

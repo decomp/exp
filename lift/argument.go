@@ -550,6 +550,11 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 	}
 
 	fmt.Printf("unable to locate function for argument %v\n", arg.Arg)
+	if rel, ok := arg.Arg.(x86asm.Rel); ok {
+		next := arg.Parent.Addr + bin.Address(arg.Parent.Len)
+		addr := next + bin.Address(rel)
+		fmt.Println("   addr:", addr)
+	}
 	panic("not yet implemented")
 }
 

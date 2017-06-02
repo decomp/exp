@@ -14,7 +14,7 @@ func (reg Register) String() string {
 	r := x86asm.Reg(reg)
 	// Pretty-print pseudo-registers.
 	m := map[x86asm.Reg]string{
-		x86asm_EDX_EAX: "EDX:EAX",
+		X86asm_EDX_EAX: "EDX:EAX",
 	}
 	if s, ok := m[r]; ok {
 		return s
@@ -209,7 +209,7 @@ func parseReg(s string) x86asm.Reg {
 		"TR6": x86asm.TR6,
 		"TR7": x86asm.TR7,
 		// PSEUDO-registers.
-		"EDX:EAX": x86asm_EDX_EAX,
+		"EDX:EAX": X86asm_EDX_EAX,
 	}
 	if reg, ok := m[s]; ok {
 		return reg
@@ -387,7 +387,7 @@ var (
 	TR6 = NewReg(x86asm.TR6, nil)
 	TR7 = NewReg(x86asm.TR7, nil)
 	// PSEUDO-registers.
-	EDX_EAX = NewReg(x86asm_EDX_EAX, nil)
+	EDX_EAX = NewReg(X86asm_EDX_EAX, nil)
 )
 
 // PSEUDO-registers.
@@ -398,7 +398,7 @@ const (
 	// TR7
 
 	// EDX:EAX (used in idiv)
-	x86asm_EDX_EAX = x86asm.TR7 + 1
+	X86asm_EDX_EAX = x86asm.TR7 + 1
 
-	LastReg = x86asm_EDX_EAX
+	LastReg = X86asm_EDX_EAX
 )

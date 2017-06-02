@@ -53,13 +53,15 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 		name := fmt.Sprintf("f_%06X", uint64(entry))
 		sig := types.NewFunc(types.Void)
 		typ := types.NewPointer(sig)
-		f.Function = &ir.Function{
-			Name: name,
-			Typ:  typ,
-			Sig:  sig,
-			Metadata: map[string]*metadata.Metadata{
-				"addr": &metadata.Metadata{
-					Nodes: []metadata.Node{&metadata.String{Val: entry.String()}},
+		f = &Func{
+			Function: &ir.Function{
+				Name: name,
+				Typ:  typ,
+				Sig:  sig,
+				Metadata: map[string]*metadata.Metadata{
+					"addr": &metadata.Metadata{
+						Nodes: []metadata.Node{&metadata.String{Val: entry.String()}},
+					},
 				},
 			},
 		}

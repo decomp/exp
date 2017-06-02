@@ -392,7 +392,7 @@ var (
 
 // PSEUDO-registers.
 const (
-	firstReg = x86asm.AL
+	FirstReg = x86asm.AL
 	// CL
 	// ...
 	// TR7
@@ -400,5 +400,5 @@ const (
 	// EDX:EAX (used in idiv)
 	x86asm_EDX_EAX = x86asm.TR7 + 1
 
-	lastReg = x86asm_EDX_EAX
+	LastReg = x86asm_EDX_EAX
 )

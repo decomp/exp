@@ -10,6 +10,7 @@ import (
 	"github.com/llir/llvm/asm"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/metadata"
+	"github.com/llir/llvm/ir/types"
 	"github.com/mewkiz/pkg/osutil"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
@@ -101,6 +102,32 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 		var entry bin.Address
 		if err := metadata.Unmarshal(node, &entry); err != nil {
 			return nil, errors.WithStack(err)
+		}
+		fn := &Func{
+			Function: f,
+		}
+		l.Funcs[entry] = fn
+	}
+
+	// Parse imports.
+	for entry, fname := range l.File.Imports {
+		if _, ok := l.Funcs[entry]; ok {
+			// Skip import if already specified through function signature.
+			continue
+		}
+		// TODO: Mark function signature as unknown (using metadata), so that type
+		// analysis may replace it.
+		sig := types.NewFunc(types.Void)
+		typ := types.NewPointer(sig)
+		f := &ir.Function{
+			Name: fname,
+			Typ:  typ,
+			Sig:  sig,
+			Metadata: map[string]*metadata.Metadata{
+				"addr": &metadata.Metadata{
+					Nodes: []metadata.Node{&metadata.String{Val: entry.String()}},
+				},
+			},
 		}
 		fn := &Func{
 			Function: f,

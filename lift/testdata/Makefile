@@ -9,10 +9,10 @@ all: \
 	nasm -f elf32 -o $@ $<
 
 %.so: %.o
-	ld -shared -m elf_i386 -o $@ $<
+	ld -Ttext 400000 -shared -m elf_i386 -o $@ $<
 
 %.out: %.o
-	ld -m elf_i386 -o $@ $<
+	ld -Ttext 10000000 -m elf_i386 -o $@ $<
 
 %.coff: %.asm
 	nasm -f win32 -o $@ $<

@@ -1,7 +1,6 @@
 package x86
 
 import (
-	"fmt"
 	"sort"
 
 	"github.com/decomp/exp/bin"
@@ -92,7 +91,7 @@ func (dis *Disasm) DecodeBlock(entry bin.Address) (*BasicBlock, error) {
 	}
 	// Sanity check.
 	if addr != end {
-		panic(fmt.Errorf("unexpected end address of basic block at %v; expected %v, got %v", entry, end, addr))
+		warn.Printf("unexpected end address of basic block at %v; expected %v, got %v", entry, end, addr)
 	}
 	// Add dummy terminator for fallthrough basic blocks.
 	if block.Term == nil {

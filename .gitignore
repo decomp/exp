@@ -1,3 +1,6 @@
 *.exe
 *.dll
 *.bin
+*.coff
+*.o
+*.out

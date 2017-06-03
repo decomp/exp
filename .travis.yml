@@ -1,0 +1,30 @@
+language: go
+go:
+  - 1.8
+
+notifications:
+  email: false
+
+env:
+  global:
+    - PATH=$HOME/gopath/bin:$PATH
+
+before_install:
+  - go get golang.org/x/tools/cmd/cover
+  - go get golang.org/x/tools/cmd/goimports
+  - go get github.com/golang/lint/golint
+  - go get github.com/mattn/goveralls
+  - go get github.com/goccmack/gocc
+  # TODO: Remove once v0.2 of llir/llvm is released.
+  - make -C $HOME/gopath/src/github.com/llir/llvm/asm/internal gen
+
+install:
+  - go get -t ./...
+
+before_script:
+  - export GOLINT_IGNORE="-not -wholename '*/internal/*' -not -name '*_string.go' -not -wholename '*/types/single.go' -not -wholename '*/types/types.go' -not -wholename '*/ir/function.go'"
+  - wget https://gist.github.com/mewmew/379014c9a2e6885e238d/raw/goclean.sh
+  - chmod +x goclean.sh
+
+script:
+  - ./goclean.sh

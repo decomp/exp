@@ -114,6 +114,10 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	}
 	less := func(i, j int) bool {
 		if file.Sections[i].Addr == file.Sections[j].Addr {
+			if len(file.Sections[i].Data) > len(file.Sections[j].Data) {
+				// prioritize longer sections with identical addresses.
+				return true
+			}
 			return file.Sections[i].Name < file.Sections[j].Name
 		}
 		return file.Sections[i].Addr < file.Sections[j].Addr

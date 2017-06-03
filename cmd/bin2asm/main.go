@@ -130,11 +130,10 @@ func main() {
 func newDisasm(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) (*x86.Disasm, error) {
 	// Parse raw binary executable.
 	if rawArch != 0 {
-		file, err := raw.ParseFile(binPath)
+		file, err := raw.ParseFile(binPath, rawArch)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		file.Arch = rawArch
 		file.Entry = rawEntry
 		file.Sections[0].Addr = rawBase
 		return x86.NewDisasm(file)

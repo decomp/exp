@@ -12,26 +12,28 @@ import (
 
 // ParseFile parses the given raw binary executable, reading from path.
 //
-// Users are responsible for specifying file.Arch. By default the entry point
-// and base address are both 0. To specify a custom entry point, set file.Entry,
-// and to specify a custom base address, set file.Sections[0].Addr.
-func ParseFile(path string) (*bin.File, error) {
+// The entry point and base address are both 0 by default. To specify a custom
+// entry point, set file.Entry, and to specify a custom base address, set
+// file.Sections[0].Addr.
+func ParseFile(path string, arch bin.Arch) (*bin.File, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	defer f.Close()
-	return Parse(f)
+	return Parse(f, arch)
 }
 
 // Parse parses the given raw binary executable, reading from r.
 //
-// Users are responsible for specifying file.Arch. By default the entry point
-// and base address are both 0. To specify a custom entry point, set file.Entry,
-// and to specify a custom base address, set file.Sections[0].Addr.
-func Parse(r io.Reader) (*bin.File, error) {
+// The entry point and base address are both 0 by default. To specify a custom
+// entry point, set file.Entry, and to specify a custom base address, set
+// file.Sections[0].Addr.
+func Parse(r io.Reader, arch bin.Arch) (*bin.File, error) {
 	// Parse segments.
-	file := &bin.File{}
+	file := &bin.File{
+		Arch: arch,
+	}
 	data, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, errors.WithStack(err)

@@ -62,6 +62,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 
 	// Parse sections.
 	for _, s := range f.Sections {
+		perm := parseSectFlags(s.Flags)
 		data, err := s.Data()
 		if err != nil {
 			return nil, errors.WithStack(err)
@@ -73,6 +74,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			Name: s.Name,
 			Addr: bin.Address(s.Addr),
 			Data: data,
+			Perm: perm,
 		}
 		file.Sections = append(file.Sections, sect)
 	}
@@ -101,7 +103,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		perm := parsePerm(prog.Flags)
+		perm := parseProgFlags(prog.Flags)
 		seg := &bin.Section{
 			Addr: bin.Address(prog.Vaddr),
 			Data: data,
@@ -318,9 +320,22 @@ const (
 	SymVisibilityProtected SymVisibility = 3
 )
 
-// parsePerm returns the memory access permissions represented by the given ELF
-// access permission flags.
-func parsePerm(flags elf.ProgFlag) bin.Perm {
+// parseSectFlags returns the memory access permissions represented by the given
+// section header flags.
+func parseSectFlags(flags elf.SectionFlag) bin.Perm {
+	var perm bin.Perm
+	if flags&elf.SHF_WRITE != 0 {
+		perm |= bin.PermW
+	}
+	if flags&elf.SHF_EXECINSTR != 0 {
+		perm |= bin.PermX
+	}
+	return perm
+}
+
+// parseProgFlags returns the memory access permissions represented by the given
+// program header flags.
+func parseProgFlags(flags elf.ProgFlag) bin.Perm {
 	var perm bin.Perm
 	if flags&elf.PF_R != 0 {
 		perm |= bin.PermR

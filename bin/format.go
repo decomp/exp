@@ -6,9 +6,18 @@ package bin
 
 import (
 	"io"
+	"log"
 	"os"
 
+	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
+)
+
+// Loggers.
+var (
+	// warn represents a logger with the "warning:" prefix, which logs warning
+	// messages to standard error.
+	warn = log.New(os.Stderr, term.RedBold("warning:")+" ", 0)
 )
 
 // RegisterFormat registers a binary executable format for use by Parse. Name is
@@ -50,14 +59,18 @@ func ParseFile(path string) (*File, error) {
 func Parse(r io.ReaderAt) (*File, error) {
 	for _, format := range formats {
 		buf := make([]byte, len(format.magic))
-		if _, err := r.ReadAt(buf, 0); err != nil {
+		if n, err := r.ReadAt(buf, 0); err != nil {
+			if errors.Cause(err) == io.EOF && n < len(format.magic) {
+				warn.Printf("skipping %q format (read %d of %d bytes required for magic identification)\n", format.name, n, len(format.magic))
+				continue
+			}
 			return nil, errors.WithStack(err)
 		}
 		if match(format.magic, buf) {
 			return format.parse(r)
 		}
 	}
-	return nil, errors.New("unknown binary executable format")
+	return nil, errors.New("unknown binary executable format;\n\ttip: try loading as raw binary executable")
 }
 
 // match reports whether magic matches b. The magic string can contain "?"

@@ -13,7 +13,9 @@ import (
 	_ "github.com/decomp/exp/bin/elf" // register ELF decoder
 	_ "github.com/decomp/exp/bin/pe"  // register PE decoder
 	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
+	"github.com/decomp/exp/bin/raw"
 	"github.com/decomp/exp/disasm/x86"
+	"github.com/kr/pretty"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
 )
@@ -57,6 +59,12 @@ func main() {
 		lastAddr bin.Address
 		// quiet specifies whether to suppress non-error messages.
 		quiet bool
+		// rawArch specifies the machine architecture of a raw binary executable.
+		rawArch bin.Arch
+		// rawEntry specifies the entry point of a raw binary executable.
+		rawEntry bin.Address
+		// rawBase specifies the base address of a raw binary executable.
+		rawBase bin.Address
 	)
 	flag.Usage = usage
 	flag.Var(&blockAddr, "block", "basic block address to disassemble")
@@ -64,6 +72,9 @@ func main() {
 	flag.Var(&funcAddr, "func", "function address to disassemble")
 	flag.Var(&lastAddr, "last", "last function address to disassemble")
 	flag.BoolVar(&quiet, "q", false, "suppress non-error messages")
+	flag.Var(&rawArch, "raw", "machine architecture of raw binary executable (x86_32, x86_64, PowerPC_32, ...)")
+	flag.Var(&rawEntry, "rawentry", "entry point of raw binary executable")
+	flag.Var(&rawBase, "rawbase", "base address of raw binary executable")
 	flag.Parse()
 	if flag.NArg() != 1 {
 		flag.Usage()
@@ -77,10 +88,11 @@ func main() {
 	}
 
 	// Prepare disassembler for the binary executable.
-	dis, err := newDisasm(binPath)
+	dis, err := newDisasm(binPath, rawArch, rawEntry, rawBase)
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
+	pretty.Println("dis:", dis)
 
 	// Disassemble basic block.
 	if blockAddr != 0 {
@@ -117,7 +129,18 @@ func main() {
 }
 
 // newDisasm returns a new disassembler for the given binary executable.
-func newDisasm(binPath string) (*x86.Disasm, error) {
+func newDisasm(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) (*x86.Disasm, error) {
+	// Parse raw binary executable.
+	if rawArch != 0 {
+		file, err := raw.ParseFile(binPath)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		file.Arch = rawArch
+		file.Entry = rawEntry
+		file.Segments[0].Addr = rawBase
+		return x86.NewDisasm(file)
+	}
 	// Parse binary executable.
 	file, err := bin.ParseFile(binPath)
 	if err != nil {

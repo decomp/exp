@@ -77,6 +77,10 @@ func New(file *bin.File) (*Disasm, error) {
 	}
 	sort.Sort(bin.Addresses(dis.BlockAddrs))
 
+	// Add entry point function address and basic block address.
+	dis.FuncAddrs = bin.InsertAddr(dis.FuncAddrs, dis.File.Entry)
+	dis.BlockAddrs = bin.InsertAddr(dis.BlockAddrs, dis.File.Entry)
+
 	// Parse jump table targets.
 	if err := parseJSON("tables.json", &dis.Tables); err != nil {
 		return nil, errors.WithStack(err)

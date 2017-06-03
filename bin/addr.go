@@ -2,6 +2,7 @@ package bin
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/llir/llvm/ir/metadata"
 	"github.com/pkg/errors"
@@ -52,6 +53,23 @@ func (v *Address) UnmarshalMetadata(node metadata.Node) error {
 		return errors.Errorf("invalid metadata string type; expected *metadata.String, got %T", n)
 	}
 	return v.Set(s.Val)
+}
+
+// InsertAddr inserts the given address within the sorted slice of addresses.
+//
+// pre-condition: addrs must be sorted in ascending order.
+func InsertAddr(addrs []Address, addr Address) []Address {
+	less := func(i int) bool {
+		return addr <= addrs[i]
+	}
+	index := sort.Search(len(addrs), less)
+	if index < len(addrs) && addrs[index] == addr {
+		// addr is already present.
+		return addrs
+	}
+	// addr is not present, insert at index.
+	a := append(addrs[:index], addr)
+	return append(a, addrs[index:]...)
 }
 
 // Addresses implements the sort.Sort interface, sorting addresses in ascending

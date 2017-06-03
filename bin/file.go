@@ -4,6 +4,7 @@ package bin
 import (
 	"fmt"
 	"sort"
+	"strings"
 )
 
 // A File is a binary exectuable.
@@ -88,15 +89,37 @@ func (arch Arch) BitSize() int {
 	panic(fmt.Errorf("support for machine architecture %v not yet implemented", uint(arch)))
 }
 
+// Set sets arch to the machine architecture represented by s.
+func (arch *Arch) Set(s string) error {
+	m := map[string]Arch{
+		"x86_32":     ArchX86_32,
+		"x86_64":     ArchX86_64,
+		"PowerPC_32": ArchPowerPC_32,
+	}
+	if v, ok := m[s]; ok {
+		*arch = v
+		return nil
+	}
+	var ss []string
+	for s := range m {
+		ss = append(ss, s)
+	}
+	sort.Strings(ss)
+	return fmt.Errorf("support for machine architecture %q not yet implemented;\n\tsupported machine architectures: %v", s, strings.Join(ss, ", "))
+}
+
 // String returns a string representation of the machine architecture.
 func (arch Arch) String() string {
 	m := map[Arch]string{
-		ArchX86_32:     "32-bit x86",
-		ArchX86_64:     "64-bit x86-64",
-		ArchPowerPC_32: "32-bit PowerPC",
+		ArchX86_32:     "x86_32",
+		ArchX86_64:     "x86_64",
+		ArchPowerPC_32: "PowerPC_32",
 	}
 	if s, ok := m[arch]; ok {
 		return s
+	}
+	if arch == 0 {
+		return "machine architecture NONE"
 	}
 	panic(fmt.Errorf("support for machine architecture %v not yet implemented", uint(arch)))
 }

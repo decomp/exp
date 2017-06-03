@@ -13,6 +13,7 @@ import (
 	_ "github.com/decomp/exp/bin/elf" // register ELF decoder
 	_ "github.com/decomp/exp/bin/pe"  // register PE decoder
 	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
+	"github.com/decomp/exp/bin/raw"
 	"github.com/decomp/exp/lift"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
@@ -57,6 +58,12 @@ func main() {
 		lastAddr bin.Address
 		// quiet specifies whether to suppress non-error messages.
 		quiet bool
+		// rawArch specifies the machine architecture of a raw binary executable.
+		rawArch bin.Arch
+		// rawEntry specifies the entry point of a raw binary executable.
+		rawEntry bin.Address
+		// rawBase specifies the base address of a raw binary executable.
+		rawBase bin.Address
 	)
 	flag.Usage = usage
 	flag.Var(&blockAddr, "block", "basic block address to lift")
@@ -64,6 +71,9 @@ func main() {
 	flag.Var(&funcAddr, "func", "function address to lift")
 	flag.Var(&lastAddr, "last", "last function address to lift")
 	flag.BoolVar(&quiet, "q", false, "suppress non-error messages")
+	flag.Var(&rawArch, "raw", "machine architecture of raw binary executable (x86_32, x86_64, PowerPC_32, ...)")
+	flag.Var(&rawEntry, "rawentry", "entry point of raw binary executable")
+	flag.Var(&rawBase, "rawbase", "base address of raw binary executable")
 	flag.Parse()
 	if flag.NArg() != 1 {
 		flag.Usage()
@@ -77,7 +87,7 @@ func main() {
 	}
 
 	// Prepare x86 to LLVM IR lifter for the binary executable.
-	l, err := newLifter(binPath)
+	l, err := newLifter(binPath, rawArch, rawEntry, rawBase)
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
@@ -128,7 +138,18 @@ func main() {
 
 // newLifter returns a new x86 to LLVM IR lifter for the given binary
 // executable.
-func newLifter(binPath string) (*lift.Lifter, error) {
+func newLifter(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) (*lift.Lifter, error) {
+	// Parse raw binary executable.
+	if rawArch != 0 {
+		file, err := raw.ParseFile(binPath)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		file.Arch = rawArch
+		file.Entry = rawEntry
+		file.Sections[0].Addr = rawBase
+		return lift.NewLifter(file)
+	}
 	// Parse binary executable.
 	file, err := bin.ParseFile(binPath)
 	if err != nil {

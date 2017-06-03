@@ -82,6 +82,7 @@ func (dis *Disasm) DecodeBlock(entry bin.Address) (*BasicBlock, error) {
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
+		dbg.Printf("   instruction at %v: %v", addr, inst)
 		addr += bin.Address(inst.Len)
 		if inst.isTerm() {
 			block.Term = inst

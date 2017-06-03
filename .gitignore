@@ -4,3 +4,4 @@
 *.coff
 *.o
 *.out
+*.so

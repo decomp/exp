@@ -110,17 +110,13 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 	}
 
 	// Parse imports.
-	for entry, fname := range l.File.Imports {
-		if _, ok := l.Funcs[entry]; ok {
-			// Skip import if already specified through function signature.
-			continue
-		}
+	addFunc := func(entry bin.Address, name string) {
 		// TODO: Mark function signature as unknown (using metadata), so that type
 		// analysis may replace it.
 		sig := types.NewFunc(types.Void)
 		typ := types.NewPointer(sig)
 		f := &ir.Function{
-			Name: fname,
+			Name: name,
 			Typ:  typ,
 			Sig:  sig,
 			Metadata: map[string]*metadata.Metadata{
@@ -133,6 +129,22 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 			Function: f,
 		}
 		l.Funcs[entry] = fn
+	}
+	for entry, fname := range l.File.Imports {
+		if _, ok := l.Funcs[entry]; ok {
+			// Skip import if already specified through function signature.
+			continue
+		}
+		addFunc(entry, fname)
+	}
+
+	// Parse exports.
+	for entry, fname := range dis.File.Exports {
+		if _, ok := l.Funcs[entry]; ok {
+			// Skip export if already specified through function signature.
+			continue
+		}
+		addFunc(entry, fname)
 	}
 
 	return l, nil

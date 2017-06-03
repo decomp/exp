@@ -126,6 +126,7 @@ func main() {
 		l.Funcs[funcAddr] = f
 	}
 
+	// Lift functions.
 	for _, funcAddr := range funcAddrs {
 		f, ok := l.Funcs[funcAddr]
 		if !ok {

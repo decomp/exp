@@ -2,7 +2,10 @@
 package elf
 
 import (
+	"bytes"
 	"debug/elf"
+	"encoding/binary"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -42,7 +45,9 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	}
 
 	// Parse machine architecture.
-	file := &bin.File{}
+	file := &bin.File{
+		Exports: make(map[bin.Address]string),
+	}
 	switch f.Machine {
 	case elf.EM_386:
 		file.Arch = bin.ArchX86_32
@@ -129,9 +134,189 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	sort.Slice(segments, less)
 
 	// TODO: Parse imports.
+	symtab := f.Section(".symtab")
+	strtab := f.Section(".strtab")
+	if symtab != nil && strtab != nil {
+		symtabData, err := symtab.Data()
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		strtabData, err := strtab.Data()
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		// Sym32 represents a 32-bit symbol descriptor.
+		type Sym32 struct {
+			// Index into the symbol string table.
+			Name uint32
+			// Value of the associated symbol. Depending on the context, this can
+			// be an absolute value, an address, etc.
+			Value uint32
+			// Size in bytes; or 0 if the symbol has no size or an unknown size.
+			Size uint32
+			// Symbol type and binding information.
+			Info uint8
+			// Symbol visibility.
+			Visibility SymVisibility
+			// Section header table index relevant for the symbol.
+			SectHdrIndex uint16
+		}
+		r := bytes.NewReader(symtabData)
+		for {
+			var sym Sym32
+			if err := binary.Read(r, binary.LittleEndian, &sym); err != nil {
+				if errors.Cause(err) == io.EOF {
+					break
+				}
+				return nil, errors.WithStack(err)
+			}
+			name := parseString(strtabData[sym.Name:])
+			addr := bin.Address(sym.Value)
+			typ := SymType(sym.Info & 0x0F)
+			bind := SymBind(sym.Info >> 4)
+			// TODO: Remove debug output.
+			//pretty.Println("sym:", sym)
+			//fmt.Println("name:", name)
+			//fmt.Println("addr:", addr)
+			//fmt.Println("typ:", typ)
+			//fmt.Println("bind:", bind)
+			//fmt.Println("visibility:", sym.Visibility)
+			//fmt.Println()
+			if bind == SymBindGlobal && typ == SymTypeFunc {
+				file.Exports[addr] = name
+			}
+		}
+	}
 
 	return file, nil
 }
+
+// SymType specifies a symbol type.
+type SymType uint8
+
+// String returns the string representation of the symbol type.
+func (typ SymType) String() string {
+	m := map[SymType]string{
+		SymTypeNone:    "none",
+		SymTypeObject:  "object",
+		SymTypeFunc:    "function",
+		SymTypeSection: "section",
+		SymTypeFile:    "file",
+		SymTypeCommon:  "common",
+		SymTypeOS0:     "OS 0",
+		SymTypeOS1:     "OS 1",
+		SymTypeOS2:     "OS 2",
+		SymTypeProc0:   "processor 0",
+		SymTypeProc1:   "processor 1",
+		SymTypeProc2:   "processor 2",
+	}
+	if s, ok := m[typ]; ok {
+		return s
+	}
+	panic(fmt.Errorf("support for symbol type %v not yet implemented", uint8(typ)))
+}
+
+// Symbol types.
+const (
+	// The symbol type is not specified.
+	SymTypeNone SymType = 0
+	// This symbol is associated with a data object, such as a variable, an
+	// array, and so forth.
+	SymTypeObject SymType = 1
+	// This symbol is associated with a function or other executable code.
+	SymTypeFunc SymType = 2
+	// This symbol is associated with a section.
+	SymTypeSection SymType = 3
+	// Name of the source file associated with the object file
+	SymTypeFile SymType = 4
+	// This symbol labels an uninitialized common block.
+	SymTypeCommon SymType = 5
+	// Reserved for operating system-specific semantics.
+	SymTypeOS0 SymType = 10
+	// Reserved for operating system-specific semantics.
+	SymTypeOS1 SymType = 11
+	// Reserved for operating system-specific semantics.
+	SymTypeOS2 SymType = 12
+	// Reserved for processor-specific semantics.
+	SymTypeProc0 SymType = 13
+	// Reserved for processor-specific semantics.
+	SymTypeProc1 SymType = 14
+	// Reserved for processor-specific semantics.
+	SymTypeProc2 SymType = 15
+)
+
+// SymBind specifies a symbol binding.
+type SymBind uint8
+
+// String returns the string representation of the symbol binding.
+func (bind SymBind) String() string {
+	m := map[SymBind]string{
+		SymBindLocal:  "local",
+		SymBindGlobal: "global",
+		SymBindWeak:   "weak",
+		SymBindOS0:    "OS 0",
+		SymBindOS1:    "OS 1",
+		SymBindOS2:    "OS 2",
+		SymBindProc0:  "processor 0",
+		SymBindProc1:  "processor 1",
+		SymBindProc2:  "processor 2",
+	}
+	if s, ok := m[bind]; ok {
+		return s
+	}
+	panic(fmt.Errorf("support for symbol binding %v not yet implemented", uint8(bind)))
+}
+
+// Symbol bindings.
+const (
+	// Local symbol.
+	SymBindLocal SymBind = 0
+	// Global symbol.
+	SymBindGlobal SymBind = 1
+	// Weak symbol.
+	SymBindWeak SymBind = 2
+	// Reserved for operating system-specific semantics.
+	SymBindOS0 SymBind = 10
+	// Reserved for operating system-specific semantics.
+	SymBindOS1 SymBind = 11
+	// Reserved for operating system-specific semantics.
+	SymBindOS2 SymBind = 12
+	// Reserved for processor-specific semantics.
+	SymBindProc0 SymBind = 13
+	// Reserved for processor-specific semantics.
+	SymBindProc1 SymBind = 14
+	// Reserved for processor-specific semantics.
+	SymBindProc2 SymBind = 15
+)
+
+// SymVisibility specifies a symbol visibility.
+type SymVisibility uint8
+
+// String returns the string representation of the symbol binding.
+func (v SymVisibility) String() string {
+	m := map[SymVisibility]string{
+		SymVisibilityDefault:   "default",
+		SymVisibilityInternal:  "internal",
+		SymVisibilityHidden:    "hidden",
+		SymVisibilityProtected: "protected",
+	}
+	if s, ok := m[v]; ok {
+		return s
+	}
+	panic(fmt.Errorf("support for symbol visibility %v not yet implemented", uint8(v)))
+}
+
+// Symbol visibility.
+const (
+	// Default symbol visiblity as specified by the symbol binding.
+	SymVisibilityDefault SymVisibility = 0
+	// Internal symbol visibility.
+	SymVisibilityInternal SymVisibility = 1
+	// Hidden symbol visibility.
+	SymVisibilityHidden SymVisibility = 2
+	// Protected symbol visibility.
+	SymVisibilityProtected SymVisibility = 3
+)
 
 // parsePerm returns the memory access permissions represented by the given ELF
 // access permission flags.
@@ -147,4 +332,15 @@ func parsePerm(flags elf.ProgFlag) bin.Perm {
 		perm |= bin.PermX
 	}
 	return perm
+}
+
+// ### [ Helper functions ] ####################################################
+
+// parseString parses the NULL-terminated string in the given data.
+func parseString(data []byte) string {
+	pos := bytes.IndexByte(data, '\x00')
+	if pos == -1 {
+		panic(fmt.Errorf("unable to locate NULL-terminated string in % 02X", data))
+	}
+	return string(data[:pos])
 }

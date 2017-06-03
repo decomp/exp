@@ -15,8 +15,10 @@ type File struct {
 	Entry Address
 	// Sections (and segments) of the exectuable.
 	Sections []*Section
-	// Imports.
+	// Function imports.
 	Imports map[Address]string
+	// Function exports.
+	Exports map[Address]string
 }
 
 // Data returns the data starting at the specified address of the binary

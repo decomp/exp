@@ -64,8 +64,12 @@ func regType(reg x86asm.Reg) types.Type {
 		panic(fmt.Errorf("support for register %v not yet implemented", reg))
 	// PSEUDO-registers.
 	// TODO: Figure out how to handle edx:eax registers.
+	case x86.X86asm_DX_AX:
+		return types.I32
 	case x86.X86asm_EDX_EAX:
 		return types.I64
+	case x86.X86asm_RDX_RAX:
+		return types.I128
 	default:
 		panic(fmt.Errorf("support for register %v not yet implemented", reg))
 	}

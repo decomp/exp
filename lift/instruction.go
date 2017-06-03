@@ -9,6 +9,7 @@ import (
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
+	"github.com/pkg/errors"
 	"golang.org/x/arch/x86/x86asm"
 )
 
@@ -2306,8 +2307,63 @@ func (f *Func) dec(arg *x86.Arg) value.Value {
 // liftInstDIV lifts the given x86 DIV instruction to LLVM IR, emitting code to
 // f.
 func (f *Func) liftInstDIV(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstDIV: not yet implemented")
+	// DIV - Unsigned Divide
+	//
+	//    div arg
+	arg := f.useArg(inst.Arg(0))
+	typ, ok := arg.Type().(*types.IntType)
+	if !ok {
+		return errors.Errorf("invalid argument type in instruction %v; expected *types.IntType, got %T", inst, arg.Type())
+	}
+	switch typ.Size {
+	case 8:
+		// Unsigned divide AX by r/m8, with result stored in:
+		//
+		//    AL = quotient
+		//    AH = remainder
+		ax := f.useReg(x86.AX)
+		arg = f.cur.NewZExt(arg, types.I16)
+		quo := f.cur.NewUDiv(ax, arg)
+		rem := f.cur.NewURem(ax, arg)
+		f.defReg(x86.AL, quo)
+		f.defReg(x86.AH, rem)
+	case 16:
+		// Unsigned divide DX:AX by r/m16, with result stored in:
+		//
+		//    AX = quotient
+		//    DX = remainder
+		dx_ax := f.useReg(x86.DX_AX)
+		arg = f.cur.NewZExt(arg, types.I32)
+		quo := f.cur.NewUDiv(dx_ax, arg)
+		rem := f.cur.NewURem(dx_ax, arg)
+		f.defReg(x86.AX, quo)
+		f.defReg(x86.DX, rem)
+	case 32:
+		// Unsigned divide EDX:EAX by r/m32, with result stored in:
+		//
+		//    EAX = quotient
+		//    EDX = remainder
+		edx_eax := f.useReg(x86.EDX_EAX)
+		arg = f.cur.NewZExt(arg, types.I64)
+		quo := f.cur.NewUDiv(edx_eax, arg)
+		rem := f.cur.NewURem(edx_eax, arg)
+		f.defReg(x86.EAX, quo)
+		f.defReg(x86.EDX, rem)
+	case 64:
+		// Unsigned divide RDX:RAX by r/m64, with result stored in:
+		//
+		//    RAX = quotient
+		//    RDX = remainder
+		rdx_rax := f.useReg(x86.RDX_RAX)
+		arg = f.cur.NewZExt(arg, types.I128)
+		quo := f.cur.NewUDiv(rdx_rax, arg)
+		rem := f.cur.NewURem(rdx_rax, arg)
+		f.defReg(x86.RAX, quo)
+		f.defReg(x86.RDX, rem)
+	default:
+		panic(fmt.Errorf("support for argument bit size %d not yet implemented", typ.Size))
+	}
+	return nil
 }
 
 // --- [ DIVPD ] ---------------------------------------------------------------

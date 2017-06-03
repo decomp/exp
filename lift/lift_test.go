@@ -30,15 +30,19 @@ func TestLift(t *testing.T) {
 		//   * .so   - ELF shared object files
 		//   * .out  - ELF executable files
 		//   * .coff - COFF object files
-		{in: "testdata/format.bin", out: "testdata/format_bin.ll", arch: bin.ArchX86_32},
-		{in: "testdata/format_elf.o", out: "testdata/format_o.ll"},
-		{in: "testdata/format_elf.so", out: "testdata/format_so.ll"},
-		{in: "testdata/format_elf.out", out: "testdata/format_out.ll"},
+		{in: "testdata/x86_32/format.bin", out: "testdata/x86_32/format_bin.ll", arch: bin.ArchX86_32},
+		{in: "testdata/x86_32/format_elf.o", out: "testdata/x86_32/format_o.ll"},
+		{in: "testdata/x86_32/format_elf.so", out: "testdata/x86_32/format_so.ll"},
+		{in: "testdata/x86_32/format_elf.out", out: "testdata/x86_32/format_out.ll"},
+		{in: "testdata/x86_64/format.bin", out: "testdata/x86_64/format_bin.ll", arch: bin.ArchX86_32},
+		{in: "testdata/x86_64/format_elf.o", out: "testdata/x86_64/format_o.ll"},
+		{in: "testdata/x86_64/format_elf.so", out: "testdata/x86_64/format_so.ll"},
+		{in: "testdata/x86_64/format_elf.out", out: "testdata/x86_64/format_out.ll"},
 		// TODO: Add support for COFF files.
 		//{in: "testdata/format.coff", out: "testdata/format_coff.ll"},
 
 		// Arithmetic instructions.
-		{in: "testdata/arithmetic.so", out: "testdata/arithmetic.ll"},
+		//{in: "testdata/arithmetic.so", out: "testdata/arithmetic.ll"},
 	}
 	for _, g := range golden {
 		log.Printf("testing: %q", g.in)

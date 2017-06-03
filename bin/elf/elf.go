@@ -136,6 +136,8 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	sort.Slice(segments, less)
 
 	// TODO: Parse imports.
+
+	// Parse exports.
 	symtab := f.Section(".symtab")
 	strtab := f.Section(".strtab")
 	if symtab != nil && strtab != nil {
@@ -147,46 +149,94 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
-		// Sym32 represents a 32-bit symbol descriptor.
-		type Sym32 struct {
-			// Index into the symbol string table.
-			Name uint32
-			// Value of the associated symbol. Depending on the context, this can
-			// be an absolute value, an address, etc.
-			Value uint32
-			// Size in bytes; or 0 if the symbol has no size or an unknown size.
-			Size uint32
-			// Symbol type and binding information.
-			Info uint8
-			// Symbol visibility.
-			Visibility SymVisibility
-			// Section header table index relevant for the symbol.
-			SectHdrIndex uint16
-		}
 		r := bytes.NewReader(symtabData)
-		for {
-			var sym Sym32
-			if err := binary.Read(r, binary.LittleEndian, &sym); err != nil {
-				if errors.Cause(err) == io.EOF {
-					break
+		switch file.Arch.BitSize() {
+		case 32:
+			// Sym32 represents a 32-bit symbol descriptor.
+			type Sym32 struct {
+				// Index into the symbol string table.
+				Name uint32
+				// Value of the associated symbol. Depending on the context, this can
+				// be an absolute value, an address, etc.
+				Value uint32
+				// Size in bytes; or 0 if the symbol has no size or an unknown size.
+				Size uint32
+				// Symbol type and binding information.
+				Info uint8
+				// Symbol visibility.
+				Visibility SymVisibility
+				// Section header table index relevant for the symbol.
+				SectHdrIndex uint16
+			}
+			for {
+				var sym Sym32
+				if err := binary.Read(r, binary.LittleEndian, &sym); err != nil {
+					if errors.Cause(err) == io.EOF {
+						break
+					}
+					return nil, errors.WithStack(err)
 				}
-				return nil, errors.WithStack(err)
+				//pretty.Println("sym:", sym)
+				name := parseString(strtabData[sym.Name:])
+				addr := bin.Address(sym.Value)
+				typ := SymType(sym.Info & 0x0F)
+				//bind := SymBind(sym.Info >> 4)
+				// TODO: Remove debug output.
+				//fmt.Println("name:", name)
+				//fmt.Println("addr:", addr)
+				//fmt.Println("size:", sym.Size)
+				//fmt.Println("typ:", typ)
+				//fmt.Println("bind:", bind)
+				//fmt.Println("visibility:", sym.Visibility)
+				//fmt.Println()
+				if typ == SymTypeFunc {
+					file.Exports[addr] = name
+				}
 			}
-			name := parseString(strtabData[sym.Name:])
-			addr := bin.Address(sym.Value)
-			typ := SymType(sym.Info & 0x0F)
-			bind := SymBind(sym.Info >> 4)
-			// TODO: Remove debug output.
-			//pretty.Println("sym:", sym)
-			//fmt.Println("name:", name)
-			//fmt.Println("addr:", addr)
-			//fmt.Println("typ:", typ)
-			//fmt.Println("bind:", bind)
-			//fmt.Println("visibility:", sym.Visibility)
-			//fmt.Println()
-			if bind == SymBindGlobal && typ == SymTypeFunc {
-				file.Exports[addr] = name
+		case 64:
+			// Sym64 represents a 64-bit symbol descriptor.
+			type Sym64 struct {
+				// Index into the symbol string table.
+				Name uint32
+				// Symbol type and binding information.
+				Info uint8
+				// Symbol visibility.
+				Visibility SymVisibility
+				// Section header table index relevant for the symbol.
+				SectHdrIndex uint16
+				// Value of the associated symbol. Depending on the context, this can
+				// be an absolute value, an address, etc.
+				Value uint64
+				// Size in bytes; or 0 if the symbol has no size or an unknown size.
+				Size uint64
 			}
+			for {
+				var sym Sym64
+				if err := binary.Read(r, binary.LittleEndian, &sym); err != nil {
+					if errors.Cause(err) == io.EOF {
+						break
+					}
+					return nil, errors.WithStack(err)
+				}
+				//pretty.Println("sym:", sym)
+				name := parseString(strtabData[sym.Name:])
+				addr := bin.Address(sym.Value)
+				typ := SymType(sym.Info & 0x0F)
+				//bind := SymBind(sym.Info >> 4)
+				// TODO: Remove debug output.
+				//fmt.Println("name:", name)
+				//fmt.Println("addr:", addr)
+				//fmt.Println("size:", sym.Size)
+				//fmt.Println("typ:", typ)
+				//fmt.Println("bind:", bind)
+				//fmt.Println("visibility:", sym.Visibility)
+				//fmt.Println()
+				if typ == SymTypeFunc {
+					file.Exports[addr] = name
+				}
+			}
+		default:
+			panic(fmt.Errorf("support for CPU bit size %d not yet implemented", file.Arch.BitSize()))
 		}
 	}
 

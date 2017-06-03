@@ -33,6 +33,7 @@ func TestLift(t *testing.T) {
 		{in: "testdata/format.bin", out: "testdata/format_bin.ll", arch: bin.ArchX86_32},
 		{in: "testdata/format_elf.o", out: "testdata/format_o.ll"},
 		{in: "testdata/format_elf.so", out: "testdata/format_so.ll"},
+		{in: "testdata/format_elf.out", out: "testdata/format_out.ll"},
 		// TODO: Add support for COFF files.
 		//{in: "testdata/format.coff", out: "testdata/format_coff.ll"},
 

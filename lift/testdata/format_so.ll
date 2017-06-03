@@ -1,4 +1,4 @@
-define void @_start() !addr !{!"0x400000"} {
-block_400000:
+define void @_start() !addr !{!"0x10000000"} {
+block_10000000:
 	ret void
 }

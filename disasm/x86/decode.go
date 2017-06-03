@@ -104,8 +104,8 @@ func (dis *Disasm) DecodeBlock(entry bin.Address) (*BasicBlock, error) {
 
 // DecodeInst decodes and returns the instruction at the given address.
 func (dis *Disasm) DecodeInst(addr bin.Address) (*Inst, error) {
-	data := dis.File.Data(addr)
-	i, err := x86asm.Decode(data, dis.Mode)
+	code := dis.File.Code(addr)
+	i, err := x86asm.Decode(code, dis.Mode)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

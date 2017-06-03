@@ -21,6 +21,44 @@ type File struct {
 	Exports map[Address]string
 }
 
+// Code returns the code starting at the specified address of the binary
+// executable.
+func (file *File) Code(addr Address) []byte {
+	if len(file.Sections) > 0 {
+		code, ok := locateCode(addr, file.Sections)
+		if ok {
+			return code
+		}
+	}
+	panic(fmt.Errorf("unable to locate code at address %v", addr))
+}
+
+// locateCode tries to locate the code starting at the specified address by
+// searching through the given sections. The boolean return value indicates
+// success.
+//
+// pre-condition: sects must be sorted in ascending order.
+func locateCode(addr Address, sects []*Section) ([]byte, bool) {
+	// Find the first section who's end address is greater than addr.
+	less := func(i int) bool {
+		sect := sects[i]
+		return addr < sect.Addr+Address(len(sect.Data))
+	}
+	index := sort.Search(len(sects), less)
+	for i := index; index < len(sects); i++ {
+		sect := sects[i]
+		if sect.Perm&PermX == 0 {
+			// skip non-executable section.
+			continue
+		}
+		if sect.Addr <= addr && addr < sect.Addr+Address(len(sect.Data)) {
+			offset := addr - sect.Addr
+			return sect.Data[offset:], true
+		}
+	}
+	return nil, false
+}
+
 // Data returns the data starting at the specified address of the binary
 // executable.
 func (file *File) Data(addr Address) []byte {

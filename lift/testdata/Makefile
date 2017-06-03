@@ -1,5 +1,5 @@
 all: \
-	format.bin format.o format.out format.coff \
+	format.bin format_elf.o format_elf.out format_elf.so format.coff \
 	arithmetic.so
 
 %.bin: %.asm

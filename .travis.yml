@@ -17,7 +17,7 @@ before_install:
   - go get github.com/mattn/goveralls
   - go get github.com/goccmack/gocc
   # TODO: Remove once v0.2 of llir/llvm is released.
-  - go get -d github.com/llir/llvm
+  - go get -d github.com/llir/llvm/ir
   - make -C $HOME/gopath/src/github.com/llir/llvm/asm/internal gen
   # Install NASM for test case generation.
   - sudo apt-get -qq update

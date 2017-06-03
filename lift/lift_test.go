@@ -2,13 +2,16 @@ package lift
 
 import (
 	"io/ioutil"
+	"log"
 	"testing"
 
 	"github.com/decomp/exp/bin"
 	_ "github.com/decomp/exp/bin/elf" // register ELF decoder
 	_ "github.com/decomp/exp/bin/pe"  // register PE decoder
 	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
+	"github.com/decomp/exp/bin/raw"
 	"github.com/llir/llvm/ir"
+	"github.com/pkg/errors"
 )
 
 func TestLift(t *testing.T) {
@@ -17,16 +20,28 @@ func TestLift(t *testing.T) {
 		in string
 		// Path to output LLVM IR assembly file.
 		out string
+		// Raw machine architecture; or 0 if any format other than raw.
+		arch bin.Arch
 	}{
+		// File formats.
+		//
+		//   * .bin  - raw executable files
+		//   * .o    - ELF object files
+		//   * .so   - ELF shared object files
+		//   * .out  - ELF executable files
+		//   * .coff - COFF object files
+		{in: "testdata/format.bin", out: "testdata/format_bin.ll", arch: bin.ArchX86_32},
+		{in: "testdata/format_elf.o", out: "testdata/format_o.ll"},
+		{in: "testdata/format_elf.so", out: "testdata/format_so.ll"},
+		// TODO: Add support for COFF files.
+		//{in: "testdata/format.coff", out: "testdata/format_coff.ll"},
+
+		// Arithmetic instructions.
 		{in: "testdata/arithmetic.so", out: "testdata/arithmetic.ll"},
 	}
 	for _, g := range golden {
-		file, err := bin.ParseFile(g.in)
-		if err != nil {
-			t.Errorf("%q: unable to parse file; %v", g.in, err)
-			continue
-		}
-		l, err := NewLifter(file)
+		log.Printf("testing: %q", g.in)
+		l, err := newLifter(g.in, g.arch)
 		if err != nil {
 			t.Errorf("%q: unable to prepare lifter; %v", g.in, err)
 			continue
@@ -65,4 +80,21 @@ func TestLift(t *testing.T) {
 			continue
 		}
 	}
+}
+
+// newLifter returns a new x86 to LLVM IR lifter for the given binary
+// executable.
+func newLifter(path string, arch bin.Arch) (*Lifter, error) {
+	if arch != 0 {
+		file, err := raw.ParseFile(path, arch)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		return NewLifter(file)
+	}
+	file, err := bin.ParseFile(path)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return NewLifter(file)
 }

@@ -133,7 +133,7 @@ func main() {
 			continue
 		}
 		f.Lift()
-		fmt.Println("f:", f)
+		fmt.Println(f)
 	}
 }
 

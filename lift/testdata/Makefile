@@ -1,5 +1,5 @@
 all: \
-	format.bin format_elf.o format_elf.out format_elf.so format.coff \
+	format.bin format_elf.o format_elf.so format_elf.out format.coff \
 	arithmetic.so
 
 %.bin: %.asm
@@ -8,11 +8,11 @@ all: \
 %.o: %.asm
 	nasm -f elf32 -o $@ $<
 
-%.out: %.o
-	ld -m elf_i386 -o $@ $<
-
 %.so: %.o
 	ld -shared -m elf_i386 -o $@ $<
+
+%.out: %.o
+	ld -m elf_i386 -o $@ $<
 
 %.coff: %.asm
 	nasm -f win32 -o $@ $<
@@ -20,4 +20,4 @@ all: \
 .PHONY: clean
 
 clean:
-	rm -f *.bin *.o *.out *.so *.coff
+	rm -f *.bin *.o *.so *.out *.coff

@@ -1,7 +1,7 @@
 package bin_test
 
 import (
-	"encoding/json"
+	"encoding"
 	"flag"
 
 	"github.com/decomp/exp/bin"
@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	_ flag.Value           = (*bin.Address)(nil)
-	_ json.Unmarshaler     = (*bin.Address)(nil)
-	_ metadata.Unmarshaler = (*bin.Address)(nil)
+	_ flag.Value               = (*bin.Address)(nil)
+	_ encoding.TextUnmarshaler = (*bin.Address)(nil)
+	_ metadata.Unmarshaler     = (*bin.Address)(nil)
 )

@@ -13,10 +13,8 @@ type File struct {
 	Arch Arch
 	// Entry point of the executable.
 	Entry Address
-	// Sections of the exectuable.
+	// Sections (and segments) of the exectuable.
 	Sections []*Section
-	// Segments of the exectuable.
-	Segments []*Section
 	// Imports.
 	Imports map[Address]string
 }
@@ -30,18 +28,14 @@ func (file *File) Data(addr Address) []byte {
 			return data
 		}
 	}
-	if len(file.Segments) > 0 {
-		data, ok := locateData(addr, file.Segments)
-		if ok {
-			return data
-		}
-	}
 	panic(fmt.Errorf("unable to locate data at address %v", addr))
 }
 
 // locateData tries to locate the data starting at the specified address by
 // searching through the given sections. The boolean return value indicates
 // success.
+//
+// pre-condition: sects must be sorted in ascending order.
 func locateData(addr Address, sects []*Section) ([]byte, bool) {
 	// Find the first section who's end address is greater than addr.
 	less := func(i int) bool {

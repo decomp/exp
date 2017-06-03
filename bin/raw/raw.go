@@ -14,7 +14,7 @@ import (
 //
 // Users are responsible for specifying file.Arch. By default the entry point
 // and base address are both 0. To specify a custom entry point, set file.Entry,
-// and to specify a custom base address, set file.Segments[0].Addr.
+// and to specify a custom base address, set file.Sections[0].Addr.
 func ParseFile(path string) (*bin.File, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -28,7 +28,7 @@ func ParseFile(path string) (*bin.File, error) {
 //
 // Users are responsible for specifying file.Arch. By default the entry point
 // and base address are both 0. To specify a custom entry point, set file.Entry,
-// and to specify a custom base address, set file.Segments[0].Addr.
+// and to specify a custom base address, set file.Sections[0].Addr.
 func Parse(r io.Reader) (*bin.File, error) {
 	// Parse segments.
 	file := &bin.File{}
@@ -41,6 +41,6 @@ func Parse(r io.Reader) (*bin.File, error) {
 		Data: data,
 		Perm: bin.PermR | bin.PermW | bin.PermX,
 	}
-	file.Segments = append(file.Segments, seg)
+	file.Sections = append(file.Sections, seg)
 	return file, nil
 }

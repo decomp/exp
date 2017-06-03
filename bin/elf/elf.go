@@ -71,6 +71,8 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		}
 		file.Sections = append(file.Sections, sect)
 	}
+
+	// Sort sections in ascending order.
 	less := func(i, j int) bool {
 		if file.Sections[i].Addr == file.Sections[j].Addr {
 			return file.Sections[i].Name < file.Sections[j].Name
@@ -80,6 +82,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	sort.Slice(file.Sections, less)
 
 	// Parse segments.
+	var segments []*bin.Section
 	for _, prog := range f.Progs {
 		if prog.Type != elf.PT_LOAD {
 			continue
@@ -95,17 +98,16 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			Data: data,
 			Perm: perm,
 		}
-		file.Segments = append(file.Segments, seg)
+		segments = append(segments, seg)
 	}
-	less = func(i, j int) bool {
-		return file.Segments[i].Addr < file.Segments[j].Addr
-	}
-	sort.Slice(file.Segments, less)
+
+	// Sort segments in ascending order.
+	sort.Slice(segments, less)
 
 	// Fix section permissions.
-	if len(file.Segments) > 0 {
+	if len(segments) > 0 {
 		for _, sect := range file.Sections {
-			for _, seg := range file.Segments {
+			for _, seg := range segments {
 				end := seg.Addr + bin.Address(len(seg.Data))
 				if seg.Addr <= sect.Addr && sect.Addr < end {
 					if sect.Perm == 0 {
@@ -115,6 +117,12 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			}
 		}
 	}
+
+	// Append segments as sections.
+	file.Sections = append(file.Sections, segments...)
+
+	// Sort sections (and segments) in ascending order.
+	sort.Slice(segments, less)
 
 	// TODO: Parse imports.
 

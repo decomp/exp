@@ -15,7 +15,6 @@ import (
 	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
 	"github.com/decomp/exp/bin/raw"
 	"github.com/decomp/exp/disasm/x86"
-	"github.com/kr/pretty"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
 )
@@ -92,7 +91,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
-	pretty.Println("dis:", dis)
 
 	// Disassemble basic block.
 	if blockAddr != 0 {
@@ -138,7 +136,7 @@ func newDisasm(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) 
 		}
 		file.Arch = rawArch
 		file.Entry = rawEntry
-		file.Segments[0].Addr = rawBase
+		file.Sections[0].Addr = rawBase
 		return x86.NewDisasm(file)
 	}
 	// Parse binary executable.

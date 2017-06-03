@@ -68,7 +68,7 @@ func InsertAddr(addrs []Address, addr Address) []Address {
 		return addrs
 	}
 	// addr is not present, insert at index.
-	a := append(addrs[:index], addr)
+	a := append(addrs[:index:index], addr)
 	return append(a, addrs[index:]...)
 }
 

@@ -17,6 +17,8 @@ before_install:
   - go get github.com/goccmack/gocc
   # TODO: Remove once v0.2 of llir/llvm is released.
   - make -C $HOME/gopath/src/github.com/llir/llvm/asm/internal gen
+  - sudo apt-get -qq update
+  - sudo apt-get install -y nasm
 
 install:
   - go get -t ./...

@@ -32,9 +32,15 @@ before_script:
   # Generate test cases
   - make -C $HOME/gopath/src/github.com/decomp/exp/lift/testdata
   # Run goclean script.
-  - export GOLINT_IGNORE="-not -wholename '*/internal/*' -not -name '*_string.go' -not -wholename '*/types/single.go' -not -wholename '*/types/types.go' -not -wholename '*/ir/function.go'"
+  - export GOLINT_IGNORE="-not -wholename '*/internal/*' -not -name '*_string.go'"
   - wget https://gist.github.com/mewmew/379014c9a2e6885e238d/raw/goclean.sh
   - chmod +x goclean.sh
 
 script:
+  # TODO: Remove Travis debugging for https://travis-ci.org/decomp/exp/builds/239254691
+  - ls -RFl $HOME/gopath/src/github.com/decomp/exp/lift/testdata
+  - file $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_32/arithmetic/arithmetic.so
+  - file $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_64/arithmetic/arithmetic.so
+  - hexdump -C $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_32/arithmetic/arithmetic.so
+  - hexdump -C $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_64/arithmetic/arithmetic.so
   - ./goclean.sh

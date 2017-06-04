@@ -1,3 +1,7 @@
+# Note, Ubuntu precise does not have access to the latest NASM (2.13.01), and
+# NASM 2.09.10 caused incorrect assembly being generated for 64-bit binaries.
+dist: trusty
+
 language: go
 go:
   - 1.8
@@ -37,4 +41,6 @@ before_script:
   - chmod +x goclean.sh
 
 script:
+  - hexdump -C $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_32/arithmetic/arithmetic.so
+  - hexdump -C $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_64/arithmetic/arithmetic.so
   - ./goclean.sh

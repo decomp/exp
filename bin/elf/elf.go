@@ -12,7 +12,6 @@ import (
 	"sort"
 
 	"github.com/decomp/exp/bin"
-	"github.com/kr/pretty"
 	"github.com/pkg/errors"
 )
 
@@ -63,11 +62,15 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 
 	// Parse sections.
 	for _, s := range f.Sections {
-		pretty.Println("s:", s)
 		perm := parseSectFlags(s.Flags)
-		data, err := s.Data()
-		if err != nil {
-			return nil, errors.WithStack(err)
+		var data []byte
+		if s.Type == elf.SHT_NOBITS {
+			data = make([]byte, s.Size)
+		} else {
+			data, err = s.Data()
+			if err != nil {
+				return nil, errors.WithStack(err)
+			}
 		}
 		if len(data) == 0 {
 			continue

@@ -120,7 +120,7 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 			Typ:  typ,
 			Sig:  sig,
 			Metadata: map[string]*metadata.Metadata{
-				"addr": &metadata.Metadata{
+				"addr": {
 					Nodes: []metadata.Node{&metadata.String{Val: entry.String()}},
 				},
 			},

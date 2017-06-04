@@ -59,7 +59,7 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 				Typ:  typ,
 				Sig:  sig,
 				Metadata: map[string]*metadata.Metadata{
-					"addr": &metadata.Metadata{
+					"addr": {
 						Nodes: []metadata.Node{&metadata.String{Val: entry.String()}},
 					},
 				},

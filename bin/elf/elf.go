@@ -12,6 +12,7 @@ import (
 	"sort"
 
 	"github.com/decomp/exp/bin"
+	"github.com/kr/pretty"
 	"github.com/pkg/errors"
 )
 
@@ -62,6 +63,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 
 	// Parse sections.
 	for _, s := range f.Sections {
+		pretty.Println("s:", s)
 		perm := parseSectFlags(s.Flags)
 		data, err := s.Data()
 		if err != nil {

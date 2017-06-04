@@ -41,6 +41,4 @@ before_script:
   - chmod +x goclean.sh
 
 script:
-  - hexdump -C $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_32/arithmetic/arithmetic.so
-  - hexdump -C $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_64/arithmetic/arithmetic.so
   - ./goclean.sh

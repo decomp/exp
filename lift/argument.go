@@ -331,6 +331,8 @@ func (f *Func) castToPtr(src value.Value, parent *x86.Inst) value.Value {
 				bits = 16
 			case x86asm.PrefixREP, x86asm.PrefixREPN:
 				// nothing to do.
+			case x86asm.PrefixREX | x86asm.PrefixREXW:
+				// TODO: Implement support for REX.W
 			default:
 				panic(fmt.Errorf("support for prefix %v (0x%04X) not yet implemented", prefix, uint16(prefix)))
 			}

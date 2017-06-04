@@ -34,6 +34,8 @@ func (f *Func) liftInst(inst *x86.Inst) error {
 			hasREP = true
 		case x86asm.PrefixREPN:
 			hasREPN = true
+		case x86asm.PrefixREX | x86asm.PrefixREXW:
+			// TODO: Implement support for REX.W
 		default:
 			pretty.Println("instruction with prefix:", inst)
 			panic(fmt.Errorf("support for %v instruction with prefix %v (0x%04X) not yet implemented", inst.Op, prefix, uint16(prefix)))

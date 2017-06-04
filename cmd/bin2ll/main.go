@@ -127,7 +127,10 @@ func main() {
 	}
 
 	// Lift functions.
-	for _, funcAddr := range funcAddrs {
+	for i, funcAddr := range funcAddrs {
+		if i != 0 {
+			fmt.Println()
+		}
 		f, ok := l.Funcs[funcAddr]
 		if !ok {
 			continue

@@ -3,6 +3,8 @@ package lift
 import (
 	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/decomp/exp/bin"
@@ -16,6 +18,8 @@ import (
 
 func TestLift(t *testing.T) {
 	golden := []struct {
+		// Base directory; which may contain decomp JSON files.
+		dir string
 		// Path to input binary executable or object file.
 		in string
 		// Path to output LLVM IR assembly file.
@@ -30,22 +34,36 @@ func TestLift(t *testing.T) {
 		//   * .so   - ELF shared object files
 		//   * .out  - ELF executable files
 		//   * .coff - COFF object files
-		{in: "testdata/x86_32/format.bin", out: "testdata/x86_32/format_bin.ll", arch: bin.ArchX86_32},
-		{in: "testdata/x86_32/format_elf.o", out: "testdata/x86_32/format_o.ll"},
-		{in: "testdata/x86_32/format_elf.so", out: "testdata/x86_32/format_so.ll"},
-		{in: "testdata/x86_32/format_elf.out", out: "testdata/x86_32/format_out.ll"},
-		{in: "testdata/x86_64/format.bin", out: "testdata/x86_64/format_bin.ll", arch: bin.ArchX86_32},
-		{in: "testdata/x86_64/format_elf.o", out: "testdata/x86_64/format_o.ll"},
-		{in: "testdata/x86_64/format_elf.so", out: "testdata/x86_64/format_so.ll"},
-		{in: "testdata/x86_64/format_elf.out", out: "testdata/x86_64/format_out.ll"},
+		{dir: "testdata/x86_32/format", in: "format.bin", out: "format_bin.ll", arch: bin.ArchX86_32},
+		{dir: "testdata/x86_32/format", in: "format_elf.o", out: "format_o.ll"},
+		{dir: "testdata/x86_32/format", in: "format_elf.so", out: "format_so.ll"},
+		{dir: "testdata/x86_32/format", in: "format_elf.out", out: "format_out.ll"},
+		{dir: "testdata/x86_64/format", in: "format.bin", out: "format_bin.ll", arch: bin.ArchX86_32},
+		{dir: "testdata/x86_64/format", in: "format_elf.o", out: "format_o.ll"},
+		{dir: "testdata/x86_64/format", in: "format_elf.so", out: "format_so.ll"},
+		{dir: "testdata/x86_64/format", in: "format_elf.out", out: "format_out.ll"},
 		// TODO: Add support for COFF files.
 		//{in: "testdata/format.coff", out: "testdata/format_coff.ll"},
 
 		// Arithmetic instructions.
-		//{in: "testdata/arithmetic.so", out: "testdata/arithmetic.ll"},
+		{dir: "testdata/x86_32/arithmetic", in: "arithmetic.so", out: "arithmetic.ll"},
+		{dir: "testdata/x86_64/arithmetic", in: "arithmetic.so", out: "arithmetic.ll"},
+	}
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("unable to retrieve current working directory; %v", err)
 	}
 	for _, g := range golden {
-		log.Printf("testing: %q", g.in)
+		if err := os.Chdir(wd); err != nil {
+			t.Errorf("%q: unable to change working directory; %v", g.in, err)
+			continue
+		}
+		if err := os.Chdir(g.dir); err != nil {
+			t.Errorf("%q: unable to change working directory; %v", g.in, err)
+			continue
+		}
+		in := filepath.Join(g.dir, g.in)
+		log.Printf("testing: %q", in)
 		l, err := newLifter(g.in, g.arch)
 		if err != nil {
 			t.Errorf("%q: unable to prepare lifter; %v", g.in, err)

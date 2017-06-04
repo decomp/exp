@@ -1,17 +1,16 @@
 all: \
-	x86_32/format.bin \
-	x86_32/format_elf.o \
-	x86_32/format_elf.so \
-	x86_32/format_elf.out \
-	x86_32/format.coff \
-	x86_64/format.bin \
-	x86_64/format_elf.o \
-	x86_64/format_elf.so \
-	x86_64/format_elf.out \
-	x86_64/format.coff
-
-# format_elf.o format_elf.so format_elf.out format.coff \
-#arithmetic_64.so
+	x86_32/format/format.bin \
+	x86_32/format/format_elf.o \
+	x86_32/format/format_elf.so \
+	x86_32/format/format_elf.out \
+	x86_32/format/format.coff \
+	x86_64/format/format.bin \
+	x86_64/format/format_elf.o \
+	x86_64/format/format_elf.so \
+	x86_64/format/format_elf.out \
+	x86_64/format/format.coff \
+	x86_32/arithmetic/arithmetic.so \
+	x86_64/arithmetic/arithmetic.so
 
 %.bin: %.asm
 	nasm -f bin -o $@ $<
@@ -43,5 +42,5 @@ x86_64/%.coff: x86_64/%.asm
 .PHONY: clean
 
 clean:
-	rm -f x86_32/{*.bin,*.o,*.so,*.out,*.coff}
-	rm -f x86_64/{*.bin,*.o,*.so,*.out,*.coff}
+	rm -f x86_32/*/{*.bin,*.o,*.so,*.out,*.coff}
+	rm -f x86_64/*/{*.bin,*.o,*.so,*.out,*.coff}

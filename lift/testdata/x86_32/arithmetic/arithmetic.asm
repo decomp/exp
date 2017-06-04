@@ -1,4 +1,6 @@
-[BITS 64]
+[BITS 32]
+
+;global _start:function
 
 global div_r8:function
 global div_m8:function
@@ -6,10 +8,15 @@ global div_r16:function
 global div_m16:function
 global div_r32:function
 global div_m32:function
-global div_r64:function
-global div_m64:function
 
 section .text
+
+;_start:
+;	call    div_m8
+;	; sys_exit(eax)
+;	mov     ebx, eax
+;	mov     eax, 1
+;	int     0x80
 
 ;add:
 ;	mov     eax, 29
@@ -45,7 +52,7 @@ div_r8:
 	mov     ax, 84
 	mov     bl, 2
 	div     bl
-	and     rax, 0x00000000000000FF
+	and     eax, 0x000000FF
 	ret
 
 div_m8:
@@ -53,7 +60,7 @@ div_m8:
 	mov     ax, 84
 	mov     byte [m8], 2
 	div     byte [m8]
-	and     rax, 0x00000000000000FF
+	and     eax, 0x000000FF
 	ret
 
 ; === [ div arg ] ==============================================================
@@ -70,7 +77,7 @@ div_r16:
 	mov     ax, 84
 	mov     bx, 2
 	div     bx
-	and     rax, 0x000000000000FFFF
+	and     eax, 0x0000FFFF
 	ret
 
 div_m16:
@@ -79,7 +86,7 @@ div_m16:
 	mov     ax, 84
 	mov     word [m16], 2
 	div     word [m16]
-	and     rax, 0x000000000000FFFF
+	and     eax, 0x0000FFFF
 	ret
 
 ; === [ div arg ] ==============================================================
@@ -96,7 +103,6 @@ div_r32:
 	mov     eax, 84
 	mov     ebx, 2
 	div     ebx
-	and     rax, 0x00000000FFFFFFFF
 	ret
 
 div_m32:
@@ -105,31 +111,6 @@ div_m32:
 	mov     eax, 84
 	mov     dword [m32], 2
 	div     dword [m32]
-	and     rax, 0x00000000FFFFFFFF
-	ret
-
-; === [ div arg ] ==============================================================
-;
-; --- [ 64-bit divisor arg ] ---------------------------------------------------
-;
-;         RDX:RAX
-;    ____________________ => RAX (quotient) and RDX (remainder)
-;    arg (64-bit divisor)
-;
-div_r64:
-	; 42 = 84 / 2
-	mov     rdx, 0
-	mov     rax, 84
-	mov     rbx, 2
-	div     rbx
-	ret
-
-div_m64:
-	; 42 = 84 / 2
-	mov     rdx, 0
-	mov     rax, 84
-	mov     qword [m64], 2
-	div     qword [m64]
 	ret
 
 ;imul:

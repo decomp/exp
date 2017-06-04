@@ -37,10 +37,4 @@ before_script:
   - chmod +x goclean.sh
 
 script:
-  # TODO: Remove Travis debugging for https://travis-ci.org/decomp/exp/builds/239254691
-  - ls -RFl $HOME/gopath/src/github.com/decomp/exp/lift/testdata
-  - file $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_32/arithmetic/arithmetic.so
-  - file $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_64/arithmetic/arithmetic.so
-  - hexdump -v -C $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_32/arithmetic/arithmetic.so
-  - hexdump -v -C $HOME/gopath/src/github.com/decomp/exp/lift/testdata/x86_64/arithmetic/arithmetic.so
   - ./goclean.sh

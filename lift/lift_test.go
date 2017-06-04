@@ -51,22 +51,22 @@ func TestLift(t *testing.T) {
 	}
 	wd, err := os.Getwd()
 	if err != nil {
-		t.Fatalf("unable to retrieve current working directory; %v", err)
+		t.Fatalf("unable to retrieve current working directory; %+v", err)
 	}
 	for _, g := range golden {
 		if err := os.Chdir(wd); err != nil {
-			t.Errorf("%q: unable to change working directory; %v", g.in, err)
+			t.Errorf("%q: unable to change working directory; %+v", g.in, err)
 			continue
 		}
 		if err := os.Chdir(g.dir); err != nil {
-			t.Errorf("%q: unable to change working directory; %v", g.in, err)
+			t.Errorf("%q: unable to change working directory; %+v", g.in, err)
 			continue
 		}
 		in := filepath.Join(g.dir, g.in)
 		log.Printf("testing: %q", in)
 		l, err := newLifter(g.in, g.arch)
 		if err != nil {
-			t.Errorf("%q: unable to prepare lifter; %v", g.in, err)
+			t.Errorf("%q: unable to prepare lifter; %+v", g.in, err)
 			continue
 		}
 
@@ -74,7 +74,7 @@ func TestLift(t *testing.T) {
 		for _, funcAddr := range l.FuncAddrs {
 			asmFunc, err := l.DecodeFunc(funcAddr)
 			if err != nil {
-				t.Errorf("%q: unable to decode function; %v", g.in, err)
+				t.Errorf("%q: unable to decode function; %+v", g.in, err)
 				continue
 			}
 			f := l.NewFunc(asmFunc)
@@ -93,7 +93,7 @@ func TestLift(t *testing.T) {
 		}
 		buf, err := ioutil.ReadFile(g.out)
 		if err != nil {
-			t.Errorf("%q: unable to read file: %v", g.in, err)
+			t.Errorf("%q: unable to read file: %+v", g.in, err)
 			continue
 		}
 		got := module.String()

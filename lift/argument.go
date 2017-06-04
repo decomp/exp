@@ -212,7 +212,8 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 	// Handle local variables.
 	if segment == nil && index == nil {
 		// Stack local memory access.
-		if mem.Mem.Base == x86asm.ESP || mem.Mem.Base == x86asm.EBP {
+		switch mem.Mem.Base {
+		case x86asm.ESP, x86asm.EBP:
 			name := fmt.Sprintf("%s_%d", strings.ToLower(x86.Register(mem.Mem.Base).String()), f.espDisp+mem.Disp)
 			if v, ok := f.locals[name]; ok {
 				return v
@@ -224,13 +225,21 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 		}
 	}
 
+	// Handle IP-relative addressing; common in 64-bit x86.
+	var rel bin.Address
+	switch mem.Mem.Base {
+	case x86asm.IP, x86asm.EIP, x86asm.RIP:
+		rel = mem.Parent.Addr + bin.Address(mem.Parent.Len)
+		base = nil
+	}
+
 	// Handle disposition.
 	if mem.Disp != 0 {
 		if context, ok := f.l.Contexts[mem.Parent.Addr]; ok {
 			if c, ok := context.Args[1]; ok {
 				if o, ok := c["Mem.offset"]; ok {
 					offset := int64(o)
-					addr := bin.Address(mem.Disp - offset)
+					addr := rel + bin.Address(mem.Disp-offset)
 					v, ok := f.addr(addr)
 					if !ok {
 						panic(fmt.Errorf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.Parent.Op, mem.Parent.Addr))
@@ -241,7 +250,7 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 			}
 		}
 		if disp == nil {
-			addr := bin.Address(mem.Disp)
+			addr := rel + bin.Address(mem.Disp)
 			v, ok := f.addr(addr)
 			if !ok {
 				warn.Printf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.Parent.Op, mem.Parent.Addr)
@@ -253,7 +262,7 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 	// Early return for direct memory access.
 	if segment == nil && base == nil && index == nil {
 		if disp == nil {
-			addr := bin.Address(mem.Disp)
+			addr := rel + bin.Address(mem.Disp)
 			panic(fmt.Errorf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.Parent.Op, mem.Parent.Addr))
 		}
 		return disp

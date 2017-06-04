@@ -33,20 +33,18 @@ define void @div_m8() !addr !{!"0x1000000F"} {
 block_1000000F:
 	store i32 84, i16* %ax
 	%1 = load i64, i64* %rip
-	%2 = bitcast i64 %1 to i8*
-	store i32 2, i8* %2
-	%3 = load i64, i64* %rip
-	%4 = bitcast i64 %3 to i8*
-	%5 = load i8, i8* %4
-	%6 = load i16, i16* %ax
-	%7 = zext i8 %5 to i16
-	%8 = udiv i16 %6, %7
-	%9 = urem i16 %6, %7
-	store i16 %8, i8* %al
-	store i16 %9, i8* %ah
-	%10 = load i64, i64* %rax
-	%11 = and i64 %10, 255
-	store i64 %11, i64* %rax
+	store i32 2, i8* @m8
+	%2 = load i64, i64* %rip
+	%3 = load i8, i8* @m8
+	%4 = load i16, i16* %ax
+	%5 = zext i8 %3 to i16
+	%6 = udiv i16 %4, %5
+	%7 = urem i16 %4, %5
+	store i16 %6, i8* %al
+	store i16 %7, i8* %ah
+	%8 = load i64, i64* %rax
+	%9 = and i64 %8, 255
+	store i64 %9, i64* %rax
 	ret void
 }
 
@@ -87,20 +85,18 @@ block_1000003D:
 	store i32 0, i16* %dx
 	store i32 84, i16* %ax
 	%1 = load i64, i64* %rip
-	%2 = bitcast i64 %1 to i16*
-	store i32 2, i16* %2
-	%3 = load i64, i64* %rip
-	%4 = bitcast i64 %3 to i16*
-	%5 = load i16, i16* %4
-	%6 = load i32, i32* %"dx\3Aax"
-	%7 = zext i16 %5 to i32
-	%8 = udiv i32 %6, %7
-	%9 = urem i32 %6, %7
-	store i32 %8, i16* %ax
-	store i32 %9, i16* %dx
-	%10 = load i64, i64* %rax
-	%11 = and i64 %10, 65535
-	store i64 %11, i64* %rax
+	store i32 2, i16* @m16
+	%2 = load i64, i64* %rip
+	%3 = load i16, i16* @m16
+	%4 = load i32, i32* %"dx\3Aax"
+	%5 = zext i16 %3 to i32
+	%6 = udiv i32 %4, %5
+	%7 = urem i32 %4, %5
+	store i32 %6, i16* %ax
+	store i32 %7, i16* %dx
+	%8 = load i64, i64* %rax
+	%9 = and i64 %8, 65535
+	store i64 %9, i64* %rax
 	ret void
 }
 
@@ -146,22 +142,20 @@ block_10000076:
 	store i32 0, i32* %edx
 	store i32 84, i32* %eax
 	%1 = load i64, i64* %rip
-	%2 = bitcast i64 %1 to i32*
-	store i32 2, i32* %2
-	%3 = load i64, i64* %rip
-	%4 = bitcast i64 %3 to i32*
-	%5 = load i32, i32* %4
-	%6 = load i64, i64* %"edx\3Aeax"
-	%7 = zext i32 %5 to i64
-	%8 = udiv i64 %6, %7
-	%9 = urem i64 %6, %7
-	store i64 %8, i32* %eax
-	store i64 %9, i32* %edx
+	store i32 2, i32* @m32
+	%2 = load i64, i64* %rip
+	%3 = load i32, i32* @m32
+	%4 = load i64, i64* %"edx\3Aeax"
+	%5 = zext i32 %3 to i64
+	%6 = udiv i64 %4, %5
+	%7 = urem i64 %4, %5
+	store i64 %6, i32* %eax
+	store i64 %7, i32* %edx
 	store i32 -1, i32* %ebx
-	%10 = load i64, i64* %rax
-	%11 = load i64, i64* %rbx
-	%12 = and i64 %10, %11
-	store i64 %12, i64* %rax
+	%8 = load i64, i64* %rax
+	%9 = load i64, i64* %rbx
+	%10 = and i64 %8, %9
+	store i64 %10, i64* %rax
 	ret void
 }
 
@@ -202,16 +196,14 @@ block_100000AC:
 	store i32 0, i32* %edx
 	store i32 84, i32* %eax
 	%1 = load i64, i64* %rip
-	%2 = bitcast i64 %1 to i64*
-	store i32 2, i64* %2
-	%3 = load i64, i64* %rip
-	%4 = bitcast i64 %3 to i64*
-	%5 = load i64, i64* %4
-	%6 = load i128, i128* %"rdx\3Arax"
-	%7 = zext i64 %5 to i128
-	%8 = udiv i128 %6, %7
-	%9 = urem i128 %6, %7
-	store i128 %8, i64* %rax
-	store i128 %9, i64* %rdx
+	store i32 2, i64* @m64
+	%2 = load i64, i64* %rip
+	%3 = load i64, i64* @m64
+	%4 = load i128, i128* %"rdx\3Arax"
+	%5 = zext i64 %3 to i128
+	%6 = udiv i128 %4, %5
+	%7 = urem i128 %4, %5
+	store i128 %6, i64* %rax
+	store i128 %7, i64* %rdx
 	ret void
 }

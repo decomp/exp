@@ -22,16 +22,16 @@ x86_64/%.o: x86_64/%.asm
 	nasm -f elf64 -o $@ $<
 
 x86_32/%.so: x86_32/%.o
-	ld -Ttext 10000000 -shared -m elf_i386 -o $@ $<
+	ld -Ttext 10000000 -Tbss 10200000 -shared -m elf_i386 -o $@ $<
 
 x86_64/%.so: x86_64/%.o
-	ld -Ttext 10000000 -shared -m elf_x86_64 -o $@ $<
+	ld -Ttext 10000000 -Tbss 10200000 -shared -m elf_x86_64 -o $@ $<
 
 x86_32/%.out: x86_32/%.o
-	ld -Ttext 400000 -m elf_i386 -o $@ $<
+	ld -Ttext 400000 -Tbss 600000 -m elf_i386 -o $@ $<
 
 x86_64/%.out: x86_64/%.o
-	ld -Ttext 400000 -m elf_x86_64 -o $@ $<
+	ld -Ttext 400000 -Tbss 600000 -m elf_x86_64 -o $@ $<
 
 x86_32/%.coff: x86_32/%.asm
 	nasm -f win32 -o $@ $<

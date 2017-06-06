@@ -48,6 +48,10 @@ func TestLift(t *testing.T) {
 		// Arithmetic instructions.
 		{dir: "testdata/x86_32/arithmetic", in: "arithmetic.so", out: "arithmetic.ll"},
 		{dir: "testdata/x86_64/arithmetic", in: "arithmetic.so", out: "arithmetic.ll"},
+
+		// Import functions from dynamic libraries.
+		{dir: "testdata/x86_32/import", in: "import.out", out: "import.ll"},
+		{dir: "testdata/x86_64/import", in: "import.out", out: "import.ll"},
 	}
 	wd, err := os.Getwd()
 	if err != nil {

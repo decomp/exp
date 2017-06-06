@@ -155,6 +155,9 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			return nil, errors.WithStack(err)
 		}
 		r := bytes.NewReader(symtabData)
+		// undef specifies that a symbol is not associated with a specific
+		// section.
+		const undef = 0
 		switch file.Arch.BitSize() {
 		case 32:
 			// Sym32 represents a 32-bit symbol descriptor.
@@ -194,7 +197,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 				//fmt.Println("bind:", bind)
 				//fmt.Println("visibility:", sym.Visibility)
 				//fmt.Println()
-				if typ == SymTypeFunc {
+				if typ == SymTypeFunc && sym.SectHdrIndex != undef {
 					file.Exports[addr] = name
 				}
 			}
@@ -236,7 +239,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 				//fmt.Println("bind:", bind)
 				//fmt.Println("visibility:", sym.Visibility)
 				//fmt.Println()
-				if typ == SymTypeFunc {
+				if typ == SymTypeFunc && sym.SectHdrIndex != undef {
 					file.Exports[addr] = name
 				}
 			}

@@ -46,6 +46,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 
 	// Parse machine architecture.
 	file := &bin.File{
+		Imports: make(map[bin.Address]string),
 		Exports: make(map[bin.Address]string),
 	}
 	switch f.Machine {
@@ -141,6 +142,85 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	sort.Slice(segments, less)
 
 	// TODO: Parse imports.
+
+	// Parse imports.
+	gotplt := f.Section(".got.plt")
+	// TODO: Add support for reading .got.plt from segments when section
+	// information is missing. Locate using DT_PLTGOT in .dynamic.
+	if gotplt != nil {
+		gotpltData, err := gotplt.Data()
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		dynSyms, err := f.DynamicSymbols()
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		// Program Linkage Table example.
+		//
+		//    plt:
+		//
+		//      ...
+		//
+		//      .printf:
+		//        jmp     [rel (BASE_DATA - BASE_CODE) + got_plt.printf]
+		//
+		//      .resolve_printf:
+		//        push    QWORD dynsym.printf_idx
+		//        jmp     NEAR .resolve
+		//        jmp     [rel (BASE_DATA - BASE_CODE) + got_plt.printf]
+		//
+		//      ...
+		//
+		// ref: https://github.com/mewrev/dissection/blob/master/elf.asm
+
+		// The length of the 32- and 64-bit JMP instruction.
+		//
+		//    jmp     [rel (BASE_DATA - BASE_CODE) + got_plt.printf]
+		const jmplen = 6
+		switch file.Arch.BitSize() {
+		case 32:
+			// skip .got.plt:dynamic            (4 bytes)
+			// skip .got.plt:link_map           (4 bytes)
+			// skip .got.plt:dl_runtime_resolve (4 bytes)
+			r := bytes.NewReader(gotpltData[4+4+4:])
+			for _, dynSym := range dynSyms {
+				var v uint32
+				if err := binary.Read(r, binary.LittleEndian, &v); err != nil {
+					if errors.Cause(err) == io.EOF {
+						break
+					}
+					return nil, errors.WithStack(err)
+				}
+				// v points to .plt:resolve_printf, and .plt:printf is at the jmp
+				// instruction directly preceding; thus subtract the length of the
+				// jmp instruction from v to arrive at .plt:printf.
+				addr := bin.Address(v) - jmplen
+				file.Imports[addr] = dynSym.Name
+			}
+		case 64:
+			// skip .got.plt:dynamic            (8 bytes)
+			// skip .got.plt:link_map           (8 bytes)
+			// skip .got.plt:dl_runtime_resolve (8 bytes)
+			r := bytes.NewReader(gotpltData[8+8+8:])
+			for _, dynSym := range dynSyms {
+				var v uint64
+				if err := binary.Read(r, binary.LittleEndian, &v); err != nil {
+					if errors.Cause(err) == io.EOF {
+						break
+					}
+					return nil, errors.WithStack(err)
+				}
+				// v points to .plt:resolve_printf, and .plt:printf is at the jmp
+				// instruction directly preceding; thus subtract the length of the
+				// jmp instruction from v to arrive at .plt:printf.
+				addr := bin.Address(v) - jmplen
+				file.Imports[addr] = dynSym.Name
+			}
+		default:
+			panic(fmt.Errorf("support for CPU bit size %d not yet implemented", file.Arch.BitSize()))
+		}
+	}
 
 	// Parse exports.
 	symtab := f.Section(".symtab")

@@ -2756,8 +2756,24 @@ func (f *Func) liftInstFILD(inst *x86.Inst) error {
 	//    FILD a1
 	//
 	// Push a1 onto the FPU register stack.
-	pretty.Println("inst:", inst)
-	panic("emitInstFILD: not yet implemented")
+	end := &ir.BasicBlock{}
+	cur := f.cur
+	var cases []*ir.Case
+	for i, v := range f.fpuStack[:] {
+		block := &ir.BasicBlock{}
+		block.NewBr(end)
+		f.cur = block
+		f.defArg(inst.Arg(0), v)
+		f.AppendBlock(block)
+		c := ir.NewCase(constant.NewInt(int64(i), types.I8), block)
+		cases = append(cases, c)
+	}
+	f.cur = cur
+	st := f.cur.NewLoad(f.st)
+	f.cur.NewSwitch(st, end, cases...)
+	f.cur = end
+	f.AppendBlock(end)
+	return nil
 }
 
 // --- [ FIMUL ] ---------------------------------------------------------------

@@ -124,6 +124,3 @@ m16: resw 1
 
 ; 32-bit memory variable.
 m32: resd 1
-
-; 64-bit memory variable.
-m64: resq 1

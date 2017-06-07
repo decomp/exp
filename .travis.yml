@@ -23,6 +23,7 @@ before_install:
   # TODO: Remove once https://github.com/golang/go/issues/18665 is resolved.
   - go get golang.org/x/arch/x86/x86asm
   - wget -O $HOME/gopath/src/golang.org/x/arch/x86/x86asm/tables.go https://raw.githubusercontent.com/mewpull/arch/master/x86/x86asm/tables.go
+
 install:
   - go get -t ./...
 

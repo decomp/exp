@@ -12,7 +12,9 @@ all: \
 	x86_32/arithmetic/arithmetic.so \
 	x86_64/arithmetic/arithmetic.so \
 	x86_32/import/import.out \
-	x86_64/import/import.out
+	x86_64/import/import.out \
+	x86_32/float/float.out \
+	x86_64/float/float.out
 
 %.bin: %.asm
 	nasm -f bin -o $@ $<
@@ -33,6 +35,12 @@ x86_32/import/%.out: x86_32/import/%.o
 	ld -Ttext 400000 -Tbss 600000 -m elf_i386 -I/lib/ld-linux.so.2 -L/usr/lib32 -o $@ $< -lc
 
 x86_64/import/%.out: x86_64/import/%.o
+	ld -Ttext 400000 -Tbss 600000 -m elf_x86_64 -I/lib/ld-linux-x86-64.so.2 -o $@ $< -lc
+
+x86_32/float/%.out: x86_32/float/%.o
+	ld -Ttext 400000 -Tbss 600000 -m elf_i386 -I/lib/ld-linux.so.2 -L/usr/lib32 -o $@ $< -lc
+
+x86_64/float/%.out: x86_64/float/%.o
 	ld -Ttext 400000 -Tbss 600000 -m elf_x86_64 -I/lib/ld-linux-x86-64.so.2 -o $@ $< -lc
 
 x86_32/%.out: x86_32/%.o

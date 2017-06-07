@@ -7,6 +7,7 @@ import (
 	"github.com/decomp/exp/bin"
 	"github.com/decomp/exp/disasm/x86"
 	"github.com/llir/llvm/ir"
+	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/metadata"
 	"github.com/llir/llvm/ir/types"
 	"golang.org/x/arch/x86/x86asm"
@@ -31,12 +32,21 @@ type Func struct {
 	// usesEDX_EAX specifies whether any instruction of the function uses
 	// EDX:EAX.
 	usesEDX_EAX bool
+	// usesFPUStack specifies whether any instruction of the function uses
+	// the FPU stack.
+	usesFPUStack bool
 
 	// TODO: Move espDisp from Func to BasicBlock, and propagate symbolic
 	// execution information through context.json.
 
 	// ESP disposition; used for shadow stack.
 	espDisp int64
+
+	// FPU register stack top; integer value in range [0, 7].
+	st *ir.InstAlloca
+
+	// FPU register stack.
+	fpuStack [8]*ir.InstAlloca
 
 	// Read-only global lifter state.
 	l *Lifter
@@ -85,6 +95,10 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 	for _, bb := range asmFunc.Blocks {
 		for _, inst := range bb.Insts {
 			switch inst.Op {
+			// TODO: Identify more instructions which makes use of the FPU register
+			// stack.
+			case x86asm.FILD:
+				f.usesFPUStack = true
 			// TODO: Identify more instructions which makes use of EDX:EAX.
 			case x86asm.IDIV:
 				f.usesEDX_EAX = true
@@ -97,6 +111,18 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 // Lift lifts the function from input assembly to LLVM IR.
 func (f *Func) Lift() {
 	dbg.Printf("lifting function at %v", f.AsmFunc.Addr)
+	// Allocate local variables for the FPU register stack used within the
+	// function.
+	if f.usesFPUStack {
+		for i := range f.fpuStack[:] {
+			v := ir.NewAlloca(types.X86_FP80)
+			v.SetName(fmt.Sprintf("st%d", i))
+			f.fpuStack[i] = v
+		}
+		v := ir.NewAlloca(types.I8)
+		v.SetName("st")
+		f.st = v
+	}
 	var blockAddrs bin.Addresses
 	for blockAddr := range f.AsmFunc.Blocks {
 		blockAddrs = append(blockAddrs, blockAddr)
@@ -118,6 +144,16 @@ func (f *Func) Lift() {
 			if inst, ok := f.regs[reg]; ok {
 				entry.AppendInst(inst)
 			}
+		}
+		// Allocate local variables for the FPU register stack used within the
+		// function.
+		if f.usesFPUStack {
+			for _, v := range f.fpuStack[:] {
+				entry.AppendInst(v)
+			}
+			entry.AppendInst(f.st)
+			zero := constant.NewInt(0, types.I8)
+			entry.NewStore(zero, f.st)
 		}
 		// Allocate local variables for each status flag used within the function.
 		for status := CF; status <= OF; status++ {

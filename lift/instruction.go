@@ -2485,24 +2485,6 @@ func (f *Func) liftInstFADDP(inst *x86.Inst) error {
 	panic("emitInstFADDP: not yet implemented")
 }
 
-// --- [ FBLD ] ----------------------------------------------------------------
-
-// liftInstFBLD lifts the given x86 FBLD instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) liftInstFBLD(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFBLD: not yet implemented")
-}
-
-// --- [ FBSTP ] ---------------------------------------------------------------
-
-// liftInstFBSTP lifts the given x86 FBSTP instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) liftInstFBSTP(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFBSTP: not yet implemented")
-}
-
 // --- [ FCHS ] ----------------------------------------------------------------
 
 // liftInstFCHS lifts the given x86 FCHS instruction to LLVM IR, emitting code
@@ -2510,78 +2492,6 @@ func (f *Func) liftInstFBSTP(inst *x86.Inst) error {
 func (f *Func) liftInstFCHS(inst *x86.Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFCHS: not yet implemented")
-}
-
-// --- [ FCMOVB ] --------------------------------------------------------------
-
-// liftInstFCMOVB lifts the given x86 FCMOVB instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) liftInstFCMOVB(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVB: not yet implemented")
-}
-
-// --- [ FCMOVBE ] -------------------------------------------------------------
-
-// liftInstFCMOVBE lifts the given x86 FCMOVBE instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) liftInstFCMOVBE(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVBE: not yet implemented")
-}
-
-// --- [ FCMOVE ] --------------------------------------------------------------
-
-// liftInstFCMOVE lifts the given x86 FCMOVE instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) liftInstFCMOVE(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVE: not yet implemented")
-}
-
-// --- [ FCMOVNB ] -------------------------------------------------------------
-
-// liftInstFCMOVNB lifts the given x86 FCMOVNB instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) liftInstFCMOVNB(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVNB: not yet implemented")
-}
-
-// --- [ FCMOVNBE ] ------------------------------------------------------------
-
-// liftInstFCMOVNBE lifts the given x86 FCMOVNBE instruction to LLVM IR,
-// emitting code to f.
-func (f *Func) liftInstFCMOVNBE(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVNBE: not yet implemented")
-}
-
-// --- [ FCMOVNE ] -------------------------------------------------------------
-
-// liftInstFCMOVNE lifts the given x86 FCMOVNE instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) liftInstFCMOVNE(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVNE: not yet implemented")
-}
-
-// --- [ FCMOVNU ] -------------------------------------------------------------
-
-// liftInstFCMOVNU lifts the given x86 FCMOVNU instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) liftInstFCMOVNU(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVNU: not yet implemented")
-}
-
-// --- [ FCMOVU ] --------------------------------------------------------------
-
-// liftInstFCMOVU lifts the given x86 FCMOVU instruction to LLVM IR, emitting
-// code to f.
-func (f *Func) liftInstFCMOVU(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVU: not yet implemented")
 }
 
 // --- [ FCOM ] ----------------------------------------------------------------
@@ -2746,42 +2656,6 @@ func (f *Func) liftInstFIDIVR(inst *x86.Inst) error {
 	panic("emitInstFIDIVR: not yet implemented")
 }
 
-// --- [ FILD ] ----------------------------------------------------------------
-
-// liftInstFILD lifts the given x86 FILD instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) liftInstFILD(inst *x86.Inst) error {
-	// FILD - Load Integer
-	//
-	//    FILD arg
-	//
-	// Converts the signed-integer source operand into double extended-precision
-	// floating-point format and pushes the value onto the FPU register stack.
-	end := &ir.BasicBlock{}
-	cur := f.cur
-	arg := f.useArg(inst.Arg(0))
-	src := f.cur.NewSIToFP(arg, types.X86_FP80)
-	var cases []*ir.Case
-	for i, v := range f.fpuStack[:] {
-		block := &ir.BasicBlock{}
-		block.NewBr(end)
-		f.cur = block
-		f.cur.NewStore(src, v)
-		f.AppendBlock(block)
-		c := ir.NewCase(constant.NewInt(int64(i), types.I8), block)
-		cases = append(cases, c)
-	}
-	f.cur = cur
-	st := f.cur.NewLoad(f.st)
-	defaultTarget := &ir.BasicBlock{}
-	defaultTarget.NewUnreachable()
-	f.AppendBlock(defaultTarget)
-	f.cur.NewSwitch(st, defaultTarget, cases...)
-	f.cur = end
-	f.AppendBlock(end)
-	return nil
-}
-
 // --- [ FIMUL ] ---------------------------------------------------------------
 
 // liftInstFIMUL lifts the given x86 FIMUL instruction to LLVM IR, emitting code
@@ -2798,24 +2672,6 @@ func (f *Func) liftInstFIMUL(inst *x86.Inst) error {
 func (f *Func) liftInstFINCSTP(inst *x86.Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFINCSTP: not yet implemented")
-}
-
-// --- [ FIST ] ----------------------------------------------------------------
-
-// liftInstFIST lifts the given x86 FIST instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) liftInstFIST(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFIST: not yet implemented")
-}
-
-// --- [ FISTP ] ---------------------------------------------------------------
-
-// liftInstFISTP lifts the given x86 FISTP instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) liftInstFISTP(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFISTP: not yet implemented")
 }
 
 // --- [ FISTTP ] --------------------------------------------------------------
@@ -2843,15 +2699,6 @@ func (f *Func) liftInstFISUB(inst *x86.Inst) error {
 func (f *Func) liftInstFISUBR(inst *x86.Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFISUBR: not yet implemented")
-}
-
-// --- [ FLD ] -----------------------------------------------------------------
-
-// liftInstFLD lifts the given x86 FLD instruction to LLVM IR, emitting code to
-// f.
-func (f *Func) liftInstFLD(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFLD: not yet implemented")
 }
 
 // --- [ FLD1 ] ----------------------------------------------------------------
@@ -3106,24 +2953,6 @@ func (f *Func) liftInstFSQRT(inst *x86.Inst) error {
 	panic("emitInstFSQRT: not yet implemented")
 }
 
-// --- [ FST ] -----------------------------------------------------------------
-
-// liftInstFST lifts the given x86 FST instruction to LLVM IR, emitting code to
-// f.
-func (f *Func) liftInstFST(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFST: not yet implemented")
-}
-
-// --- [ FSTP ] ----------------------------------------------------------------
-
-// liftInstFSTP lifts the given x86 FSTP instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) liftInstFSTP(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFSTP: not yet implemented")
-}
-
 // --- [ FSUB ] ----------------------------------------------------------------
 
 // liftInstFSUB lifts the given x86 FSUB instruction to LLVM IR, emitting code
@@ -3230,15 +3059,6 @@ func (f *Func) liftInstFWAIT(inst *x86.Inst) error {
 func (f *Func) liftInstFXAM(inst *x86.Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFXAM: not yet implemented")
-}
-
-// --- [ FXCH ] ----------------------------------------------------------------
-
-// liftInstFXCH lifts the given x86 FXCH instruction to LLVM IR, emitting code
-// to f.
-func (f *Func) liftInstFXCH(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstFXCH: not yet implemented")
 }
 
 // --- [ FXRSTOR ] -------------------------------------------------------------

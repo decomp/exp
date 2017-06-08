@@ -137,7 +137,7 @@ func (f *Func) Lift() {
 	}
 	// Add new entry basic block to define registers and status flags used within
 	// the function.
-	if len(f.regs) > 0 || len(f.statusFlags) > 0 {
+	if len(f.regs) > 0 || len(f.statusFlags) > 0 || f.usesFPUStack {
 		entry := &ir.BasicBlock{}
 		// Allocate local variables for each register used within the function.
 		for reg := x86.FirstReg; reg <= x86.LastReg; reg++ {

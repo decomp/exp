@@ -52,6 +52,10 @@ func TestLift(t *testing.T) {
 		// Import functions from dynamic libraries.
 		{dir: "testdata/x86_32/import", in: "import.out", out: "import.ll"},
 		{dir: "testdata/x86_64/import", in: "import.out", out: "import.ll"},
+
+		// Floating-point instructions.
+		{dir: "testdata/x86_32/float", in: "float.out", out: "float.ll"},
+		{dir: "testdata/x86_64/float", in: "float.out", out: "float.ll"},
 	}
 	wd, err := os.Getwd()
 	if err != nil {

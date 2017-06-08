@@ -2753,24 +2753,30 @@ func (f *Func) liftInstFIDIVR(inst *x86.Inst) error {
 func (f *Func) liftInstFILD(inst *x86.Inst) error {
 	// FILD - Load Integer
 	//
-	//    FILD a1
+	//    FILD arg
 	//
-	// Push a1 onto the FPU register stack.
+	// Converts the signed-integer source operand into double extended-precision
+	// floating-point format and pushes the value onto the FPU register stack.
 	end := &ir.BasicBlock{}
 	cur := f.cur
+	arg := f.useArg(inst.Arg(0))
+	src := f.cur.NewSIToFP(arg, types.X86_FP80)
 	var cases []*ir.Case
 	for i, v := range f.fpuStack[:] {
 		block := &ir.BasicBlock{}
 		block.NewBr(end)
 		f.cur = block
-		f.defArg(inst.Arg(0), v)
+		f.cur.NewStore(src, v)
 		f.AppendBlock(block)
 		c := ir.NewCase(constant.NewInt(int64(i), types.I8), block)
 		cases = append(cases, c)
 	}
 	f.cur = cur
 	st := f.cur.NewLoad(f.st)
-	f.cur.NewSwitch(st, end, cases...)
+	defaultTarget := &ir.BasicBlock{}
+	defaultTarget.NewUnreachable()
+	f.AppendBlock(defaultTarget)
+	f.cur.NewSwitch(st, defaultTarget, cases...)
 	f.cur = end
 	f.AppendBlock(end)
 	return nil

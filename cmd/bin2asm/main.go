@@ -130,6 +130,9 @@ func main() {
 			for _, inst := range block.Insts {
 				ops[inst.Op] = true
 			}
+			if !block.Term.IsDummyTerm() {
+				ops[block.Term.Op] = true
+			}
 		}
 	}
 	var keys []x86asm.Op

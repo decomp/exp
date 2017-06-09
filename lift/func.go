@@ -97,7 +97,27 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 			switch inst.Op {
 			// TODO: Identify more instructions which makes use of the FPU register
 			// stack.
-			case x86asm.FILD:
+			case x86asm.F2XM1, x86asm.FABS, x86asm.FADD, x86asm.FADDP, x86asm.FBLD,
+				x86asm.FBSTP, x86asm.FCHS, x86asm.FCMOVB, x86asm.FCMOVBE,
+				x86asm.FCMOVE, x86asm.FCMOVNB, x86asm.FCMOVNBE, x86asm.FCMOVNE,
+				x86asm.FCMOVNU, x86asm.FCMOVU, x86asm.FCOM, x86asm.FCOMI,
+				x86asm.FCOMIP, x86asm.FCOMP, x86asm.FCOMPP, x86asm.FCOS,
+				x86asm.FDECSTP, x86asm.FDIV, x86asm.FDIVP, x86asm.FDIVR, x86asm.FDIVRP,
+				x86asm.FFREE, x86asm.FFREEP, x86asm.FIADD, x86asm.FICOM, x86asm.FICOMP,
+				x86asm.FIDIV, x86asm.FIDIVR, x86asm.FILD, x86asm.FIMUL, x86asm.FINCSTP,
+				x86asm.FIST, x86asm.FISTP, x86asm.FISTTP, x86asm.FISUB, x86asm.FISUBR,
+				x86asm.FLD, x86asm.FLD1, x86asm.FLDCW, x86asm.FLDENV, x86asm.FLDL2E,
+				x86asm.FLDL2T, x86asm.FLDLG2, x86asm.FLDPI, x86asm.FMUL, x86asm.FMULP,
+				x86asm.FNCLEX, x86asm.FNINIT, x86asm.FNOP, x86asm.FNSAVE,
+				x86asm.FNSTCW, x86asm.FNSTENV, x86asm.FNSTSW, x86asm.FPATAN,
+				x86asm.FPREM, x86asm.FPREM1, x86asm.FPTAN, x86asm.FRNDINT,
+				x86asm.FRSTOR, x86asm.FSCALE, x86asm.FSIN, x86asm.FSINCOS,
+				x86asm.FSQRT, x86asm.FST, x86asm.FSTP, x86asm.FSUB, x86asm.FSUBP,
+				x86asm.FSUBR, x86asm.FSUBRP, x86asm.FTST, x86asm.FUCOM, x86asm.FUCOMI,
+				x86asm.FUCOMIP, x86asm.FUCOMP, x86asm.FUCOMPP, x86asm.FWAIT,
+				x86asm.FXAM, x86asm.FXCH, x86asm.FXRSTOR, x86asm.FXRSTOR64,
+				x86asm.FXSAVE, x86asm.FXSAVE64, x86asm.FXTRACT, x86asm.FYL2X,
+				x86asm.FYL2XP1:
 				f.usesFPUStack = true
 			// TODO: Identify more instructions which makes use of EDX:EAX.
 			case x86asm.IDIV:

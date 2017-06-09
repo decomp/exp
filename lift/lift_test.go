@@ -56,6 +56,9 @@ func TestLift(t *testing.T) {
 		// Floating-point instructions.
 		{dir: "testdata/x86_32/float", in: "float.out", out: "float.ll"},
 		{dir: "testdata/x86_64/float", in: "float.out", out: "float.ll"},
+		// FLD
+		{dir: "testdata/x86_32/float/fld", in: "fld.so", out: "fld.ll"},
+		{dir: "testdata/x86_64/float/fld", in: "fld.so", out: "fld.ll"},
 	}
 	wd, err := os.Getwd()
 	if err != nil {

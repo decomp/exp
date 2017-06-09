@@ -22,8 +22,23 @@ import (
 // f.
 func (f *Func) liftInstFLD(inst *x86.Inst) error {
 	// FLD - Load floating-point value.
-	pretty.Println("inst:", inst)
-	panic("emitInstFLD: not yet implemented")
+	//
+	//    FILD m32fp          Push m32fp onto the FPU register stack.
+	//    FILD m64fp          Push m64fp onto the FPU register stack.
+	//    FILD m80fp          Push m80fp onto the FPU register stack.
+	//    FILD ST(i)          Push ST(i) onto the FPU register stack.
+	//
+	// Pushes the source operand onto the FPU register stack. If the source
+	// operand is in single-precision or double-precision floating-point format,
+	// it is automatically converted to the double extended-precision floating-
+	// point format before being pushed on the stack.
+	src := f.useArg(inst.Arg(0))
+	// TODO: Verify that FILD ST(i) is handled correctly.
+	if !types.Equal(src.Type(), types.X86_FP80) {
+		src = f.cur.NewFPExt(src, types.X86_FP80)
+	}
+	f.fpush(src)
+	return nil
 }
 
 // --- [ FST ] -----------------------------------------------------------------

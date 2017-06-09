@@ -11,6 +11,7 @@ import (
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
+	"github.com/llir/llvm/ir/value"
 )
 
 // === [ x87 FPU Data Transfer Instructions ] ==================================
@@ -58,52 +59,9 @@ func (f *Func) liftInstFILD(inst *x86.Inst) error {
 	//
 	// Converts the signed-integer source operand into double extended-precision
 	// floating-point format and pushes the value onto the FPU register stack.
-
-	// Decrement st.
-	tmp1 := f.cur.NewLoad(f.st)
-	targetTrue := &ir.BasicBlock{}
-	targetFalse := &ir.BasicBlock{}
-	follow := &ir.BasicBlock{}
-	targetTrue.NewBr(follow)
-	targetFalse.NewBr(follow)
-	zero := constant.NewInt(0, types.I8)
-	cond := f.cur.NewICmp(ir.IntEQ, tmp1, zero)
-	f.cur.NewCondBr(cond, targetTrue, targetFalse)
-	f.cur = targetTrue
-	f.AppendBlock(targetTrue)
-	seven := constant.NewInt(7, types.I8)
-	f.cur.NewStore(seven, f.st)
-	f.cur = targetFalse
-	f.AppendBlock(targetFalse)
-	one := constant.NewInt(1, types.I8)
-	tmp2 := f.cur.NewSub(tmp1, one)
-	f.cur.NewStore(tmp2, f.st)
-	f.cur = follow
-	f.AppendBlock(follow)
-
-	// Store arg at st(0).
-	end := &ir.BasicBlock{}
 	arg := f.useArg(inst.Arg(0))
 	src := f.cur.NewSIToFP(arg, types.X86_FP80)
-	cur := f.cur
-	var cases []*ir.Case
-	for i, v := range f.fpuStack[:] {
-		block := &ir.BasicBlock{}
-		block.NewBr(end)
-		f.cur = block
-		f.AppendBlock(block)
-		f.cur.NewStore(src, v)
-		c := ir.NewCase(constant.NewInt(int64(i), types.I8), block)
-		cases = append(cases, c)
-	}
-	f.cur = cur
-	st := f.cur.NewLoad(f.st)
-	defaultTarget := &ir.BasicBlock{}
-	defaultTarget.NewUnreachable()
-	f.AppendBlock(defaultTarget)
-	f.cur.NewSwitch(st, defaultTarget, cases...)
-	f.cur = end
-	f.AppendBlock(end)
+	f.fpush(src)
 	return nil
 }
 
@@ -1014,4 +972,54 @@ func (f *Func) liftInstFNOP(inst *x86.Inst) error {
 	// FNOP - FPU no operation.
 	pretty.Println("inst:", inst)
 	panic("emitInstFNOP: not yet implemented")
+}
+
+// ### [ Helper functions ] ####################################################
+
+// fpush pushes the given value to the top of the FPU register stack, emitting
+// code to f.
+func (f *Func) fpush(src value.Value) {
+	// Decrement st.
+	tmp1 := f.cur.NewLoad(f.st)
+	targetTrue := &ir.BasicBlock{}
+	targetFalse := &ir.BasicBlock{}
+	follow := &ir.BasicBlock{}
+	targetTrue.NewBr(follow)
+	targetFalse.NewBr(follow)
+	zero := constant.NewInt(0, types.I8)
+	cond := f.cur.NewICmp(ir.IntEQ, tmp1, zero)
+	f.cur.NewCondBr(cond, targetTrue, targetFalse)
+	f.cur = targetTrue
+	f.AppendBlock(targetTrue)
+	seven := constant.NewInt(7, types.I8)
+	f.cur.NewStore(seven, f.st)
+	f.cur = targetFalse
+	f.AppendBlock(targetFalse)
+	one := constant.NewInt(1, types.I8)
+	tmp2 := f.cur.NewSub(tmp1, one)
+	f.cur.NewStore(tmp2, f.st)
+	f.cur = follow
+	f.AppendBlock(follow)
+
+	// Store arg at st(0).
+	end := &ir.BasicBlock{}
+	cur := f.cur
+	var cases []*ir.Case
+	for i, dst := range f.fpuStack[:] {
+		block := &ir.BasicBlock{}
+		block.NewBr(end)
+		f.cur = block
+		f.AppendBlock(block)
+		f.cur.NewStore(src, dst)
+		c := ir.NewCase(constant.NewInt(int64(i), types.I8), block)
+		cases = append(cases, c)
+	}
+	f.cur = cur
+	st := f.cur.NewLoad(f.st)
+	defaultTarget := &ir.BasicBlock{}
+	defaultTarget.NewUnreachable()
+	f.AppendBlock(defaultTarget)
+	f.cur.NewSwitch(st, defaultTarget, cases...)
+	f.cur = end
+	f.AppendBlock(end)
 }

@@ -54,8 +54,34 @@ func (f *Func) liftInstFILD(inst *x86.Inst) error {
 	//
 	//    FILD arg
 	//
+	// Push arg onto the FPU register stack.
+	//
 	// Converts the signed-integer source operand into double extended-precision
 	// floating-point format and pushes the value onto the FPU register stack.
+
+	// Decrement st.
+	tmp1 := f.cur.NewLoad(f.st)
+	targetTrue := &ir.BasicBlock{}
+	targetFalse := &ir.BasicBlock{}
+	follow := &ir.BasicBlock{}
+	targetTrue.NewBr(follow)
+	targetFalse.NewBr(follow)
+	zero := constant.NewInt(0, types.I8)
+	cond := f.cur.NewICmp(ir.IntEQ, tmp1, zero)
+	f.cur.NewCondBr(cond, targetTrue, targetFalse)
+	f.cur = targetTrue
+	f.AppendBlock(targetTrue)
+	seven := constant.NewInt(7, types.I8)
+	f.cur.NewStore(seven, f.st)
+	f.cur = targetFalse
+	f.AppendBlock(targetFalse)
+	one := constant.NewInt(1, types.I8)
+	tmp2 := f.cur.NewSub(tmp1, one)
+	f.cur.NewStore(tmp2, f.st)
+	f.cur = follow
+	f.AppendBlock(follow)
+
+	// Store arg at st(0).
 	end := &ir.BasicBlock{}
 	arg := f.useArg(inst.Arg(0))
 	src := f.cur.NewSIToFP(arg, types.X86_FP80)
@@ -130,6 +156,23 @@ func (f *Func) liftInstFXCH(inst *x86.Inst) error {
 	pretty.Println("inst:", inst)
 	panic("emitInstFXCH: not yet implemented")
 }
+
+// ___ [ FCMOVcc - Floating-Point Conditional Move Instructions ] ______________
+//
+//    Instruction Mnemonic   Status Flag States   Condition Description
+//
+//    FCMOVB                 CF=1                 Below
+//    FCMOVNB                CF=0                 Not below
+//    FCMOVE                 ZF=1                 Equal
+//    FCMOVNE                ZF=0                 Not equal
+//    FCMOVBE                CF=1 or ZF=1         Below or equal
+//    FCMOVNBE               CF=0 or ZF=0         Not below nor equal
+//    FCMOVU                 PF=1                 Unordered
+//    FCMOVNU                PF=0                 Not unordered
+//
+// ref: $ 8.3.3 Data Transfer Instructions, Table 8-5, Floating-Point
+// Conditional Move Instructions, Intel 64 and IA-32 Architectures Software
+// Developer's Manual: Basic architecture.
 
 // --- [ FCMOVE ] --------------------------------------------------------------
 

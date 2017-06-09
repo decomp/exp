@@ -8,6 +8,9 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sort"
+
+	"golang.org/x/arch/x86/x86asm"
 
 	"github.com/decomp/exp/bin"
 	_ "github.com/decomp/exp/bin/elf" // register ELF decoder
@@ -109,6 +112,7 @@ func main() {
 	}
 
 	// Disassemble functions.
+	ops := make(map[x86asm.Op]bool)
 	for _, funcAddr := range funcAddrs {
 		if firstAddr != 0 && funcAddr < firstAddr {
 			// skip functions before first address.
@@ -122,7 +126,22 @@ func main() {
 		if err != nil {
 			log.Fatalf("%+v", err)
 		}
-		_ = f
+		for _, block := range f.Blocks {
+			for _, inst := range block.Insts {
+				ops[inst.Op] = true
+			}
+		}
+	}
+	var keys []x86asm.Op
+	for op := range ops {
+		keys = append(keys, op)
+	}
+	less := func(i, j int) bool {
+		return keys[i] < keys[j]
+	}
+	sort.Slice(keys, less)
+	for _, op := range keys {
+		fmt.Println(op)
 	}
 }
 

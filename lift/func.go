@@ -116,7 +116,7 @@ func (f *Func) Lift() {
 	if f.usesFPUStack {
 		for i := range f.fpuStack[:] {
 			v := ir.NewAlloca(types.X86_FP80)
-			v.SetName(fmt.Sprintf("st%d", i))
+			v.SetName(fmt.Sprintf("f%d", i))
 			f.fpuStack[i] = v
 		}
 		v := ir.NewAlloca(types.I8)

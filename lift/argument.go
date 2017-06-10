@@ -195,7 +195,16 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 	if mem.Mem.Segment != 0 {
 		segment = f.useReg(mem.Segment())
 	}
-	if mem.Mem.Base != 0 {
+
+	// Parse Base register.
+	var rel bin.Address
+	switch mem.Mem.Base {
+	case 0:
+		// no base register.
+	case x86asm.IP, x86asm.EIP, x86asm.RIP:
+		// Handle IP-relative addressing; common in 64-bit x86.
+		rel = mem.Parent.Addr + bin.Address(mem.Parent.Len)
+	default:
 		base = f.useReg(mem.Base())
 	}
 	if mem.Mem.Index != 0 {
@@ -223,14 +232,6 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 			f.locals[name] = v
 			return v
 		}
-	}
-
-	// Handle IP-relative addressing; common in 64-bit x86.
-	var rel bin.Address
-	switch mem.Mem.Base {
-	case x86asm.IP, x86asm.EIP, x86asm.RIP:
-		rel = mem.Parent.Addr + bin.Address(mem.Parent.Len)
-		base = nil
 	}
 
 	// Handle disposition.

@@ -24,10 +24,10 @@ import (
 func (f *Func) liftInstFLD(inst *x86.Inst) error {
 	// FLD - Load floating-point value.
 	//
-	//    FILD m32fp          Push m32fp onto the FPU register stack.
-	//    FILD m64fp          Push m64fp onto the FPU register stack.
-	//    FILD m80fp          Push m80fp onto the FPU register stack.
-	//    FILD ST(i)          Push ST(i) onto the FPU register stack.
+	//    FLD m32fp           Push m32fp onto the FPU register stack.
+	//    FLD m64fp           Push m64fp onto the FPU register stack.
+	//    FLD m80fp           Push m80fp onto the FPU register stack.
+	//    FLD ST(i)           Push ST(i) onto the FPU register stack.
 	//
 	// Pushes the source operand onto the FPU register stack. If the source
 	// operand is in single-precision or double-precision floating-point format,
@@ -69,9 +69,9 @@ func (f *Func) liftInstFSTP(inst *x86.Inst) error {
 func (f *Func) liftInstFILD(inst *x86.Inst) error {
 	// FILD - Load integer.
 	//
-	//    FILD arg
-	//
-	// Push arg onto the FPU register stack.
+	//    FILD m16int         Push m16int onto the FPU register stack.
+	//    FILD m32int         Push m32int onto the FPU register stack.
+	//    FILD m64int         Push m64int onto the FPU register stack.
 	//
 	// Converts the signed-integer source operand into double extended-precision
 	// floating-point format and pushes the value onto the FPU register stack.

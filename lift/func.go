@@ -32,9 +32,8 @@ type Func struct {
 	// usesEDX_EAX specifies whether any instruction of the function uses
 	// EDX:EAX.
 	usesEDX_EAX bool
-	// usesFPUStack specifies whether any instruction of the function uses
-	// the FPU stack.
-	usesFPUStack bool
+	// usesFPU specifies whether any instruction of the function uses the FPU.
+	usesFPU bool
 
 	// TODO: Move espDisp from Func to BasicBlock, and propagate symbolic
 	// execution information through context.json.
@@ -44,9 +43,6 @@ type Func struct {
 
 	// FPU register stack top; integer value in range [0, 7].
 	st *ir.InstAlloca
-
-	// FPU register stack.
-	fpuStack [8]*ir.InstAlloca
 
 	// Read-only global lifter state.
 	l *Lifter
@@ -118,7 +114,7 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 				x86asm.FXAM, x86asm.FXCH, x86asm.FXRSTOR, x86asm.FXRSTOR64,
 				x86asm.FXSAVE, x86asm.FXSAVE64, x86asm.FXTRACT, x86asm.FYL2X,
 				x86asm.FYL2XP1:
-				f.usesFPUStack = true
+				f.usesFPU = true
 			// TODO: Identify more instructions which makes use of EDX:EAX.
 			case x86asm.IDIV:
 				f.usesEDX_EAX = true
@@ -131,14 +127,8 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 // Lift lifts the function from input assembly to LLVM IR.
 func (f *Func) Lift() {
 	dbg.Printf("lifting function at %v", f.AsmFunc.Addr)
-	// Allocate local variables for the FPU register stack used within the
-	// function.
-	if f.usesFPUStack {
-		for i := range f.fpuStack[:] {
-			v := ir.NewAlloca(types.X86_FP80)
-			v.SetName(fmt.Sprintf("f%d", i))
-			f.fpuStack[i] = v
-		}
+	// Allocate a local variable for the FPU stack top used within the function.
+	if f.usesFPU {
 		v := ir.NewAlloca(types.I8)
 		v.SetName("st")
 		f.st = v
@@ -157,7 +147,7 @@ func (f *Func) Lift() {
 	}
 	// Add new entry basic block to define registers and status flags used within
 	// the function.
-	if len(f.regs) > 0 || len(f.statusFlags) > 0 || f.usesFPUStack {
+	if len(f.regs) > 0 || len(f.statusFlags) > 0 || f.usesFPU {
 		entry := &ir.BasicBlock{}
 		// Allocate local variables for each register used within the function.
 		for reg := x86.FirstReg; reg <= x86.LastReg; reg++ {
@@ -167,13 +157,10 @@ func (f *Func) Lift() {
 		}
 		// Allocate local variables for the FPU register stack used within the
 		// function.
-		if f.usesFPUStack {
-			for _, v := range f.fpuStack[:] {
-				entry.AppendInst(v)
-			}
+		if f.usesFPU {
 			entry.AppendInst(f.st)
-			zero := constant.NewInt(0, types.I8)
-			entry.NewStore(zero, f.st)
+			seven := constant.NewInt(7, types.I8)
+			entry.NewStore(seven, f.st)
 		}
 		// Allocate local variables for each status flag used within the function.
 		for status := CF; status <= OF; status++ {

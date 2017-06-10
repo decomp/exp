@@ -9,7 +9,7 @@ define void @fild_m16int() !addr !{!"0x10000000"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_10000000
 block_10000000:
 	%1 = load i16, i16* @m16
@@ -77,7 +77,7 @@ define void @fild_m32int() !addr !{!"0x10000007"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_10000007
 block_10000007:
 	%1 = load i32, i32* @m32

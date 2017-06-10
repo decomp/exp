@@ -12,6 +12,7 @@ import (
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
+	"golang.org/x/arch/x86/x86asm"
 )
 
 // === [ x87 FPU Data Transfer Instructions ] ==================================
@@ -1020,11 +1021,13 @@ func (f *Func) fpush(src value.Value) {
 	end := &ir.BasicBlock{}
 	cur := f.cur
 	var cases []*ir.Case
-	for i, dst := range f.fpuStack[:] {
+	regs := []x86asm.Reg{x86asm.F0, x86asm.F1, x86asm.F2, x86asm.F3, x86asm.F4, x86asm.F5, x86asm.F6, x86asm.F7}
+	for i, reg := range regs {
 		block := &ir.BasicBlock{}
 		block.NewBr(end)
 		f.cur = block
 		f.AppendBlock(block)
+		dst := f.reg(reg)
 		f.cur.NewStore(src, dst)
 		c := ir.NewCase(constant.NewInt(int64(i), types.I8), block)
 		cases = append(cases, c)

@@ -10,7 +10,7 @@ define void @fld_m32fp() !addr !{!"0x10000000"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_10000000
 block_10000000:
 	%1 = load i64, i64* %rip
@@ -80,7 +80,7 @@ define void @fld_m64fp() !addr !{!"0x10000007"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_10000007
 block_10000007:
 	%1 = load i64, i64* %rip
@@ -150,7 +150,7 @@ define void @fld_m80fp() !addr !{!"0x1000000E"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_1000000E
 block_1000000E:
 	%1 = load i64, i64* %rip
@@ -210,7 +210,6 @@ block_1000000E:
 define void @fld_st0() !addr !{!"0x10000015"} {
 ; <label>:0
 	%f0 = alloca x86_fp80
-	%f0 = alloca x86_fp80
 	%f1 = alloca x86_fp80
 	%f2 = alloca x86_fp80
 	%f3 = alloca x86_fp80
@@ -219,7 +218,7 @@ define void @fld_st0() !addr !{!"0x10000015"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_10000015
 block_10000015:
 	%1 = load x86_fp80, x86_fp80* %f0
@@ -277,7 +276,6 @@ block_10000015:
 
 define void @fld_st1() !addr !{!"0x10000018"} {
 ; <label>:0
-	%f1 = alloca x86_fp80
 	%f0 = alloca x86_fp80
 	%f1 = alloca x86_fp80
 	%f2 = alloca x86_fp80
@@ -287,7 +285,7 @@ define void @fld_st1() !addr !{!"0x10000018"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_10000018
 block_10000018:
 	%1 = load x86_fp80, x86_fp80* %f1
@@ -345,7 +343,6 @@ block_10000018:
 
 define void @fld_st2() !addr !{!"0x1000001B"} {
 ; <label>:0
-	%f2 = alloca x86_fp80
 	%f0 = alloca x86_fp80
 	%f1 = alloca x86_fp80
 	%f2 = alloca x86_fp80
@@ -355,7 +352,7 @@ define void @fld_st2() !addr !{!"0x1000001B"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_1000001B
 block_1000001B:
 	%1 = load x86_fp80, x86_fp80* %f2
@@ -413,7 +410,6 @@ block_1000001B:
 
 define void @fld_st3() !addr !{!"0x1000001E"} {
 ; <label>:0
-	%f3 = alloca x86_fp80
 	%f0 = alloca x86_fp80
 	%f1 = alloca x86_fp80
 	%f2 = alloca x86_fp80
@@ -423,7 +419,7 @@ define void @fld_st3() !addr !{!"0x1000001E"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_1000001E
 block_1000001E:
 	%1 = load x86_fp80, x86_fp80* %f3
@@ -481,7 +477,6 @@ block_1000001E:
 
 define void @fld_st4() !addr !{!"0x10000021"} {
 ; <label>:0
-	%f4 = alloca x86_fp80
 	%f0 = alloca x86_fp80
 	%f1 = alloca x86_fp80
 	%f2 = alloca x86_fp80
@@ -491,7 +486,7 @@ define void @fld_st4() !addr !{!"0x10000021"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_10000021
 block_10000021:
 	%1 = load x86_fp80, x86_fp80* %f4
@@ -549,7 +544,6 @@ block_10000021:
 
 define void @fld_st5() !addr !{!"0x10000024"} {
 ; <label>:0
-	%f5 = alloca x86_fp80
 	%f0 = alloca x86_fp80
 	%f1 = alloca x86_fp80
 	%f2 = alloca x86_fp80
@@ -559,7 +553,7 @@ define void @fld_st5() !addr !{!"0x10000024"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_10000024
 block_10000024:
 	%1 = load x86_fp80, x86_fp80* %f5
@@ -617,7 +611,6 @@ block_10000024:
 
 define void @fld_st6() !addr !{!"0x10000027"} {
 ; <label>:0
-	%f6 = alloca x86_fp80
 	%f0 = alloca x86_fp80
 	%f1 = alloca x86_fp80
 	%f2 = alloca x86_fp80
@@ -627,7 +620,7 @@ define void @fld_st6() !addr !{!"0x10000027"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_10000027
 block_10000027:
 	%1 = load x86_fp80, x86_fp80* %f6
@@ -685,7 +678,6 @@ block_10000027:
 
 define void @fld_st7() !addr !{!"0x1000002A"} {
 ; <label>:0
-	%f7 = alloca x86_fp80
 	%f0 = alloca x86_fp80
 	%f1 = alloca x86_fp80
 	%f2 = alloca x86_fp80
@@ -695,7 +687,7 @@ define void @fld_st7() !addr !{!"0x1000002A"} {
 	%f6 = alloca x86_fp80
 	%f7 = alloca x86_fp80
 	%st = alloca i8
-	store i8 0, i8* %st
+	store i8 7, i8* %st
 	br label %block_1000002A
 block_1000002A:
 	%1 = load x86_fp80, x86_fp80* %f7

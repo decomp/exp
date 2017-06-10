@@ -1,17 +1,4 @@
-define void @_start() !addr !{!"0x400000"} {
-; <label>:0
-	%esp = alloca i32
-	%esp_-4 = alloca i32
-	br label %block_400000
-block_400000:
-	call void @fild_m16()
-	%1 = load i32, i32* %esp
-	store i32 0, i32* %esp_-4
-	call void @exit()
-	ret void
-}
-
-define void @fild_m16() !addr !{!"0x40000D"} {
+define void @fild_m16int() !addr !{!"0x10000000"} {
 ; <label>:0
 	%f0 = alloca x86_fp80
 	%f1 = alloca x86_fp80
@@ -23,9 +10,8 @@ define void @fild_m16() !addr !{!"0x40000D"} {
 	%f7 = alloca x86_fp80
 	%st = alloca i8
 	store i8 0, i8* %st
-	br label %block_40000D
-block_40000D:
-	store i32 42, i16* @m16
+	br label %block_10000000
+block_10000000:
 	%1 = load i16, i16* @m16
 	%2 = sitofp i16 %1 to x86_fp80
 	%3 = load i8, i8* %st
@@ -80,7 +66,7 @@ block_40000D:
 	ret void
 }
 
-define void @fild_m32() !addr !{!"0x40001D"} {
+define void @fild_m32int() !addr !{!"0x10000007"} {
 ; <label>:0
 	%f0 = alloca x86_fp80
 	%f1 = alloca x86_fp80
@@ -92,9 +78,8 @@ define void @fild_m32() !addr !{!"0x40001D"} {
 	%f7 = alloca x86_fp80
 	%st = alloca i8
 	store i8 0, i8* %st
-	br label %block_40001D
-block_40001D:
-	store i32 42, i32* @m32
+	br label %block_10000007
+block_10000007:
 	%1 = load i32, i32* @m32
 	%2 = sitofp i32 %1 to x86_fp80
 	%3 = load i8, i8* %st

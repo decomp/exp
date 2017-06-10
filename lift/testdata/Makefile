@@ -13,10 +13,10 @@ all: \
 	x86_64/arithmetic/arithmetic.so \
 	x86_32/import/import.out \
 	x86_64/import/import.out \
-	x86_32/float/float.out \
-	x86_64/float/float.out \
-	x86_32/float/fld/fld.so \
-	x86_64/float/fld/fld.so
+	x86_32/fpu/fild/fild.so \
+	x86_64/fpu/fild/fild.so \
+	x86_32/fpu/fld/fld.so \
+	x86_64/fpu/fld/fld.so
 
 %.bin: %.asm
 	nasm -f bin -o $@ $<

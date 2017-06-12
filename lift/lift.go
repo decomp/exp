@@ -38,6 +38,9 @@ type Lifter struct {
 	*x86.Disasm
 	// Functions.
 	Funcs map[bin.Address]*Func
+	// Map from function name to function. May also contain external functions
+	// without associated virtual addresses (e.g. loaded using GetProcAddress).
+	FuncByName map[string]*ir.Function
 	// Global variables.
 	Globals map[bin.Address]*ir.Global
 }
@@ -68,9 +71,10 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 		return nil, errors.WithStack(err)
 	}
 	l := &Lifter{
-		Disasm:  dis,
-		Funcs:   make(map[bin.Address]*Func),
-		Globals: make(map[bin.Address]*ir.Global),
+		Disasm:     dis,
+		Funcs:      make(map[bin.Address]*Func),
+		FuncByName: make(map[string]*ir.Function),
+		Globals:    make(map[bin.Address]*ir.Global),
 	}
 
 	// Parse associated LLVM IR information.
@@ -95,9 +99,11 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 
 	// Parse function signatures.
 	for _, f := range module.Funcs {
+		l.FuncByName[f.Name] = f
 		node, ok := f.Metadata["addr"]
 		if !ok {
-			return nil, errors.Errorf(`unable to locate "addr" metadata for function %q`, f.Name)
+			warn.Printf(`unable to locate "addr" metadata for function %q; potentially external function without associated virtual addresses (e.g. loaded with GetProcAddress)`, f.Name)
+			continue
 		}
 		var entry bin.Address
 		if err := metadata.Unmarshal(node, &entry); err != nil {

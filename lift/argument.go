@@ -240,7 +240,7 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 		if context, ok := f.l.Contexts[mem.Parent.Addr]; ok {
 			if c, ok := context.Args[1]; ok {
 				if o, ok := c["Mem.offset"]; ok {
-					offset := int64(o)
+					offset := o.Int64()
 					addr := rel + bin.Address(mem.Disp-offset)
 					v, ok := f.addr(addr)
 					if !ok {
@@ -525,8 +525,9 @@ func (f *Func) getAddr(arg *x86.Arg) (bin.Address, bool) {
 		if context, ok := f.l.Contexts[arg.Parent.Addr]; ok {
 			if c, ok := context.Regs[x86.Register(a)]; ok {
 				if addr, ok := c["addr"]; ok {
-					return bin.Address(addr), true
+					return addr.Addr(), true
 				}
+				panic(fmt.Errorf("support for register context `%v` not yet implemented", c))
 			}
 		}
 	case x86asm.Rel:
@@ -544,6 +545,23 @@ func (f *Func) getAddr(arg *x86.Arg) (bin.Address, bool) {
 // getFunc resolves the function, function type, and calling convention of the
 // given argument. The boolean return value indicates success.
 func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv, bool) {
+	// Check if register symbol context present.
+	switch a := arg.Arg.(type) {
+	case x86asm.Reg:
+		if context, ok := f.l.Contexts[arg.Parent.Addr]; ok {
+			if c, ok := context.Regs[x86.Register(a)]; ok {
+				if symbol, ok := c["symbol"]; ok {
+					fname := symbol.String()
+					fn, ok := f.l.FuncByName[fname]
+					if !ok {
+						panic(fmt.Errorf("unable to locate external function %q", fname))
+					}
+					return fn, fn.Sig, fn.CallConv, true
+				}
+			}
+		}
+	}
+
 	if addr, ok := f.getAddr(arg); ok {
 		if fn, ok := f.l.Funcs[addr]; ok {
 			v := fn.Function
@@ -562,7 +580,7 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 			}
 			if c, ok := context.Regs[x86.Register(a.Base)]; ok {
 				if addr, ok := c["addr"]; ok {
-					v := f.useAddr(bin.Address(addr))
+					v := f.useAddr(addr.Addr())
 					// TODO: Figure out how to handle negative offsets.
 					v = f.getElementPtr(v, a.Disp)
 					v = f.cur.NewLoad(v)

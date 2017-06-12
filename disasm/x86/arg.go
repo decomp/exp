@@ -131,7 +131,7 @@ func (dis *Disasm) Addrs(arg x86asm.Arg, addr, next bin.Address) []bin.Address {
 			if context, ok := dis.Contexts[addr]; ok {
 				if c, ok := context.Regs[Register(arg.Index)]; ok {
 					if indexMin, ok := c["min"]; ok {
-						disp += bin.Address(arg.Scale) * bin.Address(indexMin)
+						disp += bin.Address(arg.Scale) * indexMin.Addr()
 					}
 				}
 			}

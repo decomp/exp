@@ -33,6 +33,8 @@ type Context struct {
 //
 //    Mem.offset   int64         memory reference offset.
 //
+//    param        int64         parameter index.
+//
 //    symbol       string        symbol name.
 type ValueContext map[string]Value
 

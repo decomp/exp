@@ -20,7 +20,12 @@ func (f *Func) getElementPtr(src value.Value, offset int64) *ir.InstGetElementPt
 	e := elem
 	total := int64(0)
 	var indices []value.Value
-	for i := 0; total < offset; i++ {
+	// n specifies a byte offset into an integer element.
+	var n int64
+loop:
+	for i := int64(0); total < offset; i++ {
+		fmt.Println("   total:", total)
+		fmt.Println("   e:", e)
 		if i == 0 {
 			// Ignore checking the 0th index as it simply follows the pointer of
 			// src.
@@ -58,9 +63,28 @@ func (f *Func) getElementPtr(src value.Value, offset int64) *ir.InstGetElementPt
 			index := constant.NewInt(j, types.I64)
 			indices = append(indices, index)
 			e = t.Fields[j]
+		case *types.IntType:
+			warn.Printf("indexing into the middle of an integer element at offset %d in type %v", total, src.Type())
+			n = int64(t.Size / 8)
+			if total+n < offset {
+				panic(fmt.Errorf("unable to locate offset %d in type %v; indexing into integer type of byte size %d when at total offset %d", offset, src.Type(), n, total))
+			}
+			break loop
 		default:
 			panic(fmt.Errorf("support for indexing element type %T not yet implemented", e))
 		}
 	}
-	return f.cur.NewGetElementPtr(src, indices...)
+	v := f.cur.NewGetElementPtr(src, indices...)
+	if n > 0 {
+		src := f.cur.NewLoad(v)
+		typ := types.NewPointer(types.NewArray(types.I8, n))
+		tmp1 := f.cur.NewBitCast(src, typ)
+		indices := []value.Value{
+			constant.NewInt(0, types.I64),
+			constant.NewInt(offset-total, types.I64),
+		}
+		tmp2 := f.cur.NewGetElementPtr(tmp1, indices...)
+		return tmp2
+	}
+	return v
 }

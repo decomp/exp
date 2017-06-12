@@ -1,4 +1,6 @@
 all: \
+	x86_32/arithmetic/arithmetic.so \
+	x86_64/arithmetic/arithmetic.so \
 	x86_32/format/format.bin \
 	x86_32/format/format_elf.o \
 	x86_32/format/format_elf.so \
@@ -9,14 +11,16 @@ all: \
 	x86_64/format/format_elf.so \
 	x86_64/format/format_elf.out \
 	x86_64/format/format.coff \
-	x86_32/arithmetic/arithmetic.so \
-	x86_64/arithmetic/arithmetic.so \
-	x86_32/import/import.out \
-	x86_64/import/import.out \
 	x86_32/fpu/fild/fild.so \
 	x86_64/fpu/fild/fild.so \
 	x86_32/fpu/fld/fld.so \
-	x86_64/fpu/fld/fld.so
+	x86_64/fpu/fld/fld.so \
+	x86_32/fpu/fld1/fld1.so \
+	x86_64/fpu/fld1/fld1.so \
+	x86_32/fpu/fldz/fldz.so \
+	x86_64/fpu/fldz/fldz.so \
+	x86_32/import/import.out \
+	x86_64/import/import.out
 
 %.bin: %.asm
 	nasm -f bin -o $@ $<

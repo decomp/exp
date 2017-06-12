@@ -722,8 +722,14 @@ func (f *Func) liftInstFYL2XP1(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFLD1(inst *x86.Inst) error {
 	// FLD1 - Load +1.0.
-	pretty.Println("inst:", inst)
-	panic("emitInstFLD1: not yet implemented")
+	//
+	//    FLD1                Push +1.0 onto the FPU register stack.
+	//
+	// Push one of seven commonly used constants (in double extended-precision
+	// floating-point format) onto the FPU register stack.
+	src := constant.NewFloat(1, types.X86_FP80)
+	f.fpush(src)
+	return nil
 }
 
 // --- [ FLDZ ] ----------------------------------------------------------------
@@ -732,8 +738,14 @@ func (f *Func) liftInstFLD1(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFLDZ(inst *x86.Inst) error {
 	// FLDZ - Load +0.0.
-	pretty.Println("inst:", inst)
-	panic("emitInstFLDZ: not yet implemented")
+	//
+	//    FLDZ                Push +0.0 onto the FPU register stack.
+	//
+	// Push one of seven commonly used constants (in double extended-precision
+	// floating-point format) onto the FPU register stack.
+	src := constant.NewFloat(0, types.X86_FP80)
+	f.fpush(src)
+	return nil
 }
 
 // --- [ FLDPI ] ---------------------------------------------------------------

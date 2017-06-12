@@ -5156,8 +5156,41 @@ func (f *Func) liftInstSAR(inst *x86.Inst) error {
 // liftInstSBB lifts the given x86 SBB instruction to LLVM IR, emitting code to
 // f.
 func (f *Func) liftInstSBB(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstSBB: not yet implemented")
+	// SBB - Integer Subtraction with Borrow.
+	//
+	//    SBB AL, imm8        Subtract with borrow imm8 from AL.
+	//    SBB AX, imm16       Subtract with borrow imm16 from AX.
+	//    SBB EAX, imm32      Subtract with borrow imm32 from EAX.
+	//    SBB RAX, imm32      Subtract with borrow sign-extended imm.32 to 64-bits from RAX.
+	//    SBB r/m8, imm8      Subtract with borrow imm8 from r/m8.
+	//    SBB r/m8*, imm8     Subtract with borrow imm8 from r/m8.
+	//    SBB r/m16, imm16    Subtract with borrow imm16 from r/m16.
+	//    SBB r/m32, imm32    Subtract with borrow imm32 from r/m32.
+	//    SBB r/m64, imm32    Subtract with borrow sign-extended imm32 to 64-bits from r/m64.
+	//    SBB r/m16, imm8     Subtract with borrow sign-extended imm8 from r/m16.
+	//    SBB r/m32, imm8     Subtract with borrow sign-extended imm8 from r/m32.
+	//    SBB r/m64, imm8     Subtract with borrow sign-extended imm8 from r/m64.
+	//    SBB r/m8, r8        Subtract with borrow r8 from r/m8.
+	//    SBB r/m8*, r8       Subtract with borrow r8 from r/m8.
+	//    SBB r/m16, r16      Subtract with borrow r16 from r/m16.
+	//    SBB r/m32, r32      Subtract with borrow r32 from r/m32.
+	//    SBB r/m64, r64      Subtract with borrow r64 from r/m64.
+	//    SBB r8, r/m8        Subtract with borrow r/m8 from r8.
+	//    SBB r8*, r/m8*      Subtract with borrow r/m8 from r8.
+	//    SBB r16, r/m16      Subtract with borrow r/m16 from r16.
+	//    SBB r32, r/m32      Subtract with borrow r/m32 from r32.
+	//    SBB r64, r/m64      Subtract with borrow r/m64 from r64.
+	//
+	// Adds the source operand (second operand) and the carry (CF) flag, and
+	// subtracts the result from the destination operand (first operand). The
+	// result of the subtraction is stored in the destination operand.
+	src := f.useArg(inst.Arg(0))
+	dst := f.useArg(inst.Arg(1))
+	cf := f.useStatus(CF)
+	v := f.cur.NewAdd(src, cf)
+	result := f.cur.NewSub(dst, v)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ SCASB ] ---------------------------------------------------------------

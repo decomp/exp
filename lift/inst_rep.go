@@ -46,6 +46,10 @@ func (f *Func) liftREPInst(inst *x86.Inst) error {
 		if err := f.liftInstMOVSD(inst); err != nil {
 			return errors.WithStack(err)
 		}
+	case x86asm.STOSD:
+		if err := f.liftInstSTOSD(inst); err != nil {
+			return errors.WithStack(err)
+		}
 	default:
 		panic(fmt.Errorf("support for REP prefixed %v instruction not yet implemented", inst.Op))
 	}

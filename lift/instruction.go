@@ -1568,7 +1568,7 @@ func (f *Func) liftInstCALL(inst *x86.Inst) error {
 	// Locate callee information.
 	callee, sig, callconv, ok := f.getFunc(inst.Arg(0))
 	if !ok {
-		panic(fmt.Errorf("unable to locate function for argument %v", inst.Arg(0)))
+		panic(fmt.Errorf("unable to locate function for argument %v of instruction at address %v", inst.Arg(0), inst.Addr))
 	}
 
 	// Handle function arguments.

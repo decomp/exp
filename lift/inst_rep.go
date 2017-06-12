@@ -46,6 +46,10 @@ func (f *Func) liftREPInst(inst *x86.Inst) error {
 		if err := f.liftInstMOVSD(inst); err != nil {
 			return errors.WithStack(err)
 		}
+	case x86asm.STOSB:
+		if err := f.liftInstSTOSB(inst); err != nil {
+			return errors.WithStack(err)
+		}
 	case x86asm.STOSD:
 		if err := f.liftInstSTOSD(inst); err != nil {
 			return errors.WithStack(err)

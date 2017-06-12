@@ -1274,8 +1274,40 @@ func (f *Func) liftInstAAS(inst *x86.Inst) error {
 // liftInstADC lifts the given x86 ADC instruction to LLVM IR, emitting code to
 // f.
 func (f *Func) liftInstADC(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstADC: not yet implemented")
+	// ADC - Add with Carry.
+	//
+	//    ADC AL, imm8        Add with carry imm8 to AL.
+	//    ADC AX, imm16       Add with carry imm16 to AX.
+	//    ADC EAX, imm32      Add with carry imm32 to EAX.
+	//    ADC r/m8, imm8      Add with carry imm8 to r/m8.
+	//    ADC r/m8, r8        Add with carry byte register to r/m8.
+	//    ADC r/m8, r8        Add with carry byte register to r/m64.
+	//    ADC r/m16, imm16    Add with carry imm16 to r/m16.
+	//    ADC r/m16, imm8     Add with CF sign-extended imm8 to r/m16.
+	//    ADC r/m16, r16      Add with carry r16 to r/m16.
+	//    ADC r/m32, imm32    Add with CF imm32 to r/m32.
+	//    ADC r/m32, imm8     Add with CF sign-extended imm8 into r/m32.
+	//    ADC r/m32, r32      Add with CF r32 to r/m32.
+	//    ADC r/m64, imm32    Add with CF imm32 sign extended to 64-bits to r/m64.
+	//    ADC r/m64, imm8     Add with CF sign-extended imm8 into r/m64.
+	//    ADC r/m64, r64      Add with CF r64 to r/m64.
+	//    ADC r16, r/m16      Add with carry r/m16 to r16.
+	//    ADC r32, r/m32      Add with CF r/m32 to r32.
+	//    ADC r64, r/m64      Add with CF r/m64 to r64.
+	//    ADC r8, r/m8        Add with carry r/m8 to byte register.
+	//    ADC r8, r/m8        Add with carry r/m64 to byte register.
+	//    ADC RAX, imm32      Add with carry imm32 sign extended to 64-bits to RAX.
+	//
+	// Adds the destination operand (first operand), the source operand (second
+	// operand), and the carry (CF) flag and stores the result in the destination
+	// operand.
+	dst := f.useArg(inst.Arg(0))
+	src := f.useArg(inst.Arg(1))
+	cf := f.useStatus(CF)
+	v := f.cur.NewAdd(src, cf)
+	result := f.cur.NewAdd(dst, v)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ ADD ] -----------------------------------------------------------------
@@ -3548,8 +3580,7 @@ func (f *Func) liftInstNEG(inst *x86.Inst) error {
 // liftInstNOP lifts the given x86 NOP instruction to LLVM IR, emitting code to
 // f.
 func (f *Func) liftInstNOP(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstNOP: not yet implemented")
+	return nil
 }
 
 // --- [ NOT ] -----------------------------------------------------------------
@@ -5184,8 +5215,8 @@ func (f *Func) liftInstSBB(inst *x86.Inst) error {
 	// Adds the source operand (second operand) and the carry (CF) flag, and
 	// subtracts the result from the destination operand (first operand). The
 	// result of the subtraction is stored in the destination operand.
-	src := f.useArg(inst.Arg(0))
-	dst := f.useArg(inst.Arg(1))
+	dst := f.useArg(inst.Arg(0))
+	src := f.useArg(inst.Arg(1))
 	cf := f.useStatus(CF)
 	v := f.cur.NewAdd(src, cf)
 	result := f.cur.NewSub(dst, v)

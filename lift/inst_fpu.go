@@ -6,6 +6,8 @@
 package lift
 
 import (
+	"math"
+
 	"github.com/decomp/exp/disasm/x86"
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
@@ -34,7 +36,7 @@ func (f *Func) liftInstFLD(inst *x86.Inst) error {
 	// it is automatically converted to the double extended-precision floating-
 	// point format before being pushed on the stack.
 	src := f.useArg(inst.Arg(0))
-	// TODO: Verify that FILD ST(i) is handled correctly.
+	// TODO: Verify that FLD ST(i) is handled correctly.
 	if !types.Equal(src.Type(), types.X86_FP80) {
 		src = f.cur.NewFPExt(src, types.X86_FP80)
 	}
@@ -754,8 +756,14 @@ func (f *Func) liftInstFLDZ(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFLDPI(inst *x86.Inst) error {
 	// FLDPI - Load π.
-	pretty.Println("inst:", inst)
-	panic("emitInstFLDPI: not yet implemented")
+	//
+	//    FLDPI               Push π onto the FPU register stack.
+	//
+	// Push one of seven commonly used constants (in double extended-precision
+	// floating-point format) onto the FPU register stack.
+	src := constant.NewFloat(math.Pi, types.X86_FP80)
+	f.fpush(src)
+	return nil
 }
 
 // --- [ FLDL2E ] --------------------------------------------------------------
@@ -764,8 +772,14 @@ func (f *Func) liftInstFLDPI(inst *x86.Inst) error {
 // code to f.
 func (f *Func) liftInstFLDL2E(inst *x86.Inst) error {
 	// FLDL2E - Load log_2(e).
-	pretty.Println("inst:", inst)
-	panic("emitInstFLDL2E: not yet implemented")
+	//
+	//    FLDL2E              Push log_2(e) onto the FPU register stack.
+	//
+	// Push one of seven commonly used constants (in double extended-precision
+	// floating-point format) onto the FPU register stack.
+	src := constant.NewFloat(math.Log2E, types.X86_FP80)
+	f.fpush(src)
+	return nil
 }
 
 // --- [ FLDLN2 ] --------------------------------------------------------------
@@ -774,8 +788,14 @@ func (f *Func) liftInstFLDL2E(inst *x86.Inst) error {
 // code to f.
 func (f *Func) liftInstFLDLN2(inst *x86.Inst) error {
 	// FLDLN2 - Load log_e(2).
-	pretty.Println("inst:", inst)
-	panic("emitInstFLDLN2: not yet implemented")
+	//
+	//    FLDLN2              Push log_e(2) onto the FPU register stack.
+	//
+	// Push one of seven commonly used constants (in double extended-precision
+	// floating-point format) onto the FPU register stack.
+	src := constant.NewFloat(math.Ln2, types.X86_FP80)
+	f.fpush(src)
+	return nil
 }
 
 // --- [ FLDL2T ] --------------------------------------------------------------
@@ -784,8 +804,14 @@ func (f *Func) liftInstFLDLN2(inst *x86.Inst) error {
 // code to f.
 func (f *Func) liftInstFLDL2T(inst *x86.Inst) error {
 	// FLDL2T - Load log_2(10).
-	pretty.Println("inst:", inst)
-	panic("emitInstFLDL2T: not yet implemented")
+	//
+	//    FLDL2T              Push log_2(10) onto the FPU register stack.
+	//
+	// Push one of seven commonly used constants (in double extended-precision
+	// floating-point format) onto the FPU register stack.
+	src := constant.NewFloat(math.Log2(10), types.X86_FP80)
+	f.fpush(src)
+	return nil
 }
 
 // --- [ FLDLG2 ] --------------------------------------------------------------
@@ -794,8 +820,14 @@ func (f *Func) liftInstFLDL2T(inst *x86.Inst) error {
 // code to f.
 func (f *Func) liftInstFLDLG2(inst *x86.Inst) error {
 	// FLDLG2 - Load log_10(2).
-	pretty.Println("inst:", inst)
-	panic("emitInstFLDLG2: not yet implemented")
+	//
+	//    FLDLG2              Push log_10(2) onto the FPU register stack.
+	//
+	// Push one of seven commonly used constants (in double extended-precision
+	// floating-point format) onto the FPU register stack.
+	src := constant.NewFloat(math.Log10(2), types.X86_FP80)
+	f.fpush(src)
+	return nil
 }
 
 // === [ x87 FPU Control Instructions ] ========================================

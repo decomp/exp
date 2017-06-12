@@ -17,6 +17,16 @@ all: \
 	x86_64/fpu/fld/fld.so \
 	x86_32/fpu/fld1/fld1.so \
 	x86_64/fpu/fld1/fld1.so \
+	x86_32/fpu/fldl2e/fldl2e.so \
+	x86_64/fpu/fldl2e/fldl2e.so \
+	x86_32/fpu/fldl2t/fldl2t.so \
+	x86_64/fpu/fldl2t/fldl2t.so \
+	x86_32/fpu/fldlg2/fldlg2.so \
+	x86_64/fpu/fldlg2/fldlg2.so \
+	x86_32/fpu/fldln2/fldln2.so \
+	x86_64/fpu/fldln2/fldln2.so \
+	x86_32/fpu/fldpi/fldpi.so \
+	x86_64/fpu/fldpi/fldpi.so \
 	x86_32/fpu/fldz/fldz.so \
 	x86_64/fpu/fldz/fldz.so \
 	x86_32/import/import.out \

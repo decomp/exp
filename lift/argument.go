@@ -10,6 +10,7 @@ import (
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/metadata"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	"golang.org/x/arch/x86/x86asm"
@@ -264,6 +265,23 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 	if segment == nil && base == nil && index == nil {
 		if disp == nil {
 			addr := rel + bin.Address(mem.Disp)
+			// TODO: Remove once the lift library matures a bit.
+			warn.Printf("unknown global variable type at address %v; guessing i32", addr)
+			name := fmt.Sprintf("g_%06X", uint64(addr))
+			content := types.I32
+			typ := types.NewPointer(content)
+			g := &ir.Global{
+				Name:    name,
+				Typ:     typ,
+				Content: content,
+				Init:    constant.NewZeroInitializer(content),
+				Metadata: map[string]*metadata.Metadata{
+					"addr": {
+						Nodes: []metadata.Node{&metadata.String{Val: addr.String()}},
+					},
+				},
+			}
+			return g
 			panic(fmt.Errorf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.Parent.Op, mem.Parent.Addr))
 		}
 		return disp

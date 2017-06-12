@@ -235,6 +235,23 @@ func (f *Func) isTailCall(inst *x86.Inst) bool {
 			return false
 		}
 	}
+
+	// TODO: Find a prettier solution for handling indirect jumps to potential
+	// tail call functions at register relative memory locations; e.g.
+	//    JMP [EAX+0x8]
+
+	// HACK: set the current basic block to a dummy basic block so that we may
+	// invoke f.getFunc (which may emit load instructions) to figure out if we
+	// are jumping to a function.
+	cur := f.cur
+	dummy := &ir.BasicBlock{}
+	f.cur = dummy
+	_, _, _, ok := f.getFunc(arg)
+	f.cur = cur
+	if ok {
+		return true
+	}
+
 	fmt.Println("arg:", arg)
 	pretty.Println(arg)
 	panic("not yet implemented")

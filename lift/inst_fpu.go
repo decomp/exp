@@ -51,8 +51,32 @@ func (f *Func) liftInstFLD(inst *x86.Inst) error {
 // f.
 func (f *Func) liftInstFST(inst *x86.Inst) error {
 	// FST - Store floating-point value.
-	pretty.Println("inst:", inst)
-	panic("emitInstFST: not yet implemented")
+	//
+	//    FST m32fp      Copy ST(0) to m32fp.
+	//    FST m64fp      Copy ST(0) to m64fp.
+	//    FST ST(i)      Copy ST(0) to ST(i).
+	//
+	// Copies the value in the ST(0) register to the destination operand.
+	src := f.fload()
+	switch arg := inst.Args[0].(type) {
+	case x86asm.Reg:
+		// no type conversion needed.
+	case x86asm.Mem:
+		var typ types.Type
+		switch inst.MemBytes {
+		case 4:
+			typ = types.Float
+		case 8:
+			typ = types.Double
+		default:
+			panic(fmt.Errorf("support for memory argument with byte size %d not yet implemented", inst.MemBytes))
+		}
+		src = f.cur.NewFPTrunc(src, typ)
+	default:
+		panic(fmt.Errorf("support for operand type %T not yet implemented", arg))
+	}
+	f.defArg(inst.Arg(0), src)
+	return nil
 }
 
 // --- [ FSTP ] ----------------------------------------------------------------
@@ -61,8 +85,34 @@ func (f *Func) liftInstFST(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFSTP(inst *x86.Inst) error {
 	// FSTP - Store floating-point value and pop.
-	pretty.Println("inst:", inst)
-	panic("emitInstFSTP: not yet implemented")
+	//
+	//    FSTP m32fp          Copy ST(0) to m32fp and pop register stack.
+	//    FSTP m64fp          Copy ST(0) to m64fp and pop register stack.
+	//    FSTP m80fp          Copy ST(0) to m80fp and pop register stack.
+	//    FSTP ST(i)          Copy ST(0) to ST(i) and pop register stack.
+	//
+	// Copies the value in the ST(0) register to the destination operand.
+	src := f.fload()
+	switch arg := inst.Args[0].(type) {
+	case x86asm.Reg:
+		// no type conversion needed.
+	case x86asm.Mem:
+		switch inst.MemBytes {
+		case 4:
+			src = f.cur.NewFPTrunc(src, types.Float)
+		case 8:
+			src = f.cur.NewFPTrunc(src, types.Double)
+		case 10:
+			// no type conversion needed.
+		default:
+			panic(fmt.Errorf("support for memory argument with byte size %d not yet implemented", inst.MemBytes))
+		}
+	default:
+		panic(fmt.Errorf("support for operand type %T not yet implemented", arg))
+	}
+	f.defArg(inst.Arg(0), src)
+	f.pop()
+	return nil
 }
 
 // --- [ FILD ] ----------------------------------------------------------------
@@ -239,8 +289,23 @@ func (f *Func) liftInstFCMOVNU(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFADD(inst *x86.Inst) error {
 	// FADD - Add floating-point.
-	pretty.Println("inst:", inst)
-	panic("emitInstFADD: not yet implemented")
+	//
+	//    FADD m32fp          Add m32fp to ST(0) and store result in ST(0).
+	//    FADD m64fp          Add m64fp to ST(0) and store result in ST(0).
+	//    FADD ST(0), ST(i)   Add ST(0) to ST(i) and store result in ST(0).
+	//    FADD ST(i), ST(0)   Add ST(i) to ST(0) and store result in ST(i).
+	//
+	// Adds the destination and source operands and stores the sum in the
+	// destination location.
+	if inst.Args[1] != nil {
+		panic(fmt.Errorf("support for two-operand FADD instruction not yet implemented; instruction %v at address %v", inst, inst.Addr))
+	}
+	src := f.useArg(inst.Arg(0))
+	v := f.cur.NewFPExt(src, types.X86_FP80)
+	st0 := f.fload()
+	result := f.cur.NewFAdd(st0, v)
+	f.fstore(result)
+	return nil
 }
 
 // --- [ FADDP ] ---------------------------------------------------------------
@@ -249,6 +314,12 @@ func (f *Func) liftInstFADD(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFADDP(inst *x86.Inst) error {
 	// FADDP - Add floating-point and pop.
+	//
+	//    FADDP ST(i), ST(0)            Add ST(0) to ST(i), store result in ST(i), and pop the register stack.
+	//    FADDP                         Add ST(0) to ST(1), store result in ST(1), and pop the register stack.
+	//
+	// Adds the destination and source operands and stores the sum in the
+	// destination location.
 	pretty.Println("inst:", inst)
 	panic("emitInstFADDP: not yet implemented")
 }
@@ -259,6 +330,12 @@ func (f *Func) liftInstFADDP(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFIADD(inst *x86.Inst) error {
 	// FIADD - Add integer.
+	//
+	//    FIADD m32int        Add m32int to ST(0) and store result in ST(0).
+	//    FIADD m16int        Add m16int to ST(0) and store result in ST(0).
+	//
+	// Adds the destination and source operands and stores the sum in the
+	// destination location.
 	pretty.Println("inst:", inst)
 	panic("emitInstFIADD: not yet implemented")
 }
@@ -384,8 +461,21 @@ func (f *Func) liftInstFDIV(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFDIVP(inst *x86.Inst) error {
 	// FDIVP - Divide floating-point and pop.
-	pretty.Println("inst:", inst)
-	panic("emitInstFDIVP: not yet implemented")
+	//
+	//    FDIVP ST(i), ST(0)            Divide ST(i) by ST(0), store result in ST(i), and pop the register stack.
+	//    FDIVP                         Divide ST(1) by ST(0), store result in ST(1), and pop the register stack.
+	//
+	// Convert an integer source operand to double extended-precision floating-
+	// point format before performing the division.
+	if inst.Args[0] == nil {
+		panic(fmt.Errorf("support for zero-operand FDIVP instruction not yet implemented; instruction %v at address %v", inst, inst.Addr))
+	}
+	dst := f.useArg(inst.Arg(0))
+	src := f.useArg(inst.Arg(1))
+	result := f.cur.NewFDiv(dst, src)
+	f.defArg(inst.Arg(0), result)
+	f.fpop()
+	return nil
 }
 
 // --- [ FIDIV ] ---------------------------------------------------------------
@@ -1089,6 +1179,39 @@ func (f *Func) fpush(src value.Value) {
 
 	// Store arg at st(0).
 	f.fstore(src)
+}
+
+// fpop pops and returns the top of the FPU register stack, emitting code to f.
+func (f *Func) fpop() value.Value {
+	// Load arg from st(0).
+	v := f.fload()
+
+	// TODO: Mark st(0) as empty before incrementing st.
+
+	// Increment st.
+	tmp1 := f.cur.NewLoad(f.st)
+	targetTrue := &ir.BasicBlock{}
+	targetFalse := &ir.BasicBlock{}
+	follow := &ir.BasicBlock{}
+	targetTrue.NewBr(follow)
+	targetFalse.NewBr(follow)
+	zero := constant.NewInt(7, types.I8)
+	cond := f.cur.NewICmp(ir.IntEQ, tmp1, zero)
+	f.cur.NewCondBr(cond, targetTrue, targetFalse)
+	f.cur = targetTrue
+	f.AppendBlock(targetTrue)
+	seven := constant.NewInt(0, types.I8)
+	f.cur.NewStore(seven, f.st)
+	f.cur = targetFalse
+	f.AppendBlock(targetFalse)
+	one := constant.NewInt(1, types.I8)
+	tmp2 := f.cur.NewAdd(tmp1, one)
+	f.cur.NewStore(tmp2, f.st)
+	f.cur = follow
+	f.AppendBlock(follow)
+
+	// Return arg.
+	return v
 }
 
 // fstore stores the source value to the top FPU register, emitting code to f.

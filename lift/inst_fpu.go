@@ -6,6 +6,7 @@
 package lift
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/decomp/exp/disasm/x86"
@@ -328,8 +329,23 @@ func (f *Func) liftInstFISUBR(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFMUL(inst *x86.Inst) error {
 	// FMUL - Multiply floating-point.
-	pretty.Println("inst:", inst)
-	panic("emitInstFMUL: not yet implemented")
+	//
+	//    FMUL m32fp          Multiply ST(0) by m32fp and store result in ST(0).
+	//    FMUL m64fp          Multiply ST(0) by m64fp and store result in ST(0).
+	//    FMUL ST(0), ST(i)   Multiply ST(0) by ST(i) and store result in ST(0).
+	//    FMUL ST(i), ST(0)   Multiply ST(i) by ST(0) and store result in ST(i).
+	//
+	// Multiplies the destination and source operands and stores the product in
+	// the destination location.
+	if inst.Args[1] != nil {
+		panic(fmt.Errorf("support for two-operand form of FMUL not yet implemented; %v", inst))
+	}
+	arg := f.useArg(inst.Arg(0))
+	src := f.cur.NewFPExt(arg, types.X86_FP80)
+	st0 := f.fload()
+	result := f.cur.NewFMul(st0, src)
+	f.fstore(result)
+	return nil
 }
 
 // --- [ FMULP ] ---------------------------------------------------------------
@@ -378,8 +394,18 @@ func (f *Func) liftInstFDIVP(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFIDIV(inst *x86.Inst) error {
 	// FIDIV - Divide integer.
-	pretty.Println("inst:", inst)
-	panic("emitInstFIDIV: not yet implemented")
+	//
+	//    FIDIV m16int        Divide ST(0) by m16int and store result in ST(0).
+	//    FIDIV m32int        Divide ST(0) by m32int and store result in ST(0).
+	//
+	// Convert an integer source operand to double extended-precision floating-
+	// point format before performing the division.
+	arg := f.useArg(inst.Arg(0))
+	src := f.cur.NewSIToFP(arg, types.X86_FP80)
+	st0 := f.fload()
+	result := f.cur.NewFDiv(st0, src)
+	f.fstore(result)
+	return nil
 }
 
 // --- [ FDIVR ] ---------------------------------------------------------------
@@ -1062,6 +1088,12 @@ func (f *Func) fpush(src value.Value) {
 	f.AppendBlock(follow)
 
 	// Store arg at st(0).
+	f.fstore(src)
+}
+
+// fstore stores the source value to the top FPU register, emitting code to f.
+func (f *Func) fstore(src value.Value) {
+	// Store arg at st(0).
 	end := &ir.BasicBlock{}
 	cur := f.cur
 	var cases []*ir.Case
@@ -1084,4 +1116,38 @@ func (f *Func) fpush(src value.Value) {
 	f.cur.NewSwitch(st, defaultTarget, cases...)
 	f.cur = end
 	f.AppendBlock(end)
+}
+
+// fload returns the value of the top FPU register, emitting code to f.
+func (f *Func) fload() value.Value {
+	// Load value from st(0).
+	end := &ir.BasicBlock{}
+	cur := f.cur
+	var cases []*ir.Case
+	regs := []x86asm.Reg{x86asm.F0, x86asm.F1, x86asm.F2, x86asm.F3, x86asm.F4, x86asm.F5, x86asm.F6, x86asm.F7}
+	var incs []*ir.Incoming
+	for i, reg := range regs {
+		block := &ir.BasicBlock{}
+		block.NewBr(end)
+		f.cur = block
+		f.AppendBlock(block)
+		src := f.reg(reg)
+		v := f.cur.NewLoad(src)
+		inc := &ir.Incoming{
+			X:    v,
+			Pred: block,
+		}
+		incs = append(incs, inc)
+		c := ir.NewCase(constant.NewInt(int64(i), types.I8), block)
+		cases = append(cases, c)
+	}
+	f.cur = cur
+	st := f.cur.NewLoad(f.st)
+	defaultTarget := &ir.BasicBlock{}
+	defaultTarget.NewUnreachable()
+	f.AppendBlock(defaultTarget)
+	f.cur.NewSwitch(st, defaultTarget, cases...)
+	f.cur = end
+	f.AppendBlock(end)
+	return f.cur.NewPhi(incs...)
 }

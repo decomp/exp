@@ -567,6 +567,22 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 			v := fn.Function
 			return v, v.Sig, v.CallConv, true
 		}
+		if g, ok := f.l.Globals[addr]; ok {
+			ptr, ok := g.Typ.Elem.(*types.PointerType)
+			if !ok {
+				panic(fmt.Errorf("invalid function pointer type of global variable at address %v referenced from instruction at address %v; expected *types.PointerType, got %T; ", addr, arg.Parent.Addr, g.Typ.Elem))
+			}
+			sig, ok := ptr.Elem.(*types.FuncType)
+			if !ok {
+				panic(fmt.Errorf("invalid function type of global variable at address %v referenced from instruction at address %v; expected *types.FuncType, got %T; ", addr, arg.Parent.Addr, ptr.Elem))
+			}
+			v := f.cur.NewLoad(g)
+			// TODO: Figure out how to retrive calling convention. LLVM IR does not
+			// seem to be able to specify calling conventions for function pointers
+			// stored in global variables.
+			return v, sig, ir.CallConvX86_StdCall, true
+		}
+		panic(fmt.Errorf("unable to locate function at address %v referenced from instruction at address %v", addr, arg.Parent.Addr))
 	}
 
 	// Handle function pointers in structures.

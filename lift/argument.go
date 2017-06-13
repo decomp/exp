@@ -710,6 +710,18 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 					}
 					panic(fmt.Errorf("invalid callee type; expected pointer to function type, got %v", v.Type()))
 				}
+				if min, ok := c["min"]; ok {
+					addr := bin.Address(a.Disp + min.Int64())
+					v := f.useAddr(addr)
+					if typ, ok := v.Type().(*types.PointerType); ok {
+						if sig := typ.Elem.(*types.FuncType); ok {
+							// TODO: Figure out how to recover calling convention.
+							// Perhaps through context.json at call sites?
+							return v, sig, ir.CallConvNone, true
+						}
+					}
+					panic(fmt.Errorf("invalid callee type; expected pointer to function type, got %v", v.Type()))
+				}
 			}
 		}
 	}

@@ -12,6 +12,7 @@ import (
 // getElementPtr returns a pointer to the LLVM IR value located at the specified
 // offset from the source value.
 func (f *Func) getElementPtr(src value.Value, offset int64) *ir.InstGetElementPtr {
+	fmt.Println("offset:", offset)
 	srcType, ok := src.Type().(*types.PointerType)
 	if !ok {
 		panic(fmt.Errorf("invalid source address type; expected *types.PointerType, got %T", src.Type()))

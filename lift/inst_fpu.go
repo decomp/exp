@@ -370,6 +370,14 @@ func (f *Func) liftInstFIADD(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFSUB(inst *x86.Inst) error {
 	// FSUB - Subtract floating-point.
+	//
+	//    FSUB m32fp             Subtract m32fp from ST(0) and store result in ST(0).
+	//    FSUB m64fp             Subtract m64fp from ST(0) and store result in ST(0).
+	//    FSUB ST(0), ST(i)      Subtract ST(i) from ST(0) and store result in ST(0).
+	//    FSUB ST(i), ST(0)      Subtract ST(0) from ST(i) and store result in ST(i).
+	//
+	// Subtracts the source operand from the destination operand and stores the
+	// difference in the destination location.
 	pretty.Println("inst:", inst)
 	panic("liftInstFSUB: not yet implemented")
 }
@@ -380,6 +388,12 @@ func (f *Func) liftInstFSUB(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFSUBP(inst *x86.Inst) error {
 	// FSUBP - Subtract floating-point and pop.
+	//
+	//    FSUBP ST(i), ST(0)     Subtract ST(0) from ST(i), store result in ST(i), and pop register stack.
+	//    FSUBP                  Subtract ST(0) from ST(1), store result in ST(1), and pop register stack.
+	//
+	// Subtracts the source operand from the destination operand and stores the
+	// difference in the destination location.
 	pretty.Println("inst:", inst)
 	panic("liftInstFSUBP: not yet implemented")
 }
@@ -390,8 +404,18 @@ func (f *Func) liftInstFSUBP(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFISUB(inst *x86.Inst) error {
 	// FISUB - Subtract integer.
-	pretty.Println("inst:", inst)
-	panic("liftInstFISUB: not yet implemented")
+	//
+	//    FISUB m16int           Subtract m16int from ST(0) and store result in ST(0).
+	//    FISUB m32int           Subtract m32int from ST(0) and store result in ST(0).
+	//
+	// Subtracts the source operand from the destination operand and stores the
+	// difference in the destination location.
+	arg := f.useArg(inst.Arg(0))
+	src := f.cur.NewSIToFP(arg, types.X86_FP80)
+	st0 := f.fload()
+	result := f.cur.NewFSub(st0, src)
+	f.fstore(result)
+	return nil
 }
 
 // --- [ FSUBR ] ---------------------------------------------------------------
@@ -461,6 +485,12 @@ func (f *Func) liftInstFMUL(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFMULP(inst *x86.Inst) error {
 	// FMULP - Multiply floating-point and pop.
+	//
+	//    FMULP ST(i), ST(0)     Multiply ST(i) by ST(0), store result in ST(i), and pop the register stack.
+	//    FMULP                  Multiply ST(1) by ST(0), store result in ST(1), and pop the register stack.
+	//
+	// Multiplies the destination and source operands and stores the product in
+	// the destination location.
 	pretty.Println("inst:", inst)
 	panic("liftInstFMULP: not yet implemented")
 }
@@ -471,8 +501,18 @@ func (f *Func) liftInstFMULP(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFIMUL(inst *x86.Inst) error {
 	// FIMUL - Multiply integer.
-	pretty.Println("inst:", inst)
-	panic("liftInstFIMUL: not yet implemented")
+	//
+	//    FIMUL m16int           Multiply ST(0) by m16int and store result in ST(0).
+	//    FIMUL m32int           Multiply ST(0) by m32int and store result in ST(0).
+	//
+	// Multiplies the destination and source operands and stores the product in
+	// the destination location.
+	arg := f.useArg(inst.Arg(0))
+	src := f.cur.NewSIToFP(arg, types.X86_FP80)
+	st0 := f.fload()
+	result := f.cur.NewFMul(st0, src)
+	f.fstore(result)
+	return nil
 }
 
 // --- [ FDIV ] ----------------------------------------------------------------

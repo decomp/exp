@@ -3,6 +3,8 @@ package lift
 import (
 	"fmt"
 
+	"github.com/llir/llvm/asm"
+	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/types"
 )
 
@@ -60,4 +62,18 @@ func (l *Lifter) sizeOfType(t types.Type) int64 {
 		panic(fmt.Errorf("invalid type to sizeof; expected size in bits to be divisible by 8, got %d bits remainder", bits%8))
 	}
 	return bits / 8
+}
+
+// parseType returns the LLVM IR type represented by the given string.
+func (l *Lifter) parseType(typStr string) types.Type {
+	module := &ir.Module{
+		Types: l.Types,
+	}
+	// HACK but works :)
+	s := fmt.Sprintf("%s\n\n@dummy = external global %s", module, typStr)
+	m, err := asm.ParseString(s)
+	if err != nil {
+		panic(fmt.Errorf("unable to parse type %q; %v", s, err))
+	}
+	return m.Globals[0].Typ.Elem
 }

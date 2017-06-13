@@ -24,18 +24,22 @@ type Context struct {
 //
 // The following keys are defined.
 //
-//    Key          Type          Description
+//    Key            Type          Description
 //
-//    addr         bin.Address   virtual address.
+//    addr           bin.Address   virtual address.
 //
-//    min          int64         minimum value.
-//    max          int64         maximum value.
+//    extractvalue   bool          extract value.
 //
-//    Mem.offset   int64         memory reference offset.
+//    min            int64         minimum value.
+//    max            int64         maximum value.
 //
-//    param        int64         parameter index.
+//    Mem.offset     int64         memory reference offset.
 //
-//    symbol       string        symbol name.
+//    param          int64         parameter index.
+//
+//    symbol         string        symbol name.
+//
+//    type           string        LLVM IR type.
 type ValueContext map[string]Value
 
 // Value represents a value at a specific address.
@@ -98,4 +102,13 @@ func (v Value) Uint64() uint64 {
 		panic(fmt.Errorf("unable to parse value %q as uint64; %v", v.s, err))
 	}
 	return x
+}
+
+// Bool returns the boolean represented by v.
+func (v Value) Bool() bool {
+	b, err := strconv.ParseBool(v.s)
+	if err != nil {
+		panic(fmt.Errorf("unable to parse value %q as bool; %v", v.s, err))
+	}
+	return b
 }

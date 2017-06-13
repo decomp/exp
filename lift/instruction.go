@@ -4522,7 +4522,7 @@ func (f *Func) liftInstPOP(inst *x86.Inst) error {
 
 // pop pops a value from the top of the stack of the function, emitting code to
 // f.
-func (f *Func) pop() value.Value {
+func (f *Func) pop() value.Named {
 	m := x86asm.Mem{
 		Base: x86asm.ESP,
 	}

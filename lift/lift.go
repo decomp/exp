@@ -36,6 +36,8 @@ var (
 // concurrent lifting of functions.
 type Lifter struct {
 	*x86.Disasm
+	// Type definitions.
+	Types []types.Type
 	// Functions.
 	Funcs map[bin.Address]*Func
 	// Map from function name to function. May also contain external functions
@@ -83,6 +85,9 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
+
+	// Parse types.
+	l.Types = module.Types
 
 	// Parse globals.
 	for _, g := range module.Globals {

@@ -92,7 +92,7 @@ func (f *Func) defArgElem(arg *x86.Arg, v value.Value, elem types.Type) {
 
 // useReg loads and returns a value from the given x86 register, emitting code
 // to f.
-func (f *Func) useReg(reg *x86.Reg) value.Value {
+func (f *Func) useReg(reg *x86.Reg) value.Named {
 	src := f.reg(reg.Reg)
 	return f.cur.NewLoad(src)
 }
@@ -148,7 +148,7 @@ func (f *Func) reg(reg x86asm.Reg) value.Value {
 
 // useMem loads and returns the value of the given memory reference, emitting
 // code to f.
-func (f *Func) useMem(mem *x86.Mem) value.Value {
+func (f *Func) useMem(mem *x86.Mem) value.Named {
 	src := f.mem(mem)
 	return f.cur.NewLoad(src)
 }
@@ -700,8 +700,34 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 				panic(fmt.Errorf("unable to locate context for %v register used at %v", a.Base, arg.Parent.Addr))
 			}
 			if c, ok := context.Regs[x86.Register(a.Base)]; ok {
+				if typStr, ok := c["type"]; ok {
+					typ := f.l.parseType(typStr.String())
+					fmt.Println("context type:", typ)
+					reg := f.reg(a.Base)
+					var v value.Named = f.cur.NewBitCast(reg, typ)
+					v = f.cur.NewLoad(v)
+					// TODO: Figure out how to handle negative offsets.
+					v = f.getElementPtr(v, a.Disp)
+					v = f.cur.NewLoad(v)
+					if typ, ok := v.Type().(*types.PointerType); ok {
+						if sig := typ.Elem.(*types.FuncType); ok {
+							// TODO: Figure out how to recover calling convention.
+							// Perhaps through context.json at call sites?
+							return v, sig, ir.CallConvNone, true
+						}
+					}
+					panic(fmt.Errorf("invalid callee type; expected pointer to function type, got %v", v.Type()))
+				}
 				if addr, ok := c["addr"]; ok {
 					v := f.useAddr(addr.Addr())
+					// HACK: Remove once proper type and data flow analysis has been
+					// implemented.
+					if extractvalue, ok := c["extractvalue"]; ok && extractvalue.Bool() {
+						fmt.Println("extractvalue:", v)
+						fmt.Println("extractvalue.Type():", v.Type())
+						// TODO: Handle index based on Index regster if present.
+						v = f.cur.NewExtractValue(v, []int64{0})
+					}
 					// TODO: Figure out how to handle negative offsets.
 					v = f.getElementPtr(v, a.Disp)
 					v = f.cur.NewLoad(v)

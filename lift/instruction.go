@@ -2618,6 +2618,22 @@ func (f *Func) liftInstIDIV(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstIMUL(inst *x86.Inst) error {
 	// IMUL - Signed Multiply
+	//
+	//    IMUL r/m8                     AX = AL * r/m byte.
+	//    IMUL r/m16                    DX:AX = AX * r/m word.
+	//    IMUL r/m32                    EDX:EAX = EAX * r/m32.
+	//    IMUL r/m64                    RDX:RAX = RAX * r/m64.
+	//    IMUL r16, r/m16               Word register = word register * r/m16.
+	//    IMUL r32, r/m32               Doubleword register = doubleword register * r/m32.
+	//    IMUL r64, r/m64               Quadword register = quadword register * r/m64.
+	//    IMUL r16, r/m16, imm8         Word register = r/m16 * sign-extended immediate byte.
+	//    IMUL r32, r/m32, imm8         Doubleword register = r/m32 * sign-extended immediate byte.
+	//    IMUL r64, r/m64, imm8         Quadword register = r/m64 * sign-extended immediate byte.
+	//    IMUL r16, r/m16, imm16        Word register = r/m16 ∗ immediate word.
+	//    IMUL r32, r/m32, imm32        Doubleword register = r/m32 * immediate doubleword.
+	//    IMUL r64, r/m64, imm32        Quadword register = r/m64 * immediate doubleword.
+	//
+	// Performs a signed multiplication of two operands.
 	var x, y value.Value
 	switch {
 	case inst.Args[2] != nil:
@@ -2627,8 +2643,29 @@ func (f *Func) liftInstIMUL(inst *x86.Inst) error {
 		// Two-operand form.
 		x, y = f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
 	case inst.Args[0] != nil:
-		// TODO: Add support for one-operand form IMUL.
-		panic("not yet implemented; IMUL one-operand form")
+		// One-operand form.
+		y := f.useArg(inst.Arg(0))
+		size := f.l.sizeOfType(y.Type())
+		var dst value.Value
+		switch size {
+		case 1:
+			x = f.useReg(x86.AL)
+			dst = f.reg(x86asm.AX)
+		case 2:
+			x = f.useReg(x86.AX)
+			dst = f.reg(x86.X86asm_DX_AX)
+		case 3:
+			x = f.useReg(x86.EAX)
+			dst = f.reg(x86.X86asm_EDX_EAX)
+		case 4:
+			x = f.useReg(x86.RAX)
+			dst = f.reg(x86.X86asm_RDX_RAX)
+		default:
+			panic(fmt.Errorf("support for operand type of byte size %d not yet implemented", size))
+		}
+		result := f.cur.NewMul(x, y)
+		f.cur.NewStore(result, dst)
+		return nil
 	}
 	result := f.cur.NewMul(x, y)
 	f.defArg(inst.Arg(0), result)
@@ -3514,8 +3551,41 @@ func (f *Func) liftInstMPSADBW(inst *x86.Inst) error {
 // liftInstMUL lifts the given x86 MUL instruction to LLVM IR, emitting code to
 // f.
 func (f *Func) liftInstMUL(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstMUL: not yet implemented")
+	// MUL - Unsigned Multiply
+	//
+	//    MUL r/m8       Unsigned multiply (AX = AL ∗ r/m8).
+	//    MUL r/m8       Unsigned multiply (AX = AL ∗ r/m8).
+	//    MUL r/m16      Unsigned multiply (DX:AX = AX ∗ r/m16).
+	//    MUL r/m32      Unsigned multiply (EDX:EAX = EAX ∗ r/m32).
+	//    MUL r/m64      Unsigned multiply (RDX:RAX = RAX ∗ r/m64).
+	//
+	// Performs an unsigned multiplication of the first operand (destination
+	// operand) and the second operand (source operand) and stores the result in
+	// the destination operand.
+	// One-operand form.
+	y := f.useArg(inst.Arg(0))
+	size := f.l.sizeOfType(y.Type())
+	var x value.Value
+	var dst value.Value
+	switch size {
+	case 1:
+		x = f.useReg(x86.AL)
+		dst = f.reg(x86asm.AX)
+	case 2:
+		x = f.useReg(x86.AX)
+		dst = f.reg(x86.X86asm_DX_AX)
+	case 3:
+		x = f.useReg(x86.EAX)
+		dst = f.reg(x86.X86asm_EDX_EAX)
+	case 4:
+		x = f.useReg(x86.RAX)
+		dst = f.reg(x86.X86asm_RDX_RAX)
+	default:
+		panic(fmt.Errorf("support for operand type of byte size %d not yet implemented", size))
+	}
+	result := f.cur.NewMul(x, y)
+	f.cur.NewStore(result, dst)
+	return nil
 }
 
 // --- [ MULPD ] ---------------------------------------------------------------

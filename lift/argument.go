@@ -727,6 +727,31 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 					panic(fmt.Errorf("invalid callee type; expected pointer to function type, got %v", v.Type()))
 				}
 			}
+
+			if c, ok := context.Args[0]; ok {
+				// TODO: Remove poor man's type propagation once the type analysis and
+				// data flow analysis phases have been properly implemented.
+				if param, ok := c["param"]; ok {
+					p := param.Int64()
+					if p >= int64(len(f.Sig.Params)) {
+						panic(fmt.Errorf("invalid function parameter index; expected < %d, got %d", len(f.Sig.Params), p))
+					}
+					v := f.Sig.Params[p]
+					typ := v.Type()
+					ptr, ok := typ.(*types.PointerType)
+					if !ok {
+						panic(fmt.Errorf("invalid function pointer type of function parameter %q referenced from instruction at address %v; expected *types.PointerType, got %T; ", f.Sig.Params[p].Name, arg.Parent.Addr, typ))
+					}
+					sig, ok := ptr.Elem.(*types.FuncType)
+					if !ok {
+						panic(fmt.Errorf("invalid function type of function parameter %q referenced from instruction at address %v; expected *types.FuncType, got %T; ", f.Sig.Params[p].Name, arg.Parent.Addr, ptr.Elem))
+					}
+					// TODO: Figure out how to recover calling convention.
+					// Perhaps through context.json at call sites?
+					return v, sig, ir.CallConvNone, true
+				}
+			}
+
 		}
 		if a.Index != 0 {
 			context, ok := f.l.Contexts[arg.Parent.Addr]

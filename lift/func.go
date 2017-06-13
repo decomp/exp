@@ -27,6 +27,8 @@ type Func struct {
 	regs map[x86asm.Reg]*ir.InstAlloca
 	// Status flags used within the function.
 	statusFlags map[StatusFlag]*ir.InstAlloca
+	// FPU status flags used within the function.
+	fstatusFlags map[FStatusFlag]*ir.InstAlloca
 	// Local varialbes used within the function.
 	locals map[string]*ir.InstAlloca
 	// usesEDX_EAX specifies whether any instruction of the function uses
@@ -76,6 +78,7 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 	f.blocks = make(map[bin.Address]*ir.BasicBlock)
 	f.regs = make(map[x86asm.Reg]*ir.InstAlloca)
 	f.statusFlags = make(map[StatusFlag]*ir.InstAlloca)
+	f.fstatusFlags = make(map[FStatusFlag]*ir.InstAlloca)
 	f.locals = make(map[string]*ir.InstAlloca)
 	f.l = l
 	// Prepare output LLVM IR basic blocks.
@@ -147,7 +150,7 @@ func (f *Func) Lift() {
 	}
 	// Add new entry basic block to define registers and status flags used within
 	// the function.
-	if len(f.regs) > 0 || len(f.statusFlags) > 0 || f.usesFPU {
+	if len(f.regs) > 0 || len(f.statusFlags) > 0 || len(f.fstatusFlags) > 0 || f.usesFPU {
 		entry := &ir.BasicBlock{}
 		// Allocate local variables for each register used within the function.
 		for reg := x86.FirstReg; reg <= x86.LastReg; reg++ {
@@ -165,6 +168,13 @@ func (f *Func) Lift() {
 		// Allocate local variables for each status flag used within the function.
 		for status := CF; status <= OF; status++ {
 			if inst, ok := f.statusFlags[status]; ok {
+				entry.AppendInst(inst)
+			}
+		}
+		// Allocate local variables for each FPU status flag used within the
+		// function.
+		for fstatus := CR0; fstatus <= CR3; fstatus++ {
+			if inst, ok := f.fstatusFlags[fstatus]; ok {
 				entry.AppendInst(inst)
 			}
 		}

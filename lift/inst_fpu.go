@@ -15,6 +15,7 @@ import (
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
+	"github.com/pkg/errors"
 	"golang.org/x/arch/x86/x86asm"
 )
 
@@ -616,8 +617,82 @@ func (f *Func) liftInstFXTRACT(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFCOM(inst *x86.Inst) error {
 	// FCOM - Compare floating-point.
-	pretty.Println("inst:", inst)
-	panic("emitInstFCOM: not yet implemented")
+	//
+	//    FCOM m32fp          Compare ST(0) with m32fp.
+	//    FCOM m64fp          Compare ST(0) with m64fp.
+	//    FCOM ST(i)          Compare ST(0) with ST(i).
+	//    FCOM                Compare ST(0) with ST(1).
+	//
+	// Compares the contents of register ST(0) and source value and sets
+	// condition code flags C0, C2, and C3 in the FPU status word according to
+	// the results (see the table below).
+	//
+	//    Condition       C3 C2 C0
+	//
+	//    ST(0) > SRC      0  0  0
+	//    ST(0) < SRC      0  0  1
+	//    ST(0) = SRC      1  0  0
+	//    Unordered        1  1  1
+	if inst.Args[0] == nil {
+		panic(fmt.Errorf("support for zero-operand FCOM not yet implemented; instruction %v at address %v", inst, inst.Addr))
+	}
+	src := f.useArg(inst.Arg(0))
+	if !types.Equal(src.Type(), types.X86_FP80) {
+		src = f.cur.NewFPExt(src, types.X86_FP80)
+	}
+	st0 := f.fload()
+	a := f.cur.NewFCmp(ir.FloatOGT, st0, src)
+	b := f.cur.NewFCmp(ir.FloatOLT, st0, src)
+	c := f.cur.NewFCmp(ir.FloatOEQ, st0, src)
+	d := f.cur.NewFCmp(ir.FloatUNO, st0, src)
+	end := &ir.BasicBlock{}
+	targetA := &ir.BasicBlock{}
+	targetA.NewBr(end)
+	targetB := &ir.BasicBlock{}
+	targetB.NewBr(end)
+	targetC := &ir.BasicBlock{}
+	targetC.NewBr(end)
+	targetD := &ir.BasicBlock{}
+	targetD.NewBr(end)
+	next := &ir.BasicBlock{}
+	f.cur.NewCondBr(a, targetA, next)
+	f.cur = next
+	f.AppendBlock(next)
+	next = &ir.BasicBlock{}
+	f.cur.NewCondBr(b, targetB, next)
+	f.cur = next
+	f.AppendBlock(next)
+	next = &ir.BasicBlock{}
+	f.cur.NewCondBr(c, targetC, next)
+	f.cur = next
+	f.AppendBlock(next)
+	next = &ir.BasicBlock{}
+	f.cur.NewCondBr(d, targetD, next)
+	f.cur = next
+	f.AppendBlock(next)
+	f.cur = targetA
+	f.AppendBlock(targetA)
+	f.defFStatus(CR0, constant.False)
+	f.defFStatus(CR2, constant.False)
+	f.defFStatus(CR3, constant.False)
+	f.cur = targetB
+	f.AppendBlock(targetB)
+	f.defFStatus(CR0, constant.True)
+	f.defFStatus(CR2, constant.False)
+	f.defFStatus(CR3, constant.False)
+	f.cur = targetC
+	f.AppendBlock(targetC)
+	f.defFStatus(CR0, constant.False)
+	f.defFStatus(CR2, constant.False)
+	f.defFStatus(CR3, constant.True)
+	f.cur = targetD
+	f.AppendBlock(targetD)
+	f.defFStatus(CR0, constant.True)
+	f.defFStatus(CR2, constant.True)
+	f.defFStatus(CR3, constant.True)
+	f.cur = end
+	f.AppendBlock(end)
+	return nil
 }
 
 // --- [ FCOMP ] ---------------------------------------------------------------
@@ -626,8 +701,27 @@ func (f *Func) liftInstFCOM(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFCOMP(inst *x86.Inst) error {
 	// FCOMP - Compare floating-point and pop.
-	pretty.Println("inst:", inst)
-	panic("emitInstFCOMP: not yet implemented")
+	//
+	//    FCOMP m32fp         Compare ST(0) with m32fp and pop register stack.
+	//    FCOMP m64fp         Compare ST(0) with m64fp and pop register stack.
+	//    FCOMP ST(i)         Compare ST(0) with ST(i) and pop register stack.
+	//    FCOMP               Compare ST(0) with ST(1) and pop register stack.
+	//
+	// Compares the contents of register ST(0) and source value and sets
+	// condition code flags C0, C2, and C3 in the FPU status word according to
+	// the results (see the table below).
+	//
+	//    Condition       C3 C2 C0
+	//
+	//    ST(0) > SRC      0  0  0
+	//    ST(0) < SRC      0  0  1
+	//    ST(0) = SRC      1  0  0
+	//    Unordered        1  1  1
+	if err := f.liftInstFCOM(inst); err != nil {
+		return errors.WithStack(err)
+	}
+	f.pop()
+	return nil
 }
 
 // --- [ FCOMPP ] --------------------------------------------------------------
@@ -636,8 +730,25 @@ func (f *Func) liftInstFCOMP(inst *x86.Inst) error {
 // code to f.
 func (f *Func) liftInstFCOMPP(inst *x86.Inst) error {
 	// FCOMPP - Compare floating-point and pop twice.
-	pretty.Println("inst:", inst)
-	panic("emitInstFCOMPP: not yet implemented")
+	//
+	//    FCOMPP              Compare ST(0) with ST(1) and pop register stack twice.
+	//
+	// Compares the contents of register ST(0) and source value and sets
+	// condition code flags C0, C2, and C3 in the FPU status word according to
+	// the results (see the table below).
+	//
+	//    Condition       C3 C2 C0
+	//
+	//    ST(0) > SRC      0  0  0
+	//    ST(0) < SRC      0  0  1
+	//    ST(0) = SRC      1  0  0
+	//    Unordered        1  1  1
+	if err := f.liftInstFCOM(inst); err != nil {
+		return errors.WithStack(err)
+	}
+	f.pop()
+	f.pop()
+	return nil
 }
 
 // --- [ FUCOM ] ---------------------------------------------------------------
@@ -1116,6 +1227,28 @@ func (f *Func) liftInstFRSTOR(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFSTSW(inst *x86.Inst) error {
 	// FSTSW - Store FPU status word after checking error conditions.
+	//
+	//    FSTSW m16           Store FPU status word at m16 after checking for pending unmasked floating-point exceptions.
+	//    FSTSW AX            Store FPU status word in AX register after checking for pending unmasked floating-point exceptions.
+	//
+	// Stores the current value of the x87 FPU status word in the destination
+	// location.
+
+	// TODO: Continue here.
+
+	// Busy
+	// CR0
+	// CR1
+	// CR2
+	// CR3
+	// ES
+	// StackFault
+	// PE
+	// UE
+	// OE
+	// ZE
+	// DE
+	// IE
 	pretty.Println("inst:", inst)
 	panic("emitInstFSTSW: not yet implemented")
 }
@@ -1126,6 +1259,12 @@ func (f *Func) liftInstFSTSW(inst *x86.Inst) error {
 // code to f.
 func (f *Func) liftInstFNSTSW(inst *x86.Inst) error {
 	// FNSTSW - Store FPU status word without checking error conditions.
+	//
+	//    FNSTSW m16          Store FPU status word at m16 without checking for pending unmasked floating-point exceptions.
+	//    FNSTSW AX           Store FPU status word in AX register without checking for pending unmasked floating-point exceptions.
+	//
+	// Stores the current value of the x87 FPU status word in the destination
+	// location.
 	pretty.Println("inst:", inst)
 	panic("emitInstFNSTSW: not yet implemented")
 }

@@ -444,6 +444,70 @@ func (f *Func) status(status StatusFlag) value.Value {
 	return v
 }
 
+// === [ FPU status flag ] =====================================================
+
+// FStatusFlag represents the set of FPU status flags.
+type FStatusFlag uint
+
+// FPU status flags.
+const (
+	Busy       FStatusFlag = iota // FPU Busy
+	CR0                           // Condition Code 0
+	CR1                           // Condition Code 1
+	CR2                           // Condition Code 2
+	CR3                           // Condition Code 3
+	ES                            // Exception Summary Status
+	StackFault                    // Stack Fault
+	// Exception Flags.
+	PE // Precision
+	UE // Underflow
+	OE // Overflow
+	ZE // Zero Divide
+	DE // Denormalized Operand
+	IE // Invalid Operation
+)
+
+// String returns the string representation of the status flag.
+func (fstatus FStatusFlag) String() string {
+	m := map[FStatusFlag]string{
+		CR0: "CR0",
+		CR1: "CR1",
+		CR2: "CR2",
+		CR3: "CR3",
+	}
+	if s, ok := m[fstatus]; ok {
+		return s
+	}
+	return fmt.Sprintf("unknown status flag %d", uint(fstatus))
+}
+
+// useFStatus loads and returns the value of the given x87 FPU status flag,
+// emitting code to f.
+func (f *Func) useFStatus(fstatus FStatusFlag) value.Value {
+	src := f.fstatus(fstatus)
+	return f.cur.NewLoad(src)
+}
+
+// defFStatus stores the value to the given x87 FPU status flag, emitting code
+// to f.
+func (f *Func) defFStatus(fstatus FStatusFlag, v value.Value) {
+	dst := f.fstatus(fstatus)
+	f.cur.NewStore(v, dst)
+}
+
+// fstatus returns a pointer to the LLVM IR value associated with the given x87
+// FPU status flag.
+func (f *Func) fstatus(fstatus FStatusFlag) value.Value {
+	if v, ok := f.fstatusFlags[fstatus]; ok {
+		return v
+	}
+	v := ir.NewAlloca(types.I1)
+	name := strings.ToLower(fstatus.String())
+	v.SetName(name)
+	f.fstatusFlags[fstatus] = v
+	return v
+}
+
 // === [ address ] =============================================================
 
 // useAddr loads and returns the value of the given address, emitting code to f.

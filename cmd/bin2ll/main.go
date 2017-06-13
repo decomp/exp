@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"sort"
 
 	"github.com/decomp/exp/bin"
 	_ "github.com/decomp/exp/bin/elf" // register ELF decoder
@@ -15,6 +16,7 @@ import (
 	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
 	"github.com/decomp/exp/bin/raw"
 	"github.com/decomp/exp/lift"
+	"github.com/llir/llvm/ir"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
 )
@@ -56,6 +58,8 @@ func main() {
 		// TODO: Remove -last flag and lastAddr.
 		// lastAddr specifies the last function address to disassemble.
 		lastAddr bin.Address
+		// output specifies the output path.
+		output string
 		// quiet specifies whether to suppress non-error messages.
 		quiet bool
 		// rawArch specifies the machine architecture of a raw binary executable.
@@ -70,6 +74,7 @@ func main() {
 	flag.Var(&firstAddr, "first", "first function address to lift")
 	flag.Var(&funcAddr, "func", "function address to lift")
 	flag.Var(&lastAddr, "last", "last function address to lift")
+	flag.StringVar(&output, "o", "", "output path")
 	flag.BoolVar(&quiet, "q", false, "suppress non-error messages")
 	flag.Var(&rawArch, "raw", "machine architecture of raw binary executable (x86_32, x86_64, PowerPC_32, ...)")
 	flag.Var(&rawEntry, "rawentry", "entry point of raw binary executable")
@@ -103,21 +108,25 @@ func main() {
 	}
 
 	// Lift function specified by `-func` flag.
-	funcAddrs := l.FuncAddrs
+	var funcAddrs bin.Addresses
 	if funcAddr != 0 {
 		funcAddrs = []bin.Address{funcAddr}
+	} else {
+		for _, funcAddr := range l.FuncAddrs {
+			if firstAddr != 0 && funcAddr < firstAddr {
+				// skip functions before first address.
+				continue
+			}
+			if lastAddr != 0 && funcAddr >= lastAddr {
+				// skip functions after last address.
+				break
+			}
+			funcAddrs = append(funcAddrs, funcAddr)
+		}
 	}
 
 	// Create function lifters.
 	for _, funcAddr := range funcAddrs {
-		if firstAddr != 0 && funcAddr < firstAddr {
-			// skip functions before first address.
-			continue
-		}
-		if lastAddr != 0 && funcAddr >= lastAddr {
-			// skip functions after last address.
-			break
-		}
 		asmFunc, err := l.DecodeFunc(funcAddr)
 		if err != nil {
 			log.Fatalf("%+v", err)
@@ -137,6 +146,41 @@ func main() {
 		}
 		f.Lift()
 		fmt.Println(f)
+	}
+
+	// Store LLVM IR output.
+	w := os.Stdout
+	if len(output) > 0 {
+		f, err := os.Create(output)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		w = f
+	}
+	var funcs []*ir.Function
+	sort.Sort(funcAddrs)
+	for _, funcAddr := range funcAddrs {
+		f := l.Funcs[funcAddr]
+		funcs = append(funcs, f.Function)
+	}
+	var globals []*ir.Global
+	var globalAddrs bin.Addresses
+	for globalAddr := range l.Globals {
+		globalAddrs = append(globalAddrs, globalAddr)
+	}
+	sort.Sort(globalAddrs)
+	for _, globalAddr := range globalAddrs {
+		g := l.Globals[globalAddr]
+		globals = append(globals, g)
+	}
+	m := &ir.Module{
+		Types:   l.Types,
+		Globals: globals,
+		Funcs:   funcs,
+	}
+	if _, err := fmt.Fprintln(w, m); err != nil {
+		log.Fatalf("%+v", err)
 	}
 }
 

@@ -481,8 +481,29 @@ func (f *Func) liftInstFIMUL(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFDIV(inst *x86.Inst) error {
 	// FDIV - Divide floating-point.
-	pretty.Println("inst:", inst)
-	panic("liftInstFDIV: not yet implemented")
+	//
+	//    FDIV m32fp          Divide ST(0) by m32fp and store result in ST(0).
+	//    FDIV m64fp          Divide ST(0) by m64fp and store result in ST(0).
+	//    FDIV ST(0), ST(i)   Divide ST(0) by ST(i) and store result in ST(0).
+	//    FDIV ST(i), ST(0)   Divide ST(i) by ST(0) and store result in ST(i).
+	//
+	// Divides the destination operand by the source operand and stores the
+	// result in the destination location.
+	if inst.Args[1] != nil {
+		// Two-operand form.
+		dst := f.useArg(inst.Arg(0))
+		src := f.useArg(inst.Arg(1))
+		result := f.cur.NewFDiv(dst, src)
+		f.defArg(inst.Arg(0), result)
+		return nil
+	}
+	// One-operand form.
+	arg := f.useArg(inst.Arg(0))
+	src := f.cur.NewFPExt(arg, types.X86_FP80)
+	st0 := f.fload()
+	result := f.cur.NewFDiv(st0, src)
+	f.fstore(result)
+	return nil
 }
 
 // --- [ FDIVP ] ---------------------------------------------------------------
@@ -495,16 +516,23 @@ func (f *Func) liftInstFDIVP(inst *x86.Inst) error {
 	//    FDIVP ST(i), ST(0)            Divide ST(i) by ST(0), store result in ST(i), and pop the register stack.
 	//    FDIVP                         Divide ST(1) by ST(0), store result in ST(1), and pop the register stack.
 	//
-	// Convert an integer source operand to double extended-precision floating-
-	// point format before performing the division.
-	if inst.Args[0] == nil {
-		panic(fmt.Errorf("support for zero-operand FDIVP instruction not yet implemented; instruction %v at address %v", inst, inst.Addr))
+	// Divides the destination operand by the source operand and stores the
+	// result in the destination location.
+	if inst.Args[1] != nil {
+		// Two-operand form.
+		dst := f.useArg(inst.Arg(0))
+		src := f.useArg(inst.Arg(1))
+		result := f.cur.NewFDiv(dst, src)
+		f.defArg(inst.Arg(0), result)
+		f.fpop()
+		return nil
 	}
-	dst := f.useArg(inst.Arg(0))
-	src := f.useArg(inst.Arg(1))
+	// Zero-operand form.
+	dst := f.useReg(x86.NewReg(x86asm.F1, inst))
+	src := f.useReg(x86.NewReg(x86asm.F0, inst))
 	result := f.cur.NewFDiv(dst, src)
-	f.defArg(inst.Arg(0), result)
-	f.fpop()
+	f.defReg(x86.NewReg(x86asm.F1, inst), result)
+	f.pop()
 	return nil
 }
 

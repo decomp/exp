@@ -24,7 +24,10 @@ func (f *Func) getElementPtr(src value.Value, offset int64) *ir.InstGetElementPt
 	// n specifies a byte offset into an integer element.
 	var n int64
 loop:
-	for i := int64(0); total < offset; i++ {
+	for i := int64(0); ; i++ {
+		if total > offset {
+			panic("unreachable; or at least should be :)")
+		}
 		fmt.Println("   total:", total)
 		fmt.Println("   e:", e)
 		if i == 0 {
@@ -38,6 +41,9 @@ loop:
 		}
 		switch t := e.(type) {
 		case *types.PointerType:
+			if total == offset {
+				break loop
+			}
 			// ref: http://llvm.org/docs/GetElementPtr.html#what-is-dereferenced-by-gep
 			panic("unable to index into element of pointer type; for more information, see http://llvm.org/docs/GetElementPtr.html#what-is-dereferenced-by-gep")
 		case *types.ArrayType:
@@ -65,6 +71,9 @@ loop:
 			indices = append(indices, index)
 			e = t.Fields[j]
 		case *types.IntType:
+			if total == offset {
+				break loop
+			}
 			warn.Printf("indexing into the middle of an integer element at offset %d in type %v", total, src.Type())
 			n = int64(t.Size / 8)
 			if total+n < offset {

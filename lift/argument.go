@@ -247,7 +247,11 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 						panic(fmt.Errorf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.Parent.Op, mem.Parent.Addr))
 					}
 					// TODO: Figure out how to handle negative offsets.
-					disp = f.getElementPtr(v, offset)
+					if offset < 0 {
+						disp = v
+					} else {
+						disp = f.getElementPtr(v, offset)
+					}
 				}
 			}
 		}
@@ -713,6 +717,41 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 				if min, ok := c["min"]; ok {
 					addr := bin.Address(a.Disp + min.Int64())
 					v := f.useAddr(addr)
+					if typ, ok := v.Type().(*types.PointerType); ok {
+						if sig := typ.Elem.(*types.FuncType); ok {
+							// TODO: Figure out how to recover calling convention.
+							// Perhaps through context.json at call sites?
+							return v, sig, ir.CallConvNone, true
+						}
+					}
+					panic(fmt.Errorf("invalid callee type; expected pointer to function type, got %v", v.Type()))
+				}
+			}
+		}
+		if a.Index != 0 {
+			context, ok := f.l.Contexts[arg.Parent.Addr]
+			if !ok {
+				pretty.Println(arg.Arg)
+				panic(fmt.Errorf("unable to locate context for %v register used at %v", a.Index, arg.Parent.Addr))
+			}
+			if c, ok := context.Regs[x86.Register(a.Index)]; ok {
+				if min, ok := c["min"]; ok {
+					addr := bin.Address(a.Disp + int64(a.Scale)*min.Int64())
+					v := f.useAddr(addr)
+					if typ, ok := v.Type().(*types.PointerType); ok {
+						if sig := typ.Elem.(*types.FuncType); ok {
+							// TODO: Figure out how to recover calling convention.
+							// Perhaps through context.json at call sites?
+							return v, sig, ir.CallConvNone, true
+						}
+					}
+					// HACK: Use gep as a fallback for 0 element offsets.
+					fallback, ok := f.addr(addr)
+					if !ok {
+						panic(fmt.Sprintf("unable to locate variable associated with address %v", addr))
+					}
+					fallback = f.getElementPtr(fallback, 0)
+					v = f.cur.NewLoad(fallback)
 					if typ, ok := v.Type().(*types.PointerType); ok {
 						if sig := typ.Elem.(*types.FuncType); ok {
 							// TODO: Figure out how to recover calling convention.

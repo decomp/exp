@@ -238,7 +238,7 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 	// Handle disposition.
 	if mem.Disp != 0 {
 		if context, ok := f.l.Contexts[mem.Parent.Addr]; ok {
-			if c, ok := context.Args[1]; ok {
+			if c, ok := context.Args[mem.OpIndex]; ok {
 				if o, ok := c["Mem.offset"]; ok {
 					offset := o.Int64()
 					addr := rel + bin.Address(mem.Disp-offset)
@@ -728,7 +728,7 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 				}
 			}
 
-			if c, ok := context.Args[0]; ok {
+			if c, ok := context.Args[arg.OpIndex]; ok {
 				// TODO: Remove poor man's type propagation once the type analysis and
 				// data flow analysis phases have been properly implemented.
 				if param, ok := c["param"]; ok {

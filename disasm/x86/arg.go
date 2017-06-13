@@ -12,17 +12,23 @@ import (
 
 // Arg returns the i:th argument of the instruction.
 func (inst *Inst) Arg(i int) *Arg {
-	return NewArg(inst.Args[i], inst)
+	arg := NewArg(inst.Args[i], inst)
+	arg.OpIndex = i
+	return arg
 }
 
 // Reg returns the register at the i:th argument of the instruction.
 func (inst *Inst) Reg(i int) *Reg {
-	return NewReg(inst.Args[i], inst)
+	reg := NewReg(inst.Args[i], inst)
+	reg.OpIndex = i
+	return reg
 }
 
 // Mem returns the memory reference at the i:th argument of the instruction.
 func (inst *Inst) Mem(i int) *Mem {
-	return NewMem(inst.Args[i], inst)
+	mem := NewMem(inst.Args[i], inst)
+	mem.OpIndex = i
+	return mem
 }
 
 // --- [ argument ] ------------------------------------------------------------
@@ -34,6 +40,8 @@ type Arg struct {
 	// Parent instruction; used to calculate relative offsets and retrieve
 	// symbolic execution information.
 	Parent *Inst
+	// Instruction operand index.
+	OpIndex int
 }
 
 // NewArg returns a new x86 argument with the given parent instruction.
@@ -52,6 +60,8 @@ type Reg struct {
 	x86asm.Reg
 	// Parent instruction; used to retrieve symbolic execution information.
 	Parent *Inst
+	// Instruction operand index.
+	OpIndex int
 }
 
 // NewReg returns a new x86 register argument with the given parent instruction.
@@ -74,6 +84,8 @@ type Mem struct {
 	x86asm.Mem
 	// Parent instruction; used to retrieve symbolic execution information.
 	Parent *Inst
+	// Instruction operand index.
+	OpIndex int
 }
 
 // NewMem returns a new memory reference argument with the given parent

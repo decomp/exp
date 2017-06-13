@@ -166,14 +166,14 @@ func (f *Func) Lift() {
 			entry.NewStore(seven, f.st)
 		}
 		// Allocate local variables for each status flag used within the function.
-		for status := CF; status <= OF; status++ {
+		for status := firstStatusFlag; status <= lastStatusFlag; status++ {
 			if inst, ok := f.statusFlags[status]; ok {
 				entry.AppendInst(inst)
 			}
 		}
 		// Allocate local variables for each FPU status flag used within the
 		// function.
-		for fstatus := CR0; fstatus <= CR3; fstatus++ {
+		for fstatus := fpuFirstStatusFlag; fstatus <= fpuLastStatusFlag; fstatus++ {
 			if inst, ok := f.fstatusFlags[fstatus]; ok {
 				entry.AppendInst(inst)
 			}

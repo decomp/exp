@@ -299,8 +299,14 @@ func (f *Func) liftInstFADD(inst *x86.Inst) error {
 	// Adds the destination and source operands and stores the sum in the
 	// destination location.
 	if inst.Args[1] != nil {
-		panic(fmt.Errorf("support for two-operand FADD instruction not yet implemented; instruction %v at address %v", inst, inst.Addr))
+		// Two-operand form.
+		dst := f.useArg(inst.Arg(0))
+		src := f.useArg(inst.Arg(1))
+		result := f.cur.NewFAdd(dst, src)
+		f.defArg(inst.Arg(0), result)
+		return nil
 	}
+	// One-operand form.
 	src := f.useArg(inst.Arg(0))
 	v := f.cur.NewFPExt(src, types.X86_FP80)
 	st0 := f.fload()
@@ -667,29 +673,27 @@ func (f *Func) liftInstFCOM(inst *x86.Inst) error {
 	f.cur = next
 	f.AppendBlock(next)
 	next = &ir.BasicBlock{}
-	f.cur.NewCondBr(d, targetD, next)
-	f.cur = next
-	f.AppendBlock(next)
+	f.cur.NewCondBr(d, targetD, end)
 	f.cur = targetA
 	f.AppendBlock(targetA)
-	f.defFStatus(CR0, constant.False)
-	f.defFStatus(CR2, constant.False)
-	f.defFStatus(CR3, constant.False)
+	f.defFStatus(C0, constant.False)
+	f.defFStatus(C2, constant.False)
+	f.defFStatus(C3, constant.False)
 	f.cur = targetB
 	f.AppendBlock(targetB)
-	f.defFStatus(CR0, constant.True)
-	f.defFStatus(CR2, constant.False)
-	f.defFStatus(CR3, constant.False)
+	f.defFStatus(C0, constant.True)
+	f.defFStatus(C2, constant.False)
+	f.defFStatus(C3, constant.False)
 	f.cur = targetC
 	f.AppendBlock(targetC)
-	f.defFStatus(CR0, constant.False)
-	f.defFStatus(CR2, constant.False)
-	f.defFStatus(CR3, constant.True)
+	f.defFStatus(C0, constant.False)
+	f.defFStatus(C2, constant.False)
+	f.defFStatus(C3, constant.True)
 	f.cur = targetD
 	f.AppendBlock(targetD)
-	f.defFStatus(CR0, constant.True)
-	f.defFStatus(CR2, constant.True)
-	f.defFStatus(CR3, constant.True)
+	f.defFStatus(C0, constant.True)
+	f.defFStatus(C2, constant.True)
+	f.defFStatus(C3, constant.True)
 	f.cur = end
 	f.AppendBlock(end)
 	return nil
@@ -1233,24 +1237,11 @@ func (f *Func) liftInstFSTSW(inst *x86.Inst) error {
 	//
 	// Stores the current value of the x87 FPU status word in the destination
 	// location.
-
-	// TODO: Continue here.
-
-	// Busy
-	// CR0
-	// CR1
-	// CR2
-	// CR3
-	// ES
-	// StackFault
-	// PE
-	// UE
-	// OE
-	// ZE
-	// DE
-	// IE
-	pretty.Println("inst:", inst)
-	panic("emitInstFSTSW: not yet implemented")
+	if err := f.liftInstFNSTSW(inst); err != nil {
+		return errors.WithStack(err)
+	}
+	// TODO: Check FPU error condition.
+	return nil
 }
 
 // --- [ FNSTSW ] --------------------------------------------------------------
@@ -1265,8 +1256,91 @@ func (f *Func) liftInstFNSTSW(inst *x86.Inst) error {
 	//
 	// Stores the current value of the x87 FPU status word in the destination
 	// location.
-	pretty.Println("inst:", inst)
-	panic("emitInstFNSTSW: not yet implemented")
+
+	// Load FPU status flags.
+	b := f.useFStatus(Busy)
+	c3 := f.useFStatus(C3)
+	st := f.fload()
+	c2 := f.useFStatus(C2)
+	c1 := f.useFStatus(C1)
+	c0 := f.useFStatus(C0)
+	es := f.useFStatus(ES)
+	sf := f.useFStatus(StackFault)
+	pe := f.useFStatus(PE)
+	ue := f.useFStatus(UE)
+	oe := f.useFStatus(OE)
+	ze := f.useFStatus(ZE)
+	de := f.useFStatus(DE)
+	ie := f.useFStatus(IE)
+
+	// Extend to 16-bit.
+	b = f.cur.NewZExt(b, types.I16)
+	c3 = f.cur.NewZExt(b, types.I16)
+	st = f.cur.NewZExt(b, types.I16)
+	c2 = f.cur.NewZExt(b, types.I16)
+	c1 = f.cur.NewZExt(b, types.I16)
+	c0 = f.cur.NewZExt(b, types.I16)
+	es = f.cur.NewZExt(b, types.I16)
+	sf = f.cur.NewZExt(b, types.I16)
+	pe = f.cur.NewZExt(b, types.I16)
+	ue = f.cur.NewZExt(b, types.I16)
+	oe = f.cur.NewZExt(b, types.I16)
+	ze = f.cur.NewZExt(b, types.I16)
+	de = f.cur.NewZExt(b, types.I16)
+	ie = f.cur.NewZExt(b, types.I16)
+
+	// x87 FPU Status Word
+	//
+	//    15    - B, FPU Busy
+	//    14    - C3, Conditional Code 3
+	//    11-13 - TOP, Top of Stack Pointer
+	//    10    - C2, Conditional Code 2
+	//     9    - C1, Conditional Code 1
+	//     8    - C0, Conditional Code 0
+	//     7    - ES, Exception Summary Status
+	//     6    - SF, Stack Fault
+	//     5    - PE, Precision
+	//     4    - UE, Underflow
+	//     3    - OE, Overflow
+	//     2    - ZE, Zero Divide
+	//     1    - DE, Denormalized Operand
+	//     0    - IE, Invalid Operation
+	//
+	// ref: 8.1.3 x87 FPU Status Register, Intel 64 and IA-32 architectures
+	// software developer's manual volume 1: Basic architecture.
+	b = f.cur.NewShl(b, constant.NewInt(15, types.I64))
+	c3 = f.cur.NewShl(c3, constant.NewInt(14, types.I64))
+	st = f.cur.NewShl(st, constant.NewInt(11, types.I64))
+	c2 = f.cur.NewShl(c2, constant.NewInt(10, types.I64))
+	c1 = f.cur.NewShl(c1, constant.NewInt(9, types.I64))
+	c0 = f.cur.NewShl(c0, constant.NewInt(8, types.I64))
+	es = f.cur.NewShl(es, constant.NewInt(7, types.I64))
+	sf = f.cur.NewShl(sf, constant.NewInt(6, types.I64))
+	pe = f.cur.NewShl(pe, constant.NewInt(5, types.I64))
+	ue = f.cur.NewShl(ue, constant.NewInt(4, types.I64))
+	oe = f.cur.NewShl(oe, constant.NewInt(3, types.I64))
+	ze = f.cur.NewShl(ze, constant.NewInt(2, types.I64))
+	de = f.cur.NewShl(de, constant.NewInt(1, types.I64))
+	//ie = f.cur.NewShl(ie, constant.NewInt(0, types.I64))
+
+	tmp := f.cur.NewOr(b, c3)
+	tmp = f.cur.NewOr(tmp, st)
+	tmp = f.cur.NewOr(tmp, c2)
+	tmp = f.cur.NewOr(tmp, c1)
+	tmp = f.cur.NewOr(tmp, c0)
+	tmp = f.cur.NewOr(tmp, es)
+	tmp = f.cur.NewOr(tmp, sf)
+	tmp = f.cur.NewOr(tmp, pe)
+	tmp = f.cur.NewOr(tmp, ue)
+	tmp = f.cur.NewOr(tmp, oe)
+	tmp = f.cur.NewOr(tmp, ze)
+	tmp = f.cur.NewOr(tmp, de)
+	result := f.cur.NewOr(tmp, ie)
+
+	// Store FPU status flags.
+	f.defArg(inst.Arg(0), result)
+
+	return nil
 }
 
 // --- [ FWAIT ] ---------------------------------------------------------------

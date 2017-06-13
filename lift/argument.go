@@ -394,12 +394,16 @@ type StatusFlag uint
 
 // Status flags.
 const (
+	firstStatusFlag = CF
+
 	CF StatusFlag = iota // Carry Flag
 	PF                   // Parity Flag
 	AF                   // Auxiliary Carry Flag
 	ZF                   // Zero Flag
 	SF                   // Sign Flag
 	OF                   // Overflow Flag
+
+	lastStatusFlag = OF
 )
 
 // String returns the string representation of the status flag.
@@ -451,11 +455,13 @@ type FStatusFlag uint
 
 // FPU status flags.
 const (
+	fpuFirstStatusFlag = Busy
+
 	Busy       FStatusFlag = iota // FPU Busy
-	CR0                           // Condition Code 0
-	CR1                           // Condition Code 1
-	CR2                           // Condition Code 2
-	CR3                           // Condition Code 3
+	C0                            // Condition Code 0
+	C1                            // Condition Code 1
+	C2                            // Condition Code 2
+	C3                            // Condition Code 3
 	ES                            // Exception Summary Status
 	StackFault                    // Stack Fault
 	// Exception Flags.
@@ -465,15 +471,26 @@ const (
 	ZE // Zero Divide
 	DE // Denormalized Operand
 	IE // Invalid Operation
+
+	fpuLastStatusFlag = IE
 )
 
 // String returns the string representation of the status flag.
 func (fstatus FStatusFlag) String() string {
 	m := map[FStatusFlag]string{
-		CR0: "CR0",
-		CR1: "CR1",
-		CR2: "CR2",
-		CR3: "CR3",
+		Busy:       "x87_B",
+		C0:         "x87_C0",
+		C1:         "x87_C1",
+		C2:         "x87_C2",
+		C3:         "x87_C3",
+		ES:         "x87_ES",
+		StackFault: "x87_SF",
+		PE:         "x87_PE",
+		UE:         "x87_UE",
+		OE:         "x87_OE",
+		ZE:         "x87_ZE",
+		DE:         "x87_DE",
+		IE:         "x87_IE",
 	}
 	if s, ok := m[fstatus]; ok {
 		return s

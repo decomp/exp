@@ -142,7 +142,7 @@ func (f *Func) liftInstFILD(inst *x86.Inst) error {
 func (f *Func) liftInstFIST(inst *x86.Inst) error {
 	// FIST - Store integer.
 	pretty.Println("inst:", inst)
-	panic("emitInstFIST: not yet implemented")
+	panic("liftInstFIST: not yet implemented")
 }
 
 // --- [ FISTP ] ---------------------------------------------------------------
@@ -152,7 +152,7 @@ func (f *Func) liftInstFIST(inst *x86.Inst) error {
 func (f *Func) liftInstFISTP(inst *x86.Inst) error {
 	// FISTP - Store integer and pop.
 	pretty.Println("inst:", inst)
-	panic("emitInstFISTP: not yet implemented")
+	panic("liftInstFISTP: not yet implemented")
 }
 
 // --- [ FBLD ] ----------------------------------------------------------------
@@ -162,7 +162,7 @@ func (f *Func) liftInstFISTP(inst *x86.Inst) error {
 func (f *Func) liftInstFBLD(inst *x86.Inst) error {
 	// FBLD - Load BCD.
 	pretty.Println("inst:", inst)
-	panic("emitInstFBLD: not yet implemented")
+	panic("liftInstFBLD: not yet implemented")
 }
 
 // --- [ FBSTP ] ---------------------------------------------------------------
@@ -172,7 +172,7 @@ func (f *Func) liftInstFBLD(inst *x86.Inst) error {
 func (f *Func) liftInstFBSTP(inst *x86.Inst) error {
 	// FBSTP - Store BCD and pop.
 	pretty.Println("inst:", inst)
-	panic("emitInstFBSTP: not yet implemented")
+	panic("liftInstFBSTP: not yet implemented")
 }
 
 // --- [ FXCH ] ----------------------------------------------------------------
@@ -182,7 +182,7 @@ func (f *Func) liftInstFBSTP(inst *x86.Inst) error {
 func (f *Func) liftInstFXCH(inst *x86.Inst) error {
 	// FXCH - Exchange registers.
 	pretty.Println("inst:", inst)
-	panic("emitInstFXCH: not yet implemented")
+	panic("liftInstFXCH: not yet implemented")
 }
 
 // ___ [ FCMOVcc - Floating-Point Conditional Move Instructions ] ______________
@@ -209,7 +209,7 @@ func (f *Func) liftInstFXCH(inst *x86.Inst) error {
 func (f *Func) liftInstFCMOVE(inst *x86.Inst) error {
 	// FCMOVE - Floating-point conditional move if equal.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVE: not yet implemented")
+	panic("liftInstFCMOVE: not yet implemented")
 }
 
 // --- [ FCMOVNE ] -------------------------------------------------------------
@@ -219,7 +219,7 @@ func (f *Func) liftInstFCMOVE(inst *x86.Inst) error {
 func (f *Func) liftInstFCMOVNE(inst *x86.Inst) error {
 	// FCMOVNE - Floating-point conditional move if not equal.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVNE: not yet implemented")
+	panic("liftInstFCMOVNE: not yet implemented")
 }
 
 // --- [ FCMOVB ] --------------------------------------------------------------
@@ -229,7 +229,7 @@ func (f *Func) liftInstFCMOVNE(inst *x86.Inst) error {
 func (f *Func) liftInstFCMOVB(inst *x86.Inst) error {
 	// FCMOVB - Floating-point conditional move if below.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVB: not yet implemented")
+	panic("liftInstFCMOVB: not yet implemented")
 }
 
 // --- [ FCMOVBE ] -------------------------------------------------------------
@@ -239,7 +239,7 @@ func (f *Func) liftInstFCMOVB(inst *x86.Inst) error {
 func (f *Func) liftInstFCMOVBE(inst *x86.Inst) error {
 	// FCMOVBE - Floating-point conditional move if below or equal.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVBE: not yet implemented")
+	panic("liftInstFCMOVBE: not yet implemented")
 }
 
 // --- [ FCMOVNB ] -------------------------------------------------------------
@@ -249,7 +249,7 @@ func (f *Func) liftInstFCMOVBE(inst *x86.Inst) error {
 func (f *Func) liftInstFCMOVNB(inst *x86.Inst) error {
 	// FCMOVNB - Floating-point conditional move if not below.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVNB: not yet implemented")
+	panic("liftInstFCMOVNB: not yet implemented")
 }
 
 // --- [ FCMOVNBE ] ------------------------------------------------------------
@@ -259,7 +259,7 @@ func (f *Func) liftInstFCMOVNB(inst *x86.Inst) error {
 func (f *Func) liftInstFCMOVNBE(inst *x86.Inst) error {
 	// FCMOVNBE - Floating-point conditional move if not below or equal.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVNBE: not yet implemented")
+	panic("liftInstFCMOVNBE: not yet implemented")
 }
 
 // --- [ FCMOVU ] --------------------------------------------------------------
@@ -269,7 +269,7 @@ func (f *Func) liftInstFCMOVNBE(inst *x86.Inst) error {
 func (f *Func) liftInstFCMOVU(inst *x86.Inst) error {
 	// FCMOVU - Floating-point conditional move if unordered.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVU: not yet implemented")
+	panic("liftInstFCMOVU: not yet implemented")
 }
 
 // --- [ FCMOVNU ] -------------------------------------------------------------
@@ -279,7 +279,7 @@ func (f *Func) liftInstFCMOVU(inst *x86.Inst) error {
 func (f *Func) liftInstFCMOVNU(inst *x86.Inst) error {
 	// FCMOVNU - Floating-point conditional move if not unordered.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCMOVNU: not yet implemented")
+	panic("liftInstFCMOVNU: not yet implemented")
 }
 
 // === [ x87 FPU Basic Arithmetic Instructions ] ===============================
@@ -327,8 +327,25 @@ func (f *Func) liftInstFADDP(inst *x86.Inst) error {
 	//
 	// Adds the destination and source operands and stores the sum in the
 	// destination location.
-	pretty.Println("inst:", inst)
-	panic("emitInstFADDP: not yet implemented")
+	if inst.Args[1] != nil {
+		// Two-operand form.
+		dst := f.useArg(inst.Arg(0))
+		src := f.useArg(inst.Arg(1))
+		result := f.cur.NewFAdd(dst, src)
+		f.defArg(inst.Arg(0), result)
+		return nil
+	}
+	// Zero-operand form.
+
+	// TODO: Figure out how to handle F1, directly or through abstraction since
+	// the underlying register of F1 changes as ST is updated.
+	st0 := f.useReg(x86.NewReg(x86asm.F0, inst))
+	st1 := f.useReg(x86.NewReg(x86asm.F1, inst))
+	result := f.cur.NewFAdd(st0, st1)
+	f.defReg(x86.NewReg(x86asm.F1, inst), result)
+
+	f.pop()
+	return nil
 }
 
 // --- [ FIADD ] ---------------------------------------------------------------
@@ -344,7 +361,7 @@ func (f *Func) liftInstFIADD(inst *x86.Inst) error {
 	// Adds the destination and source operands and stores the sum in the
 	// destination location.
 	pretty.Println("inst:", inst)
-	panic("emitInstFIADD: not yet implemented")
+	panic("liftInstFIADD: not yet implemented")
 }
 
 // --- [ FSUB ] ----------------------------------------------------------------
@@ -354,7 +371,7 @@ func (f *Func) liftInstFIADD(inst *x86.Inst) error {
 func (f *Func) liftInstFSUB(inst *x86.Inst) error {
 	// FSUB - Subtract floating-point.
 	pretty.Println("inst:", inst)
-	panic("emitInstFSUB: not yet implemented")
+	panic("liftInstFSUB: not yet implemented")
 }
 
 // --- [ FSUBP ] ---------------------------------------------------------------
@@ -364,7 +381,7 @@ func (f *Func) liftInstFSUB(inst *x86.Inst) error {
 func (f *Func) liftInstFSUBP(inst *x86.Inst) error {
 	// FSUBP - Subtract floating-point and pop.
 	pretty.Println("inst:", inst)
-	panic("emitInstFSUBP: not yet implemented")
+	panic("liftInstFSUBP: not yet implemented")
 }
 
 // --- [ FISUB ] ---------------------------------------------------------------
@@ -374,7 +391,7 @@ func (f *Func) liftInstFSUBP(inst *x86.Inst) error {
 func (f *Func) liftInstFISUB(inst *x86.Inst) error {
 	// FISUB - Subtract integer.
 	pretty.Println("inst:", inst)
-	panic("emitInstFISUB: not yet implemented")
+	panic("liftInstFISUB: not yet implemented")
 }
 
 // --- [ FSUBR ] ---------------------------------------------------------------
@@ -384,7 +401,7 @@ func (f *Func) liftInstFISUB(inst *x86.Inst) error {
 func (f *Func) liftInstFSUBR(inst *x86.Inst) error {
 	// FSUBR - Subtract floating-point reverse.
 	pretty.Println("inst:", inst)
-	panic("emitInstFSUBR: not yet implemented")
+	panic("liftInstFSUBR: not yet implemented")
 }
 
 // --- [ FSUBRP ] --------------------------------------------------------------
@@ -394,7 +411,7 @@ func (f *Func) liftInstFSUBR(inst *x86.Inst) error {
 func (f *Func) liftInstFSUBRP(inst *x86.Inst) error {
 	// FSUBRP - Subtract floating-point reverse and pop.
 	pretty.Println("inst:", inst)
-	panic("emitInstFSUBRP: not yet implemented")
+	panic("liftInstFSUBRP: not yet implemented")
 }
 
 // --- [ FISUBR ] --------------------------------------------------------------
@@ -404,7 +421,7 @@ func (f *Func) liftInstFSUBRP(inst *x86.Inst) error {
 func (f *Func) liftInstFISUBR(inst *x86.Inst) error {
 	// FISUBR - Subtract integer reverse.
 	pretty.Println("inst:", inst)
-	panic("emitInstFISUBR: not yet implemented")
+	panic("liftInstFISUBR: not yet implemented")
 }
 
 // --- [ FMUL ] ----------------------------------------------------------------
@@ -422,8 +439,14 @@ func (f *Func) liftInstFMUL(inst *x86.Inst) error {
 	// Multiplies the destination and source operands and stores the product in
 	// the destination location.
 	if inst.Args[1] != nil {
-		panic(fmt.Errorf("support for two-operand form of FMUL not yet implemented; %v", inst))
+		// Two-operand form.
+		dst := f.useArg(inst.Arg(0))
+		src := f.useArg(inst.Arg(1))
+		result := f.cur.NewFMul(dst, src)
+		f.defArg(inst.Arg(0), result)
+		return nil
 	}
+	// One-operand form.
 	arg := f.useArg(inst.Arg(0))
 	src := f.cur.NewFPExt(arg, types.X86_FP80)
 	st0 := f.fload()
@@ -439,7 +462,7 @@ func (f *Func) liftInstFMUL(inst *x86.Inst) error {
 func (f *Func) liftInstFMULP(inst *x86.Inst) error {
 	// FMULP - Multiply floating-point and pop.
 	pretty.Println("inst:", inst)
-	panic("emitInstFMULP: not yet implemented")
+	panic("liftInstFMULP: not yet implemented")
 }
 
 // --- [ FIMUL ] ---------------------------------------------------------------
@@ -449,7 +472,7 @@ func (f *Func) liftInstFMULP(inst *x86.Inst) error {
 func (f *Func) liftInstFIMUL(inst *x86.Inst) error {
 	// FIMUL - Multiply integer.
 	pretty.Println("inst:", inst)
-	panic("emitInstFIMUL: not yet implemented")
+	panic("liftInstFIMUL: not yet implemented")
 }
 
 // --- [ FDIV ] ----------------------------------------------------------------
@@ -459,7 +482,7 @@ func (f *Func) liftInstFIMUL(inst *x86.Inst) error {
 func (f *Func) liftInstFDIV(inst *x86.Inst) error {
 	// FDIV - Divide floating-point.
 	pretty.Println("inst:", inst)
-	panic("emitInstFDIV: not yet implemented")
+	panic("liftInstFDIV: not yet implemented")
 }
 
 // --- [ FDIVP ] ---------------------------------------------------------------
@@ -511,8 +534,17 @@ func (f *Func) liftInstFIDIV(inst *x86.Inst) error {
 // to f.
 func (f *Func) liftInstFDIVR(inst *x86.Inst) error {
 	// FDIVR - Divide floating-point reverse.
+	//
+	//    FDIVR m32fp                   Divide m32fp by ST(0) and store result in ST(0).
+	//    FDIVR m64fp                   Divide m64fp by ST(0) and store result in ST(0).
+	//    FDIVR ST(0), ST(i)            Divide ST(i) by ST(0) and store result in ST(0).
+	//    FDIVR ST(i), ST(0)            Divide ST(0) by ST(i) and store result in ST(i).
+	//
+	// Divides the source operand by the destination operand and stores the
+	// result in the destination location.
+
 	pretty.Println("inst:", inst)
-	panic("emitInstFDIVR: not yet implemented")
+	panic("liftInstFDIVR: not yet implemented")
 }
 
 // --- [ FDIVRP ] --------------------------------------------------------------
@@ -521,8 +553,28 @@ func (f *Func) liftInstFDIVR(inst *x86.Inst) error {
 // code to f.
 func (f *Func) liftInstFDIVRP(inst *x86.Inst) error {
 	// FDIVRP - Divide floating-point reverse and pop.
-	pretty.Println("inst:", inst)
-	panic("emitInstFDIVRP: not yet implemented")
+	//
+	//    FDIVRP ST(i), ST(0)           Divide ST(0) by ST(i), store result in ST(i), and pop the register stack.
+	//    FDIVRP                        Divide ST(0) by ST(1), store result in ST(1), and pop the register stack.
+	//
+	// Divides the source operand by the destination operand and stores the
+	// result in the destination location.
+	if inst.Args[1] != nil {
+		// Two-operand form.
+		dst := f.useArg(inst.Arg(0))
+		src := f.useArg(inst.Arg(1))
+		result := f.cur.NewFDiv(src, dst)
+		f.defArg(inst.Arg(0), result)
+		f.pop()
+		return nil
+	}
+	// Zero-operand form.
+	dst := f.useReg(x86.NewReg(x86asm.F1, inst))
+	src := f.useReg(x86.NewReg(x86asm.F0, inst))
+	result := f.cur.NewFDiv(src, dst)
+	f.defReg(x86.NewReg(x86asm.F1, inst), result)
+	f.pop()
+	return nil
 }
 
 // --- [ FIDIVR ] --------------------------------------------------------------
@@ -531,8 +583,15 @@ func (f *Func) liftInstFDIVRP(inst *x86.Inst) error {
 // code to f.
 func (f *Func) liftInstFIDIVR(inst *x86.Inst) error {
 	// FIDIVR - Divide integer reverse.
+	//
+	//    FIDIVR m32int       Divide m32int by ST(0) and store result in ST(0).
+	//    FIDIVR m16int       Divide m16int by ST(0) and store result in ST(0).
+	//
+	// Divides the source operand by the destination operand and stores the
+	// result in the destination location.
+
 	pretty.Println("inst:", inst)
-	panic("emitInstFIDIVR: not yet implemented")
+	panic("liftInstFIDIVR: not yet implemented")
 }
 
 // --- [ FPREM ] ---------------------------------------------------------------
@@ -542,7 +601,7 @@ func (f *Func) liftInstFIDIVR(inst *x86.Inst) error {
 func (f *Func) liftInstFPREM(inst *x86.Inst) error {
 	// FPREM - Partial remainder.
 	pretty.Println("inst:", inst)
-	panic("emitInstFPREM: not yet implemented")
+	panic("liftInstFPREM: not yet implemented")
 }
 
 // --- [ FPREM1 ] --------------------------------------------------------------
@@ -552,7 +611,7 @@ func (f *Func) liftInstFPREM(inst *x86.Inst) error {
 func (f *Func) liftInstFPREM1(inst *x86.Inst) error {
 	// FPREM1 - IEEE Partial remainder.
 	pretty.Println("inst:", inst)
-	panic("emitInstFPREM1: not yet implemented")
+	panic("liftInstFPREM1: not yet implemented")
 }
 
 // --- [ FABS ] ----------------------------------------------------------------
@@ -562,7 +621,7 @@ func (f *Func) liftInstFPREM1(inst *x86.Inst) error {
 func (f *Func) liftInstFABS(inst *x86.Inst) error {
 	// FABS - Absolute value.
 	pretty.Println("inst:", inst)
-	panic("emitInstFABS: not yet implemented")
+	panic("liftInstFABS: not yet implemented")
 }
 
 // --- [ FCHS ] ----------------------------------------------------------------
@@ -572,7 +631,7 @@ func (f *Func) liftInstFABS(inst *x86.Inst) error {
 func (f *Func) liftInstFCHS(inst *x86.Inst) error {
 	// FCHS - Change sign.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCHS: not yet implemented")
+	panic("liftInstFCHS: not yet implemented")
 }
 
 // --- [ FRNDINT ] -------------------------------------------------------------
@@ -582,7 +641,7 @@ func (f *Func) liftInstFCHS(inst *x86.Inst) error {
 func (f *Func) liftInstFRNDINT(inst *x86.Inst) error {
 	// FRNDINT - Round to integer.
 	pretty.Println("inst:", inst)
-	panic("emitInstFRNDINT: not yet implemented")
+	panic("liftInstFRNDINT: not yet implemented")
 }
 
 // --- [ FSCALE ] --------------------------------------------------------------
@@ -592,7 +651,7 @@ func (f *Func) liftInstFRNDINT(inst *x86.Inst) error {
 func (f *Func) liftInstFSCALE(inst *x86.Inst) error {
 	// FSCALE - Scale by power of two.
 	pretty.Println("inst:", inst)
-	panic("emitInstFSCALE: not yet implemented")
+	panic("liftInstFSCALE: not yet implemented")
 }
 
 // --- [ FSQRT ] ---------------------------------------------------------------
@@ -602,7 +661,7 @@ func (f *Func) liftInstFSCALE(inst *x86.Inst) error {
 func (f *Func) liftInstFSQRT(inst *x86.Inst) error {
 	// FSQRT - Square root.
 	pretty.Println("inst:", inst)
-	panic("emitInstFSQRT: not yet implemented")
+	panic("liftInstFSQRT: not yet implemented")
 }
 
 // --- [ FXTRACT ] -------------------------------------------------------------
@@ -612,7 +671,7 @@ func (f *Func) liftInstFSQRT(inst *x86.Inst) error {
 func (f *Func) liftInstFXTRACT(inst *x86.Inst) error {
 	// FXTRACT - Extract exponent and significand.
 	pretty.Println("inst:", inst)
-	panic("emitInstFXTRACT: not yet implemented")
+	panic("liftInstFXTRACT: not yet implemented")
 }
 
 // === [ x87 FPU Comparison Instructions ] =====================================
@@ -762,7 +821,7 @@ func (f *Func) liftInstFCOMPP(inst *x86.Inst) error {
 func (f *Func) liftInstFUCOM(inst *x86.Inst) error {
 	// FUCOM - Unordered compare floating-point.
 	pretty.Println("inst:", inst)
-	panic("emitInstFUCOM: not yet implemented")
+	panic("liftInstFUCOM: not yet implemented")
 }
 
 // --- [ FUCOMP ] --------------------------------------------------------------
@@ -772,7 +831,7 @@ func (f *Func) liftInstFUCOM(inst *x86.Inst) error {
 func (f *Func) liftInstFUCOMP(inst *x86.Inst) error {
 	// FUCOMP - Unordered compare floating-point and pop.
 	pretty.Println("inst:", inst)
-	panic("emitInstFUCOMP: not yet implemented")
+	panic("liftInstFUCOMP: not yet implemented")
 }
 
 // --- [ FUCOMPP ] -------------------------------------------------------------
@@ -782,7 +841,7 @@ func (f *Func) liftInstFUCOMP(inst *x86.Inst) error {
 func (f *Func) liftInstFUCOMPP(inst *x86.Inst) error {
 	// FUCOMPP - Unordered compare floating-point and pop twice.
 	pretty.Println("inst:", inst)
-	panic("emitInstFUCOMPP: not yet implemented")
+	panic("liftInstFUCOMPP: not yet implemented")
 }
 
 // --- [ FICOM ] ---------------------------------------------------------------
@@ -792,7 +851,7 @@ func (f *Func) liftInstFUCOMPP(inst *x86.Inst) error {
 func (f *Func) liftInstFICOM(inst *x86.Inst) error {
 	// FICOM - Compare integer.
 	pretty.Println("inst:", inst)
-	panic("emitInstFICOM: not yet implemented")
+	panic("liftInstFICOM: not yet implemented")
 }
 
 // --- [ FICOMP ] --------------------------------------------------------------
@@ -802,7 +861,7 @@ func (f *Func) liftInstFICOM(inst *x86.Inst) error {
 func (f *Func) liftInstFICOMP(inst *x86.Inst) error {
 	// FICOMP - Compare integer and pop.
 	pretty.Println("inst:", inst)
-	panic("emitInstFICOMP: not yet implemented")
+	panic("liftInstFICOMP: not yet implemented")
 }
 
 // --- [ FCOMI ] ---------------------------------------------------------------
@@ -812,7 +871,7 @@ func (f *Func) liftInstFICOMP(inst *x86.Inst) error {
 func (f *Func) liftInstFCOMI(inst *x86.Inst) error {
 	// FCOMI - Compare floating-point and set EFLAGS.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCOMI: not yet implemented")
+	panic("liftInstFCOMI: not yet implemented")
 }
 
 // --- [ FUCOMI ] --------------------------------------------------------------
@@ -822,7 +881,7 @@ func (f *Func) liftInstFCOMI(inst *x86.Inst) error {
 func (f *Func) liftInstFUCOMI(inst *x86.Inst) error {
 	// FUCOMI - Unordered compare floating-point and set EFLAGS.
 	pretty.Println("inst:", inst)
-	panic("emitInstFUCOMI: not yet implemented")
+	panic("liftInstFUCOMI: not yet implemented")
 }
 
 // --- [ FCOMIP ] --------------------------------------------------------------
@@ -832,7 +891,7 @@ func (f *Func) liftInstFUCOMI(inst *x86.Inst) error {
 func (f *Func) liftInstFCOMIP(inst *x86.Inst) error {
 	// FCOMIP - Compare floating-point, set EFLAGS, and pop.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCOMIP: not yet implemented")
+	panic("liftInstFCOMIP: not yet implemented")
 }
 
 // --- [ FUCOMIP ] -------------------------------------------------------------
@@ -842,7 +901,7 @@ func (f *Func) liftInstFCOMIP(inst *x86.Inst) error {
 func (f *Func) liftInstFUCOMIP(inst *x86.Inst) error {
 	// FUCOMIP - Unordered compare floating-point, set EFLAGS, and pop.
 	pretty.Println("inst:", inst)
-	panic("emitInstFUCOMIP: not yet implemented")
+	panic("liftInstFUCOMIP: not yet implemented")
 }
 
 // --- [ FTST ] ----------------------------------------------------------------
@@ -852,7 +911,7 @@ func (f *Func) liftInstFUCOMIP(inst *x86.Inst) error {
 func (f *Func) liftInstFTST(inst *x86.Inst) error {
 	// FTST - Test floating-point (compare with 0.0).
 	pretty.Println("inst:", inst)
-	panic("emitInstFTST: not yet implemented")
+	panic("liftInstFTST: not yet implemented")
 }
 
 // --- [ FXAM ] ----------------------------------------------------------------
@@ -862,7 +921,7 @@ func (f *Func) liftInstFTST(inst *x86.Inst) error {
 func (f *Func) liftInstFXAM(inst *x86.Inst) error {
 	// FXAM - Examine floating-point.
 	pretty.Println("inst:", inst)
-	panic("emitInstFXAM: not yet implemented")
+	panic("liftInstFXAM: not yet implemented")
 }
 
 // === [ x87 FPU Transcendental Instructions ] =================================
@@ -874,7 +933,7 @@ func (f *Func) liftInstFXAM(inst *x86.Inst) error {
 func (f *Func) liftInstFSIN(inst *x86.Inst) error {
 	// FSIN - Sine.
 	pretty.Println("inst:", inst)
-	panic("emitInstFSIN: not yet implemented")
+	panic("liftInstFSIN: not yet implemented")
 }
 
 // --- [ FCOS ] ----------------------------------------------------------------
@@ -884,7 +943,7 @@ func (f *Func) liftInstFSIN(inst *x86.Inst) error {
 func (f *Func) liftInstFCOS(inst *x86.Inst) error {
 	// FCOS - Cosine.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCOS: not yet implemented")
+	panic("liftInstFCOS: not yet implemented")
 }
 
 // --- [ FSINCOS ] -------------------------------------------------------------
@@ -894,7 +953,7 @@ func (f *Func) liftInstFCOS(inst *x86.Inst) error {
 func (f *Func) liftInstFSINCOS(inst *x86.Inst) error {
 	// FSINCOS - Sine and cosine.
 	pretty.Println("inst:", inst)
-	panic("emitInstFSINCOS: not yet implemented")
+	panic("liftInstFSINCOS: not yet implemented")
 }
 
 // --- [ FPTAN ] ---------------------------------------------------------------
@@ -904,7 +963,7 @@ func (f *Func) liftInstFSINCOS(inst *x86.Inst) error {
 func (f *Func) liftInstFPTAN(inst *x86.Inst) error {
 	// FPTAN - Partial tangent.
 	pretty.Println("inst:", inst)
-	panic("emitInstFPTAN: not yet implemented")
+	panic("liftInstFPTAN: not yet implemented")
 }
 
 // --- [ FPATAN ] --------------------------------------------------------------
@@ -914,7 +973,7 @@ func (f *Func) liftInstFPTAN(inst *x86.Inst) error {
 func (f *Func) liftInstFPATAN(inst *x86.Inst) error {
 	// FPATAN - Partial arctangent.
 	pretty.Println("inst:", inst)
-	panic("emitInstFPATAN: not yet implemented")
+	panic("liftInstFPATAN: not yet implemented")
 }
 
 // --- [ F2XM1 ] ---------------------------------------------------------------
@@ -924,7 +983,7 @@ func (f *Func) liftInstFPATAN(inst *x86.Inst) error {
 func (f *Func) liftInstF2XM1(inst *x86.Inst) error {
 	// F2XM1 - 2^x - 1.
 	pretty.Println("inst:", inst)
-	panic("emitInstF2XM1: not yet implemented")
+	panic("liftInstF2XM1: not yet implemented")
 }
 
 // --- [ FYL2X ] ---------------------------------------------------------------
@@ -934,7 +993,7 @@ func (f *Func) liftInstF2XM1(inst *x86.Inst) error {
 func (f *Func) liftInstFYL2X(inst *x86.Inst) error {
 	// FYL2X - y*log_2(x).
 	pretty.Println("inst:", inst)
-	panic("emitInstFYL2X: not yet implemented")
+	panic("liftInstFYL2X: not yet implemented")
 }
 
 // --- [ FYL2XP1 ] -------------------------------------------------------------
@@ -944,7 +1003,7 @@ func (f *Func) liftInstFYL2X(inst *x86.Inst) error {
 func (f *Func) liftInstFYL2XP1(inst *x86.Inst) error {
 	// FYL2XP1 - y*log_2(x+1).
 	pretty.Println("inst:", inst)
-	panic("emitInstFYL2XP1: not yet implemented")
+	panic("liftInstFYL2XP1: not yet implemented")
 }
 
 // === [ x87 FPU Load Constants Instructions ] =================================
@@ -1070,7 +1129,7 @@ func (f *Func) liftInstFLDLG2(inst *x86.Inst) error {
 func (f *Func) liftInstFINCSTP(inst *x86.Inst) error {
 	// FINCSTP - Increment FPU register stack pointer.
 	pretty.Println("inst:", inst)
-	panic("emitInstFINCSTP: not yet implemented")
+	panic("liftInstFINCSTP: not yet implemented")
 }
 
 // --- [ FDECSTP ] -------------------------------------------------------------
@@ -1080,7 +1139,7 @@ func (f *Func) liftInstFINCSTP(inst *x86.Inst) error {
 func (f *Func) liftInstFDECSTP(inst *x86.Inst) error {
 	// FDECSTP - Decrement FPU register stack pointer.
 	pretty.Println("inst:", inst)
-	panic("emitInstFDECSTP: not yet implemented")
+	panic("liftInstFDECSTP: not yet implemented")
 }
 
 // --- [ FFREE ] ---------------------------------------------------------------
@@ -1090,7 +1149,7 @@ func (f *Func) liftInstFDECSTP(inst *x86.Inst) error {
 func (f *Func) liftInstFFREE(inst *x86.Inst) error {
 	// FFREE - Free floating-point register.
 	pretty.Println("inst:", inst)
-	panic("emitInstFFREE: not yet implemented")
+	panic("liftInstFFREE: not yet implemented")
 }
 
 // --- [ FINIT ] ---------------------------------------------------------------
@@ -1100,7 +1159,7 @@ func (f *Func) liftInstFFREE(inst *x86.Inst) error {
 func (f *Func) liftInstFINIT(inst *x86.Inst) error {
 	// FINIT - Initialize FPU after checking error conditions.
 	pretty.Println("inst:", inst)
-	panic("emitInstFINIT: not yet implemented")
+	panic("liftInstFINIT: not yet implemented")
 }
 
 // --- [ FNINIT ] --------------------------------------------------------------
@@ -1110,7 +1169,7 @@ func (f *Func) liftInstFINIT(inst *x86.Inst) error {
 func (f *Func) liftInstFNINIT(inst *x86.Inst) error {
 	// FNINIT - Initialize FPU without checking error conditions.
 	pretty.Println("inst:", inst)
-	panic("emitInstFNINIT: not yet implemented")
+	panic("liftInstFNINIT: not yet implemented")
 }
 
 // --- [ FCLEX ] ---------------------------------------------------------------
@@ -1121,7 +1180,7 @@ func (f *Func) liftInstFCLEX(inst *x86.Inst) error {
 	// FCLEX - Clear floating-point exception flags after checking for error
 	// conditions.
 	pretty.Println("inst:", inst)
-	panic("emitInstFCLEX: not yet implemented")
+	panic("liftInstFCLEX: not yet implemented")
 }
 
 // --- [ FNCLEX ] --------------------------------------------------------------
@@ -1132,7 +1191,7 @@ func (f *Func) liftInstFNCLEX(inst *x86.Inst) error {
 	// FNCLEX - Clear floating-point exception flags without checking for error
 	// conditions.
 	pretty.Println("inst:", inst)
-	panic("emitInstFNCLEX: not yet implemented")
+	panic("liftInstFNCLEX: not yet implemented")
 }
 
 // --- [ FSTCW ] ---------------------------------------------------------------
@@ -1142,7 +1201,7 @@ func (f *Func) liftInstFNCLEX(inst *x86.Inst) error {
 func (f *Func) liftInstFSTCW(inst *x86.Inst) error {
 	// FSTCW - Store FPU control word after checking error conditions.
 	pretty.Println("inst:", inst)
-	panic("emitInstFSTCW: not yet implemented")
+	panic("liftInstFSTCW: not yet implemented")
 }
 
 // --- [ FNSTCW ] --------------------------------------------------------------
@@ -1152,7 +1211,7 @@ func (f *Func) liftInstFSTCW(inst *x86.Inst) error {
 func (f *Func) liftInstFNSTCW(inst *x86.Inst) error {
 	// FNSTCW - Store FPU control word without checking error conditions.
 	pretty.Println("inst:", inst)
-	panic("emitInstFNSTCW: not yet implemented")
+	panic("liftInstFNSTCW: not yet implemented")
 }
 
 // --- [ FLDCW ] ---------------------------------------------------------------
@@ -1162,7 +1221,7 @@ func (f *Func) liftInstFNSTCW(inst *x86.Inst) error {
 func (f *Func) liftInstFLDCW(inst *x86.Inst) error {
 	// FLDCW - Load FPU control word.
 	pretty.Println("inst:", inst)
-	panic("emitInstFLDCW: not yet implemented")
+	panic("liftInstFLDCW: not yet implemented")
 }
 
 // --- [ FSTENV ] --------------------------------------------------------------
@@ -1172,7 +1231,7 @@ func (f *Func) liftInstFLDCW(inst *x86.Inst) error {
 func (f *Func) liftInstFSTENV(inst *x86.Inst) error {
 	// FSTENV - Store FPU environment after checking error conditions.
 	pretty.Println("inst:", inst)
-	panic("emitInstFSTENV: not yet implemented")
+	panic("liftInstFSTENV: not yet implemented")
 }
 
 // --- [ FNSTENV ] -------------------------------------------------------------
@@ -1182,7 +1241,7 @@ func (f *Func) liftInstFSTENV(inst *x86.Inst) error {
 func (f *Func) liftInstFNSTENV(inst *x86.Inst) error {
 	// FNSTENV - Store FPU environment without checking error conditions.
 	pretty.Println("inst:", inst)
-	panic("emitInstFNSTENV: not yet implemented")
+	panic("liftInstFNSTENV: not yet implemented")
 }
 
 // --- [ FLDENV ] --------------------------------------------------------------
@@ -1192,7 +1251,7 @@ func (f *Func) liftInstFNSTENV(inst *x86.Inst) error {
 func (f *Func) liftInstFLDENV(inst *x86.Inst) error {
 	// FLDENV - Load FPU environment.
 	pretty.Println("inst:", inst)
-	panic("emitInstFLDENV: not yet implemented")
+	panic("liftInstFLDENV: not yet implemented")
 }
 
 // --- [ FSAVE ] ---------------------------------------------------------------
@@ -1202,7 +1261,7 @@ func (f *Func) liftInstFLDENV(inst *x86.Inst) error {
 func (f *Func) liftInstFSAVE(inst *x86.Inst) error {
 	// FSAVE - Save FPU state after checking error conditions.
 	pretty.Println("inst:", inst)
-	panic("emitInstFSAVE: not yet implemented")
+	panic("liftInstFSAVE: not yet implemented")
 }
 
 // --- [ FNSAVE ] --------------------------------------------------------------
@@ -1212,7 +1271,7 @@ func (f *Func) liftInstFSAVE(inst *x86.Inst) error {
 func (f *Func) liftInstFNSAVE(inst *x86.Inst) error {
 	// FNSAVE - Save FPU state without checking error conditions.
 	pretty.Println("inst:", inst)
-	panic("emitInstFNSAVE: not yet implemented")
+	panic("liftInstFNSAVE: not yet implemented")
 }
 
 // --- [ FRSTOR ] --------------------------------------------------------------
@@ -1222,7 +1281,7 @@ func (f *Func) liftInstFNSAVE(inst *x86.Inst) error {
 func (f *Func) liftInstFRSTOR(inst *x86.Inst) error {
 	// FRSTOR - Restore FPU state.
 	pretty.Println("inst:", inst)
-	panic("emitInstFRSTOR: not yet implemented")
+	panic("liftInstFRSTOR: not yet implemented")
 }
 
 // --- [ FSTSW ] ---------------------------------------------------------------
@@ -1350,7 +1409,7 @@ func (f *Func) liftInstFNSTSW(inst *x86.Inst) error {
 func (f *Func) liftInstFWAIT(inst *x86.Inst) error {
 	// FWAIT - Wait for FPU.
 	pretty.Println("inst:", inst)
-	panic("emitInstFWAIT: not yet implemented")
+	panic("liftInstFWAIT: not yet implemented")
 }
 
 // --- [ FNOP ] ----------------------------------------------------------------
@@ -1360,7 +1419,7 @@ func (f *Func) liftInstFWAIT(inst *x86.Inst) error {
 func (f *Func) liftInstFNOP(inst *x86.Inst) error {
 	// FNOP - FPU no operation.
 	pretty.Println("inst:", inst)
-	panic("emitInstFNOP: not yet implemented")
+	panic("liftInstFNOP: not yet implemented")
 }
 
 // ### [ Helper functions ] ####################################################

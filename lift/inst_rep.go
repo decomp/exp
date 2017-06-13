@@ -42,6 +42,10 @@ func (f *Func) liftREPInst(inst *x86.Inst) error {
 	// Generate body basic block.
 	f.cur = body
 	switch inst.Op {
+	case x86asm.MOVSB:
+		if err := f.liftInstMOVSB(inst); err != nil {
+			return errors.WithStack(err)
+		}
 	case x86asm.MOVSD:
 		if err := f.liftInstMOVSD(inst); err != nil {
 			return errors.WithStack(err)

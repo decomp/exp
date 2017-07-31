@@ -32,7 +32,7 @@ func llFuncSigs(module *ir.Module, sigs map[bin.Address]FuncSig, funcAddrs []bin
 		f.Parent = nil
 		f.Blocks = nil
 		f.Metadata = map[string]*metadata.Metadata{
-			"addr": &metadata.Metadata{
+			"addr": {
 				Nodes: []metadata.Node{&metadata.String{Val: funcAddr.String()}},
 			},
 		}

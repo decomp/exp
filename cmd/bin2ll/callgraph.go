@@ -105,7 +105,7 @@ type Node struct {
 // DOTAttributes returns the DOT attributes of the node.
 func (n Node) DOTAttributes() []dot.Attribute {
 	return []dot.Attribute{
-		dot.Attribute{Key: "label", Value: fmt.Sprintf("%q", n.Name)},
+		{Key: "label", Value: fmt.Sprintf("%q", n.Name)},
 	}
 }
 

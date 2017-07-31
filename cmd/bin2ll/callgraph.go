@@ -98,7 +98,7 @@ var sources = []Source{
 
 // Node represents a call site node in a call graph.
 type Node struct {
-	simple.Node
+	graph.Node
 	Name string
 }
 
@@ -122,7 +122,7 @@ func genCallGraph(funcs map[bin.Address]*lift.Func) error {
 			fn, ok := nodes[f.Name]
 			if !ok {
 				node := Node{
-					Node: simple.Node(g.NewNodeID()),
+					Node: g.NewNode(),
 					Name: f.Name,
 				}
 				fn = node
@@ -135,7 +135,7 @@ func genCallGraph(funcs map[bin.Address]*lift.Func) error {
 				caller, ok := nodes[name]
 				if !ok {
 					node := Node{
-						Node: simple.Node(g.NewNodeID()),
+						Node: g.NewNode(),
 						Name: name,
 					}
 					caller = node
@@ -154,7 +154,7 @@ func genCallGraph(funcs map[bin.Address]*lift.Func) error {
 				callee, ok := nodes[name]
 				if !ok {
 					node := Node{
-						Node: simple.Node(g.NewNodeID()),
+						Node: g.NewNode(),
 						Name: name,
 					}
 					callee = node

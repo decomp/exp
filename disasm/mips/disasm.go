@@ -1,5 +1,5 @@
-// Package x86 implements a disassembler for the x86 architecture.
-package x86
+// Package mips implements a disassembler for the MIPS architecture.
+package mips
 
 import (
 	"fmt"
@@ -18,9 +18,9 @@ import (
 
 // Loggers.
 var (
-	// dbg represents a logger with the "x86:" prefix, which logs debug messages
+	// dbg represents a logger with the "mips:" prefix, which logs debug messages
 	// to standard error.
-	dbg = log.New(os.Stderr, term.BlueBold("x86:")+" ", 0)
+	dbg = log.New(os.Stderr, term.BlueBold("mips:")+" ", 0)
 	// warn represents a logger with the "warning:" prefix, which logs warning
 	// messages to standard error.
 	warn = log.New(os.Stderr, term.RedBold("warning:")+" ", 0)
@@ -35,8 +35,6 @@ type Disasm struct {
 	*disasm.Disasm
 	// Processor mode.
 	Mode int
-	// CPU contexts.
-	Contexts Contexts
 }
 
 // NewDisasm creates a new Disasm for accessing the assembly instructions of the
@@ -50,34 +48,31 @@ type Disasm struct {
 //    chunks.json
 //    data.json
 //
-// Associated files of the x86 disassembler.
+// Associated files of the MIPS disassembler.
 //
 //    contexts.json
 func NewDisasm(file *bin.File) (*Disasm, error) {
-	// Prepare x86 disassembler.
+	// Prepare MIPS disassembler.
 	d, err := disasm.New(file)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 	dis := &Disasm{
-		Disasm:   d,
-		Contexts: make(Contexts),
+		Disasm: d,
 	}
 
 	// Parse processor mode.
 	switch dis.File.Arch {
-	case bin.ArchX86_32:
+	case bin.ArchMIPS_32:
 		dis.Mode = 32
-	case bin.ArchX86_64:
-		dis.Mode = 64
 	default:
 		panic(fmt.Errorf("support for machine architecture %v not yet implemented", dis.File.Arch))
 	}
 
 	// Parse CPU contexts.
-	if err := parseJSON("contexts.json", &dis.Contexts); err != nil {
-		return nil, errors.WithStack(err)
-	}
+	//if err := parseJSON("contexts.json", &dis.Contexts); err != nil {
+	//	return nil, errors.WithStack(err)
+	//}
 
 	return dis, nil
 }

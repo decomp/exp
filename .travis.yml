@@ -15,10 +15,7 @@ env:
     - PATH=$HOME/gopath/bin:$PATH
 
 before_install:
-  # TODO: Remove once v0.2 of llir/llvm is released.
-  - go get golang.org/x/tools/cmd/goimports
   - go get github.com/goccmack/gocc
-  - go get -d github.com/llir/llvm/...
   - go get golang.org/x/arch/x86/x86asm
   - wget -O $HOME/gopath/src/golang.org/x/arch/x86/x86asm/tables.go https://raw.githubusercontent.com/mewpull/arch/master/x86/x86asm/tables.go
 
@@ -27,6 +24,8 @@ install:
 
 before_script:
   - go get golang.org/x/tools/cmd/cover
+  - go get golang.org/x/tools/cmd/goimports
+  - go get golang.org/x/tools/cmd/vet
   - go get github.com/golang/lint/golint
   - go get github.com/mattn/goveralls
   # Install NASM for test case generation.

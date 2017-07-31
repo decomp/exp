@@ -1,5 +1,4 @@
-// The bin2asm tool disassembles binary executables to x86 assembly (*.exe ->
-// *.asm).
+// The bin2asm tool disassembles binary executables (*.exe -> *.asm).
 package main
 
 import (
@@ -10,14 +9,12 @@ import (
 	"os"
 	"sort"
 
-	"golang.org/x/arch/x86/x86asm"
-
 	"github.com/decomp/exp/bin"
 	_ "github.com/decomp/exp/bin/elf" // register ELF decoder
 	_ "github.com/decomp/exp/bin/pe"  // register PE decoder
 	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
 	"github.com/decomp/exp/bin/raw"
-	"github.com/decomp/exp/disasm/x86"
+	"github.com/decomp/exp/disasm/mips"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
 )
@@ -34,7 +31,7 @@ var (
 
 func usage() {
 	const use = `
-Disassemble binary executables to x86 assembly (*.exe -> *.asm).
+Disassemble binary executables (*.exe -> *.asm).
 
 Usage:
 
@@ -74,7 +71,7 @@ func main() {
 	flag.Var(&funcAddr, "func", "function address to disassemble")
 	flag.Var(&lastAddr, "last", "last function address to disassemble")
 	flag.BoolVar(&quiet, "q", false, "suppress non-error messages")
-	flag.Var(&rawArch, "raw", "machine architecture of raw binary executable (x86_32, x86_64, PowerPC_32, ...)")
+	flag.Var(&rawArch, "raw", "machine architecture of raw binary executable (x86_32, x86_64, MIPS_32, PowerPC_32, ...)")
 	flag.Var(&rawEntry, "rawentry", "entry point of raw binary executable")
 	flag.Var(&rawBase, "rawbase", "base address of raw binary executable")
 	flag.Parse()
@@ -112,7 +109,8 @@ func main() {
 	}
 
 	// Disassemble functions.
-	ops := make(map[x86asm.Op]bool)
+	var fs []*mips.Func
+	ops := make(map[string]bool)
 	for _, funcAddr := range funcAddrs {
 		if firstAddr != 0 && funcAddr < firstAddr {
 			// skip functions before first address.
@@ -126,16 +124,17 @@ func main() {
 		if err != nil {
 			log.Fatalf("%+v", err)
 		}
+		fs = append(fs, f)
 		for _, block := range f.Blocks {
 			for _, inst := range block.Insts {
-				ops[inst.Op] = true
+				ops[inst.Name] = true
 			}
 			if !block.Term.IsDummyTerm() {
-				ops[block.Term.Op] = true
+				ops[block.Term.Name] = true
 			}
 		}
 	}
-	var keys []x86asm.Op
+	var keys []string
 	for op := range ops {
 		keys = append(keys, op)
 	}
@@ -146,10 +145,36 @@ func main() {
 	for _, op := range keys {
 		fmt.Println(op)
 	}
+
+	less = func(i, j int) bool {
+		return fs[i].Addr < fs[j].Addr
+	}
+	sort.Slice(fs, less)
+	/*
+		for _, f := range fs {
+			fmt.Printf("; Function at %v\n", f.Addr)
+			var blocks []*mips.BasicBlock
+			for _, block := range f.Blocks {
+				blocks = append(blocks, block)
+			}
+			less := func(i, j int) bool {
+				return blocks[i].Addr < blocks[j].Addr
+			}
+			sort.Slice(blocks, less)
+			for _, block := range blocks {
+				fmt.Printf(";   block %v\n", block.Addr)
+				for _, inst := range block.Insts {
+					fmt.Println(inst)
+				}
+				fmt.Println(block.Term)
+			}
+			fmt.Println()
+		}
+	*/
 }
 
 // newDisasm returns a new disassembler for the given binary executable.
-func newDisasm(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) (*x86.Disasm, error) {
+func newDisasm(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) (*mips.Disasm, error) {
 	// Parse raw binary executable.
 	if rawArch != 0 {
 		file, err := raw.ParseFile(binPath, rawArch)
@@ -158,12 +183,12 @@ func newDisasm(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) 
 		}
 		file.Entry = rawEntry
 		file.Sections[0].Addr = rawBase
-		return x86.NewDisasm(file)
+		return mips.NewDisasm(file)
 	}
 	// Parse binary executable.
 	file, err := bin.ParseFile(binPath)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	return x86.NewDisasm(file)
+	return mips.NewDisasm(file)
 }

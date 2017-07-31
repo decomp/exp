@@ -104,7 +104,9 @@ const (
 	// ArchX86_64 represents the 64-bit x86-64 machine architecture, as used by
 	// Intel and AMD.
 	ArchX86_64
-	// ArchPowerPC represents the 32-bit PowerPC machine architecture.
+	// ArchMIPS_32 represents the 32-bit MIPS machine architecture.
+	ArchMIPS_32
+	// ArchPowerPC_32 represents the 32-bit PowerPC machine architecture.
 	ArchPowerPC_32
 )
 
@@ -113,6 +115,7 @@ func (arch Arch) BitSize() int {
 	m := map[Arch]int{
 		// 32-bit architectures.
 		ArchX86_32:     32,
+		ArchMIPS_32:    32,
 		ArchPowerPC_32: 32,
 		// 64-bit architectures.
 		ArchX86_64: 64,
@@ -128,6 +131,7 @@ func (arch *Arch) Set(s string) error {
 	m := map[string]Arch{
 		"x86_32":     ArchX86_32,
 		"x86_64":     ArchX86_64,
+		"MIPS_32":    ArchMIPS_32,
 		"PowerPC_32": ArchPowerPC_32,
 	}
 	if v, ok := m[s]; ok {
@@ -147,6 +151,7 @@ func (arch Arch) String() string {
 	m := map[Arch]string{
 		ArchX86_32:     "x86_32",
 		ArchX86_64:     "x86_64",
+		ArchMIPS_32:    "MIPS_32",
 		ArchPowerPC_32: "PowerPC_32",
 	}
 	if s, ok := m[arch]; ok {

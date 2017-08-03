@@ -1,4 +1,4 @@
-package lift
+package x86
 
 import (
 	"github.com/decomp/exp/disasm/x86"

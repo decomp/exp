@@ -1,5 +1,5 @@
-// Package lift implements x86 to LLVM IR lifting.
-package lift
+// Package x86 implements x86 to LLVM IR lifting.
+package x86
 
 import (
 	"log"

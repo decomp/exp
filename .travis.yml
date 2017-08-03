@@ -30,7 +30,7 @@ before_script:
   - sudo dpkg --add-architecture i386
   - sudo apt-get install -y libc6-dev-i386 gcc-multilib
   # Generate test cases
-  - make -C $HOME/gopath/src/github.com/decomp/exp/lift/testdata
+  - make -C $HOME/gopath/src/github.com/decomp/exp/lift/x86/testdata
   # Run goclean script.
   - export GOLINT_IGNORE="-not -wholename '*/internal/*' -not -name '*_string.go'"
   - wget https://gist.github.com/mewmew/379014c9a2e6885e238d/raw/goclean.sh

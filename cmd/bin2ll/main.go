@@ -15,7 +15,7 @@ import (
 	_ "github.com/decomp/exp/bin/pe"  // register PE decoder
 	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
 	"github.com/decomp/exp/bin/raw"
-	"github.com/decomp/exp/lift"
+	"github.com/decomp/exp/lift/x86"
 	"github.com/llir/llvm/ir"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
@@ -191,7 +191,7 @@ func main() {
 
 // newLifter returns a new x86 to LLVM IR lifter for the given binary
 // executable.
-func newLifter(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) (*lift.Lifter, error) {
+func newLifter(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) (*x86.Lifter, error) {
 	// Parse raw binary executable.
 	if rawArch != 0 {
 		file, err := raw.ParseFile(binPath, rawArch)
@@ -200,12 +200,12 @@ func newLifter(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) 
 		}
 		file.Entry = rawEntry
 		file.Sections[0].Addr = rawBase
-		return lift.NewLifter(file)
+		return x86.NewLifter(file)
 	}
 	// Parse binary executable.
 	file, err := bin.ParseFile(binPath)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	return lift.NewLifter(file)
+	return x86.NewLifter(file)
 }

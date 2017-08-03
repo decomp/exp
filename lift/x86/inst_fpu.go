@@ -3,7 +3,7 @@
 // ref: $ 5.2 X87 FPU INSTRUCTIONS, Intel 64 and IA-32 architectures software
 // developer's manual volume 1: Basic architecture.
 
-package lift
+package x86
 
 import (
 	"fmt"

@@ -7,7 +7,7 @@ import (
 	"sort"
 
 	"github.com/decomp/exp/bin"
-	"github.com/decomp/exp/lift"
+	"github.com/decomp/exp/lift/x86"
 	"github.com/graphism/simple"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/value"
@@ -109,7 +109,7 @@ func (n Node) DOTAttributes() []dot.Attribute {
 	}
 }
 
-func genCallGraph(funcs map[bin.Address]*lift.Func) error {
+func genCallGraph(funcs map[bin.Address]*x86.Func) error {
 	for _, source := range sources {
 		nodes := make(map[string]graph.Node)
 		g := simple.NewDirectedGraph(0, 0)
@@ -182,7 +182,7 @@ func genCallGraph(funcs map[bin.Address]*lift.Func) error {
 
 // calls returns the callers and callees of the given functions; where callers
 // maps from callee to caller, and callees maps from caller to callee.
-func calls(funcs map[bin.Address]*lift.Func) (callers, callees map[string]string) {
+func calls(funcs map[bin.Address]*x86.Func) (callers, callees map[string]string) {
 	callers = make(map[string]string)
 	callees = make(map[string]string)
 	for _, f := range funcs {
@@ -204,7 +204,7 @@ func calls(funcs map[bin.Address]*lift.Func) (callers, callees map[string]string
 	return callers, callees
 }
 
-func getCallerNames(funcs map[bin.Address]*lift.Func, name string) []string {
+func getCallerNames(funcs map[bin.Address]*x86.Func, name string) []string {
 	m := make(map[string]bool)
 	for _, f := range funcs {
 		for _, block := range f.Blocks {

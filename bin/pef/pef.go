@@ -57,6 +57,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		if file.Arch != 0 && arch != file.Arch {
 			panic(fmt.Errorf("support for multiple machine architectures not yet implemented; prev %q, new %q", file.Arch, arch))
 		}
+		file.Arch = arch
 	}
 
 	// Parse sections.

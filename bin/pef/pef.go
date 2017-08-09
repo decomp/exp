@@ -68,10 +68,12 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 				return nil, errors.WithStack(err)
 			}
 			perm := parsePerm(s.SectionKind)
+			offset := container.Offset + uint64(s.ContainerOffset)
 			sect := &bin.Section{
-				Addr: bin.Address(s.DefaultAddress),
-				Data: data,
-				Perm: perm,
+				Addr:   bin.Address(s.DefaultAddress),
+				Offset: offset,
+				Data:   data,
+				Perm:   perm,
 			}
 			file.Sections = append(file.Sections, sect)
 		}
@@ -121,6 +123,8 @@ func parseFile(r io.ReaderAt) (*File, error) {
 type Container struct {
 	// PEF container header.
 	*ContainerHeader
+	// File offset of the container.
+	Offset uint64
 	// PEF sections.
 	Sections []*Section
 }

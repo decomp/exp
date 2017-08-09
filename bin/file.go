@@ -169,6 +169,8 @@ type Section struct {
 	Name string
 	// Start address of the section.
 	Addr Address
+	// File offset of the section.
+	Offset uint64
 	// Section contents.
 	Data []byte
 	// Access permissions of the section in memory.

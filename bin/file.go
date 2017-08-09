@@ -173,6 +173,12 @@ type Section struct {
 	Offset uint64
 	// Section contents.
 	Data []byte
+	// Size in bytes of the section contents when loaded into memory. The virtual
+	// size is larger than the raw size (i.e. len(sect.Data)) for sections padded
+	// to section alignment in the executable file, and smaller than the raw size
+	// for sections containing uninitialized data not part of the executable
+	// file.
+	MemSize int
 	// Access permissions of the section in memory.
 	Perm Perm
 }

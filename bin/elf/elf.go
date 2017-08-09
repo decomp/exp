@@ -65,23 +65,22 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	for _, s := range f.Sections {
 		perm := parseSectFlags(s.Flags)
 		var data []byte
-		if s.Type == elf.SHT_NOBITS {
-			data = make([]byte, s.Size)
-		} else {
+		if s.Type != elf.SHT_NOBITS {
 			data, err = s.Data()
 			if err != nil {
 				return nil, errors.WithStack(err)
 			}
-		}
-		if len(data) == 0 {
-			continue
+			if len(data) == 0 {
+				continue
+			}
 		}
 		sect := &bin.Section{
-			Name:   s.Name,
-			Addr:   bin.Address(s.Addr),
-			Offset: s.Offset,
-			Data:   data,
-			Perm:   perm,
+			Name:    s.Name,
+			Addr:    bin.Address(s.Addr),
+			Offset:  s.Offset,
+			MemSize: int(s.Size),
+			Data:    data,
+			Perm:    perm,
 		}
 		file.Sections = append(file.Sections, sect)
 	}
@@ -112,10 +111,11 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		}
 		perm := parseProgFlags(prog.Flags)
 		seg := &bin.Section{
-			Addr:   bin.Address(prog.Vaddr),
-			Offset: prog.Off,
-			Data:   data,
-			Perm:   perm,
+			Addr:    bin.Address(prog.Vaddr),
+			Offset:  prog.Off,
+			Data:    data,
+			MemSize: int(prog.Memsz),
+			Perm:    perm,
 		}
 		segments = append(segments, seg)
 	}

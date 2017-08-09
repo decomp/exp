@@ -70,10 +70,11 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			perm := parsePerm(s.SectionKind)
 			offset := container.Offset + uint64(s.ContainerOffset)
 			sect := &bin.Section{
-				Addr:   bin.Address(s.DefaultAddress),
-				Offset: offset,
-				Data:   data,
-				Perm:   perm,
+				Addr:    bin.Address(s.DefaultAddress),
+				Offset:  offset,
+				Data:    data,
+				MemSize: int(s.TotalSize),
+				Perm:    perm,
 			}
 			file.Sections = append(file.Sections, sect)
 		}

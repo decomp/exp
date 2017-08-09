@@ -105,11 +105,12 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		}
 		perm := parsePerm(s.Characteristics)
 		sect := &bin.Section{
-			Name:   s.Name,
-			Addr:   addr,
-			Offset: uint64(s.Offset),
-			Data:   data,
-			Perm:   perm,
+			Name:    s.Name,
+			Addr:    addr,
+			Offset:  uint64(s.Offset),
+			Data:    data,
+			MemSize: int(s.VirtualSize),
+			Perm:    perm,
 		}
 		file.Sections = append(file.Sections, sect)
 	}

@@ -14,9 +14,10 @@ import (
 	_ "github.com/decomp/exp/bin/pe"  // register PE decoder
 	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
 	"github.com/decomp/exp/bin/raw"
-	"github.com/decomp/exp/disasm/mips"
+	"github.com/decomp/exp/disasm/x86"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
+	"golang.org/x/arch/x86/x86asm"
 )
 
 // Loggers.
@@ -109,8 +110,8 @@ func main() {
 	}
 
 	// Disassemble functions.
-	var fs []*mips.Func
-	ops := make(map[string]bool)
+	var fs []*x86.Func
+	ops := make(map[x86asm.Op]bool)
 	for _, funcAddr := range funcAddrs {
 		if firstAddr != 0 && funcAddr < firstAddr {
 			// skip functions before first address.
@@ -127,14 +128,14 @@ func main() {
 		fs = append(fs, f)
 		for _, block := range f.Blocks {
 			for _, inst := range block.Insts {
-				ops[inst.Name] = true
+				ops[inst.Op] = true
 			}
 			if !block.Term.IsDummyTerm() {
-				ops[block.Term.Name] = true
+				ops[block.Term.Op] = true
 			}
 		}
 	}
-	var keys []string
+	var keys []x86asm.Op
 	for op := range ops {
 		keys = append(keys, op)
 	}
@@ -153,7 +154,7 @@ func main() {
 	/*
 		for _, f := range fs {
 			fmt.Printf("; Function at %v\n", f.Addr)
-			var blocks []*mips.BasicBlock
+			var blocks []*x86.BasicBlock
 			for _, block := range f.Blocks {
 				blocks = append(blocks, block)
 			}
@@ -174,7 +175,7 @@ func main() {
 }
 
 // newDisasm returns a new disassembler for the given binary executable.
-func newDisasm(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) (*mips.Disasm, error) {
+func newDisasm(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) (*x86.Disasm, error) {
 	// Parse raw binary executable.
 	if rawArch != 0 {
 		file, err := raw.ParseFile(binPath, rawArch)
@@ -183,12 +184,12 @@ func newDisasm(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) 
 		}
 		file.Entry = rawEntry
 		file.Sections[0].Addr = rawBase
-		return mips.NewDisasm(file)
+		return x86.NewDisasm(file)
 	}
 	// Parse binary executable.
 	file, err := bin.ParseFile(binPath)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	return mips.NewDisasm(file)
+	return x86.NewDisasm(file)
 }

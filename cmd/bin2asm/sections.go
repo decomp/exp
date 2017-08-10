@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 	"unicode"
@@ -32,10 +31,6 @@ func dumpSections(sects []*bin.Section, fs []*x86.Func) error {
 			}
 		}
 	}
-	dir := "_dump_"
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return errors.WithStack(err)
-	}
 	for _, sect := range sects {
 		if len(sect.Name) == 0 {
 			// Ignore segments.
@@ -45,10 +40,10 @@ func dumpSections(sects []*bin.Section, fs []*x86.Func) error {
 			return sect.Data[addr-sect.Addr]
 		}
 		buf := dumpSection(sect, funcs, blocks, insts, data)
-		dbg.Printf("dumping section %q\n", sect.Name)
 		filename := strings.Replace(sect.Name, ".", "_", -1) + ".asm"
-		path := filepath.Join(dir, filename)
-		if err := ioutil.WriteFile(path, buf, 0644); err != nil {
+		outPath := filepath.Join(outDir, filename)
+		dbg.Printf("creating %q\n", outPath)
+		if err := ioutil.WriteFile(outPath, buf, 0644); err != nil {
 			return errors.WithStack(err)
 		}
 	}

@@ -124,11 +124,24 @@ func main() {
 		fs = append(fs, f)
 	}
 
+	// Create output directory.
+	if err := os.MkdirAll(outDir, 0755); err != nil {
+		log.Fatalf("%+v", err)
+	}
+
+	// Dump PE header in NASM syntax.
+	if err := dumpHeader(binPath); err != nil {
+		log.Fatalf("%+v", err)
+	}
+
 	// Dump sections in NASM syntax.
 	if err := dumpSections(dis.File.Sections, fs); err != nil {
 		log.Fatalf("%+v", err)
 	}
 }
+
+// outDir specifies the output direcotry.
+const outDir = "_dump_"
 
 // newDisasm returns a new disassembler for the given binary executable.
 func newDisasm(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) (*x86.Disasm, error) {

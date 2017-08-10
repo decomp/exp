@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"sort"
 
 	"github.com/decomp/exp/bin"
 	_ "github.com/decomp/exp/bin/elf" // register ELF decoder
@@ -17,7 +16,6 @@ import (
 	"github.com/decomp/exp/disasm/x86"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
-	"golang.org/x/arch/x86/x86asm"
 )
 
 // Loggers.
@@ -92,7 +90,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
-
 	// Disassemble basic block.
 	if blockAddr != 0 {
 		block, err := dis.DecodeBlock(blockAddr)
@@ -111,7 +108,6 @@ func main() {
 
 	// Disassemble functions.
 	var fs []*x86.Func
-	ops := make(map[x86asm.Op]bool)
 	for _, funcAddr := range funcAddrs {
 		if firstAddr != 0 && funcAddr < firstAddr {
 			// skip functions before first address.
@@ -126,52 +122,12 @@ func main() {
 			log.Fatalf("%+v", err)
 		}
 		fs = append(fs, f)
-		for _, block := range f.Blocks {
-			for _, inst := range block.Insts {
-				ops[inst.Op] = true
-			}
-			if !block.Term.IsDummyTerm() {
-				ops[block.Term.Op] = true
-			}
-		}
-	}
-	var keys []x86asm.Op
-	for op := range ops {
-		keys = append(keys, op)
-	}
-	less := func(i, j int) bool {
-		return keys[i] < keys[j]
-	}
-	sort.Slice(keys, less)
-	for _, op := range keys {
-		fmt.Println(op)
 	}
 
-	less = func(i, j int) bool {
-		return fs[i].Addr < fs[j].Addr
+	// Dump sections in NASM syntax.
+	if err := dumpSections(dis.File.Sections, fs); err != nil {
+		log.Fatalf("%+v", err)
 	}
-	sort.Slice(fs, less)
-	/*
-		for _, f := range fs {
-			fmt.Printf("; Function at %v\n", f.Addr)
-			var blocks []*x86.BasicBlock
-			for _, block := range f.Blocks {
-				blocks = append(blocks, block)
-			}
-			less := func(i, j int) bool {
-				return blocks[i].Addr < blocks[j].Addr
-			}
-			sort.Slice(blocks, less)
-			for _, block := range blocks {
-				fmt.Printf(";   block %v\n", block.Addr)
-				for _, inst := range block.Insts {
-					fmt.Println(inst)
-				}
-				fmt.Println(block.Term)
-			}
-			fmt.Println()
-		}
-	*/
 }
 
 // newDisasm returns a new disassembler for the given binary executable.

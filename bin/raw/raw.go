@@ -39,10 +39,11 @@ func Parse(r io.Reader, arch bin.Arch) (*bin.File, error) {
 		return nil, errors.WithStack(err)
 	}
 	seg := &bin.Section{
-		Addr:    0,
-		Data:    data,
-		MemSize: len(data),
-		Perm:    bin.PermR | bin.PermW | bin.PermX,
+		Addr:     0,
+		Data:     data,
+		FileSize: len(data),
+		MemSize:  len(data),
+		Perm:     bin.PermR | bin.PermW | bin.PermX,
 	}
 	file.Sections = append(file.Sections, seg)
 	return file, nil

@@ -75,12 +75,13 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			}
 		}
 		sect := &bin.Section{
-			Name:    s.Name,
-			Addr:    bin.Address(s.Addr),
-			Offset:  s.Offset,
-			MemSize: int(s.Size),
-			Data:    data,
-			Perm:    perm,
+			Name:     s.Name,
+			Addr:     bin.Address(s.Addr),
+			Offset:   s.Offset,
+			FileSize: int(s.FileSize),
+			MemSize:  int(s.Size),
+			Data:     data,
+			Perm:     perm,
 		}
 		file.Sections = append(file.Sections, sect)
 	}
@@ -111,11 +112,12 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		}
 		perm := parseProgFlags(prog.Flags)
 		seg := &bin.Section{
-			Addr:    bin.Address(prog.Vaddr),
-			Offset:  prog.Off,
-			Data:    data,
-			MemSize: int(prog.Memsz),
-			Perm:    perm,
+			Addr:     bin.Address(prog.Vaddr),
+			Offset:   prog.Off,
+			Data:     data,
+			FileSize: int(prog.Filesz),
+			MemSize:  int(prog.Memsz),
+			Perm:     perm,
 		}
 		segments = append(segments, seg)
 	}

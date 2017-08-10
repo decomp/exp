@@ -171,13 +171,18 @@ type Section struct {
 	Addr Address
 	// File offset of the section.
 	Offset uint64
-	// Section contents.
+	// Section contents of initialized data; excluding section alignment padding.
 	Data []byte
-	// Size in bytes of the section contents when loaded into memory. The virtual
-	// size is larger than the raw size (i.e. len(sect.Data)) for sections padded
-	// to section alignment in the executable file, and smaller than the raw size
-	// for sections containing uninitialized data not part of the executable
-	// file.
+	// Size in bytes of the section contents in the executable file; including
+	// section alignment padding.
+	//
+	// FileSize is larger than MemSize for sections padded to section alignment
+	// in the executable file.
+	FileSize int
+	// Size in bytes of the section contents when loaded into memory.
+	//
+	// MemSize is larger than FileSize for sections containing uninitialized data
+	// not part of the executable file.
 	MemSize int
 	// Access permissions of the section in memory.
 	Perm Perm

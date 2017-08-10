@@ -99,18 +99,26 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	// Parse sections.
 	for _, s := range f.Sections {
 		addr := bin.Address(imageBase) + bin.Address(s.VirtualAddress)
-		data, err := s.Data()
+		raw, err := s.Data()
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
+		data := raw
+		fileSize := len(raw)
+		memSize := int(s.VirtualSize)
+		if fileSize > memSize {
+			// Ignore section alignment padding.
+			data = raw[:memSize]
+		}
 		perm := parsePerm(s.Characteristics)
 		sect := &bin.Section{
-			Name:    s.Name,
-			Addr:    addr,
-			Offset:  uint64(s.Offset),
-			Data:    data,
-			MemSize: int(s.VirtualSize),
-			Perm:    perm,
+			Name:     s.Name,
+			Addr:     addr,
+			Offset:   uint64(s.Offset),
+			Data:     data,
+			FileSize: fileSize,
+			MemSize:  memSize,
+			Perm:     perm,
 		}
 		file.Sections = append(file.Sections, sect)
 	}

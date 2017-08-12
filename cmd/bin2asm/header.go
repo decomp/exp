@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"github.com/mewrev/pe"
 	"github.com/pkg/errors"
@@ -211,8 +212,123 @@ opt_hdr:                                                        ;    IMAGE_OPTIO
                         dd      0x%08X                      ;       SizeOfHeapCommit
                         dd      0x%08X                      ;       LoaderFlags
                         dd      data_dir_count                  ;       NumberOfRvaAndSizes
+
 `
 	fmt.Fprintf(buf, optHdrFormat, optHdr.FileAlign, optHdr.SectAlign, optHdr.SectAlign/1024, uint16(optHdr.State), optHdr.State, optHdr.MajorLinkVer, optHdr.MinorLinkVer, optHdr.BSSSize, optHdr.MajorOSVer, optHdr.MinorOSVer, optHdr.MajorImageVer, optHdr.MinorImageVer, optHdr.MajorSubsystemVer, optHdr.MinorSubsystemVer, optHdr.Checksum, uint16(optHdr.Subsystem), optHdr.Subsystem, uint16(optHdr.Flags), optHdr.Flags, optHdr.ReserveStackSize, optHdr.InitStackSize, optHdr.ReserveHeapSize, optHdr.InitHeapSize, optHdr.LoaderFlags)
+
+	// Dump data directory header.
+	const dataDirHeader = `
+; ~~~~~~~~~ [ IMAGE_DATA_DIRECTORY[] ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+data_dirs:
+`
+	buf.WriteString(dataDirHeader[1:])
+
+	// Dump data directories.
+	for i, dataDir := range optHdr.DataDirs {
+		switch i {
+		case 1:
+			// Import table.
+			const dataDirEntry = `
+  .import_table:                                                ;       IMAGE_DATA_DIRECTORY
+                        dd      import_table - IMAGE_BASE       ;          VirtualAddress
+                        dd      import_table_size               ;          Size
+`
+			buf.WriteString(dataDirEntry[1:])
+		case 2:
+			// Resource table.
+			const dataDirEntry = `
+  .resource_table:                                              ;       IMAGE_DATA_DIRECTORY
+                        dd      resource_table - IMAGE_BASE     ;          VirtualAddress
+                        dd      resource_table_size             ;          Size
+`
+			buf.WriteString(dataDirEntry[1:])
+		case 12:
+			// Import address table.
+			const dataDirEntry = `
+  .import_address_table:                                        ;       IMAGE_DATA_DIRECTORY
+                        dd      iat - IMAGE_BASE                ;          VirtualAddress
+                        dd      iat_size                        ;          Size
+`
+			buf.WriteString(dataDirEntry[1:])
+		default:
+			const dataDirEntryFormat = `
+                        dd      0x%08X, 0x%08X          ;          IMAGE_DATA_DIRECTORY
+`
+			fmt.Fprintf(buf, dataDirEntryFormat[1:], dataDir.RelAddr, dataDir.Size)
+		}
+	}
+
+	// Dump data directory footer.
+	const dataDirFooter = `
+   data_dir_count       equ     ($ - data_dirs) / 8
+; ~~~~~~~~~ [/ IMAGE_DATA_DIRECTORY[] ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   opt_hdr_size         equ     $ - opt_hdr
+; ------ [/ IMAGE_OPTIONAL_HEADER ] --------------------------------------------
+
+; === [/ IMAGE_NT_HEADERS ] ====================================================
+
+`
+	buf.WriteString(dataDirFooter)
+
+	// Dump section headers header.
+	const sectHeader = `
+; === [ IMAGE_SECTION_HEADER[] ] ===============================================
+sect_hdrs:
+`
+	buf.WriteString(sectHeader)
+	for _, sectHdr := range sectHdrs {
+		// Dump section header.
+		//
+		//    .text:                                                        ; IMAGE_SECTION_HEADER
+		//                          db      '.text', 0, 0, 0                ;    Name[8]
+		//                          dd      _text_vsize                     ;    VirtualSize
+		//                          dd      _text_vstart - IMAGE_BASE       ;    VirtualAddress
+		//                          dd      _text_size                      ;    SizeOfRawData
+		//                          dd      section..text.start             ;    PointerToRawData
+		//                          dd      0x00000000                      ;    PointerToRelocations
+		//                          dd      0x00000000                      ;    PointerToLinenumbers
+		//                          dw      0x0000                          ;    NumberOfRelocations
+		//                          dw      0x0000                          ;    NumberOfLinenumbers
+		//                          dd      0x60000020                      ;    Characteristics                    (executable code: r-x)
+
+		const sectHdrFormat = `
+  %s:                                                        ; IMAGE_SECTION_HEADER
+                        db      %s                ;    Name[8]
+                        dd      %s_vsize                     ;    VirtualSize
+                        dd      %s_vstart - IMAGE_BASE       ;    VirtualAddress
+                        dd      %s_size                      ;    SizeOfRawData
+                        dd      section.%s.start             ;    PointerToRawData
+                        dd      0x%08X                      ;    PointerToRelocations
+                        dd      0x%08X                      ;    PointerToLinenumbers
+                        dw      0x%04X                          ;    NumberOfRelocations
+                        dw      0x%04X                          ;    NumberOfLinenumbers
+                        dd      0x%08X                      ;    Characteristics                    (%s)
+`
+		pos := bytes.IndexByte(sectHdr.Name[:], '\x00')
+		if pos == -1 {
+			pos = len(sectHdr.Name)
+		}
+		rawName := string(sectHdr.Name[0:pos])
+		nameArray := "'" + rawName + "'"
+		for i := pos; i < len(sectHdr.Name); i++ {
+			nameArray += ", 0"
+		}
+		name := strings.Replace(rawName, ".", "_", -1)
+		fmt.Fprintf(buf, sectHdrFormat, rawName, nameArray, name, name, name, rawName, sectHdr.RelocsOffset, sectHdr.LineNumsOffset, sectHdr.NReloc, sectHdr.NLineNum, uint32(sectHdr.Flags), sectHdr.Flags)
+	}
+
+	// Dump section headers footer.
+	const sectFooter = `
+
+   sect_hdr_count       equ     ($ - sect_hdrs) / 40
+; === [/ IMAGE_SECTION_HEADER[] ] ==============================================
+
+   hdr_size             equ     $ - $$
+
+align file_align,       db      0x00
+`
+	buf.WriteString(sectFooter[1:])
 
 	// Store output.
 	outPath := filepath.Join(outDir, "pe-hdr.asm")

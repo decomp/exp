@@ -15,6 +15,7 @@ import (
 	"github.com/decomp/exp/bin/raw"
 	"github.com/decomp/exp/disasm/x86"
 	"github.com/mewkiz/pkg/term"
+	"github.com/mewrev/pe"
 	"github.com/pkg/errors"
 )
 
@@ -129,13 +130,28 @@ func main() {
 		log.Fatalf("%+v", err)
 	}
 
+	// Dump main file.
+	file, err := pe.Open(binPath)
+	if err != nil {
+		log.Fatalf("%+v", err)
+	}
+	defer file.Close()
+	if err := dumpMain(file); err != nil {
+		log.Fatalf("%+v", err)
+	}
+
+	// Dump common include file.
+	if err := dumpCommon(file); err != nil {
+		log.Fatalf("%+v", err)
+	}
+
 	// Dump PE header in NASM syntax.
-	if err := dumpHeader(binPath); err != nil {
+	if err := dumpHeader(file); err != nil {
 		log.Fatalf("%+v", err)
 	}
 
 	// Dump sections in NASM syntax.
-	if err := dumpSections(dis.File.Sections, fs); err != nil {
+	if err := dumpSections(dis.File.Sections, file, fs); err != nil {
 		log.Fatalf("%+v", err)
 	}
 }

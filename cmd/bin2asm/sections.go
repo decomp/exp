@@ -10,11 +10,12 @@ import (
 
 	"github.com/decomp/exp/bin"
 	"github.com/decomp/exp/disasm/x86"
+	"github.com/mewrev/pe"
 	"github.com/pkg/errors"
 )
 
 // dumpSections dumps the given sections in NASM syntax.
-func dumpSections(sects []*bin.Section, fs []*x86.Func) error {
+func dumpSections(sects []*bin.Section, file *pe.File, fs []*x86.Func) error {
 	// Index functions, basic blocks and instructions.
 	funcs := make(map[bin.Address]*x86.Func)
 	blocks := make(map[bin.Address]*x86.BasicBlock)
@@ -31,15 +32,26 @@ func dumpSections(sects []*bin.Section, fs []*x86.Func) error {
 			}
 		}
 	}
+	optHdr, err := file.OptHeader()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	entry := bin.Address(optHdr.ImageBase + optHdr.EntryRelAddr)
+	imageBase := bin.Address(optHdr.ImageBase)
+	dataDirs := optHdr.DataDirs
 	for _, sect := range sects {
 		if len(sect.Name) == 0 {
 			// Ignore segments.
 			continue
 		}
-		data := func(addr bin.Address) byte {
-			return sect.Data[addr-sect.Addr]
+		data := func(addr bin.Address) (byte, bool) {
+			i := int(addr - sect.Addr)
+			if i < 0 || i >= len(sect.Data) {
+				return 0, false
+			}
+			return sect.Data[addr-sect.Addr], true
 		}
-		buf := dumpSection(sect, funcs, blocks, insts, data)
+		buf := dumpSection(sect, entry, imageBase, dataDirs, funcs, blocks, insts, data)
 		filename := strings.Replace(sect.Name, ".", "_", -1) + ".asm"
 		outPath := filepath.Join(outDir, filename)
 		dbg.Printf("creating %q\n", outPath)
@@ -51,7 +63,7 @@ func dumpSections(sects []*bin.Section, fs []*x86.Func) error {
 }
 
 // dumpSection dumps the given section in NASM syntax.
-func dumpSection(sect *bin.Section, funcs map[bin.Address]*x86.Func, blocks map[bin.Address]*x86.BasicBlock, insts map[bin.Address]*x86.Inst, data func(addr bin.Address) byte) []byte {
+func dumpSection(sect *bin.Section, entry, imageBase bin.Address, dataDirs []pe.DataDirectory, funcs map[bin.Address]*x86.Func, blocks map[bin.Address]*x86.BasicBlock, insts map[bin.Address]*x86.Inst, data func(addr bin.Address) (byte, bool)) []byte {
 	buf := &bytes.Buffer{}
 	sectName := strings.Replace(sect.Name, ".", "_", -1)
 	// Dump section header.
@@ -73,7 +85,32 @@ SECTION %s
 `
 	fmt.Fprintf(buf, sectHeader[1:], sect.Name, sect.Offset, uint64(sect.Addr), sect.Name)
 	end := sect.Addr + bin.Address(len(sect.Data))
-	for addr := sect.Addr; addr < end; {
+	// Import table.
+	itAddr := imageBase + bin.Address(dataDirs[1].RelAddr)
+	itEnd := itAddr + bin.Address(dataDirs[1].Size)
+	// Resource table.
+	rsrcTableAddr := imageBase + bin.Address(dataDirs[2].RelAddr)
+	rsrcTableEnd := rsrcTableAddr + bin.Address(dataDirs[2].Size)
+	// Import address table.
+	iatAddr := imageBase + bin.Address(dataDirs[12].RelAddr)
+	iatEnd := iatAddr + bin.Address(dataDirs[12].Size)
+	for addr := sect.Addr; addr <= end; {
+		switch addr {
+		case entry:
+			buf.WriteString("\nstart:\n")
+		case itAddr:
+			buf.WriteString("\nimport_table:\n")
+		case itEnd:
+			buf.WriteString("\n   import_table_size    equ     $ - import_table\n")
+		case rsrcTableAddr:
+			buf.WriteString("\nresource_table:\n")
+		case rsrcTableEnd:
+			buf.WriteString("\n   resource_table_size  equ     $ - $$\n")
+		case iatAddr:
+			buf.WriteString("\niat:\n")
+		case iatEnd:
+			buf.WriteString("\niat_size             equ     $ - iat\n")
+		}
 		a := uint64(addr)
 		if sect.Perm&bin.PermX != 0 {
 			// Dump function header.
@@ -103,8 +140,12 @@ sub_%06X:
 					if i != 0 {
 						fmt.Fprint(buf, ", ")
 					}
-					b := data(addr + bin.Address(i))
+					b, ok := data(addr + bin.Address(i))
+					if !ok {
+						panic(fmt.Errorf("unable to locate data at %v", addr+bin.Address(i)))
+					}
 					fmt.Fprintf(buf, "0x%02X", b)
+
 				}
 				pad := " "
 				if n := 80 - (len("  addr_401000:          db      ") + len("0x00")*inst.Len + len(", ")*(inst.Len-1)); n > 0 {
@@ -119,12 +160,13 @@ sub_%06X:
 		// Dump data.
 		//
 		//    addr_48B054:          db      0x44 ; 'D'
-		b := data(addr)
-		char := ""
-		if isPrint(b) {
-			char = fmt.Sprintf(" ; %q", b)
+		if b, ok := data(addr); ok {
+			char := ""
+			if isPrint(b) {
+				char = fmt.Sprintf(" ; %q", b)
+			}
+			fmt.Fprintf(buf, "  addr_%06X:          db      0x%02X%s\n", a, b, char)
 		}
-		fmt.Fprintf(buf, "  addr_%06X:          db      0x%02X%s\n", a, b, char)
 		addr++
 	}
 

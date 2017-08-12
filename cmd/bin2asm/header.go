@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -12,14 +11,113 @@ import (
 	"github.com/pkg/errors"
 )
 
-// dumpHeader dumps the PE header of the executable.
-func dumpHeader(binPath string) error {
+// dumpMain dumps the main file of the executable.
+func dumpMain(file *pe.File) error {
 	buf := &bytes.Buffer{}
-	file, err := pe.Open(binPath)
+	const mainHeader = `
+BITS 32
+
+%include 'common.inc'
+%include 'pe-hdr.asm'
+`
+	buf.WriteString(mainHeader[1:])
+	sectHdrs, err := file.SectHeaders()
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	defer file.Close()
+	for _, sectHdr := range sectHdrs {
+		rawName, _ := getSectName(sectHdr.Name)
+		sectName := strings.Replace(rawName, ".", "_", -1)
+		fmt.Fprintf(buf, "%%include '%s.asm'\n", sectName)
+	}
+	// Store output.
+	outPath := filepath.Join(outDir, "main.asm")
+	dbg.Printf("creating %q\n", outPath)
+	if err := ioutil.WriteFile(outPath, buf.Bytes(), 0644); err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
+// dumpCommon dumps a common include file of the executable.
+func dumpCommon(file *pe.File) error {
+	buf := &bytes.Buffer{}
+	const commonFormat = `
+%%ifndef __COMMON_INC__
+%%define __COMMON_INC__
+
+%%define IMAGE_BASE      0x%08X
+%%define CODE_BASE       0x%08X
+%%define DATA_BASE       0x%08X
+
+   hdr_vstart           equ     IMAGE_BASE
+`
+	optHdr, err := file.OptHeader()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	sectHdrs, err := file.SectHeaders()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	fmt.Fprintf(buf, commonFormat[1:], optHdr.ImageBase, optHdr.CodeBase, optHdr.DataBase)
+
+	for _, sectHdr := range sectHdrs {
+		rawName, _ := getSectName(sectHdr.Name)
+		sectName := strings.Replace(rawName, ".", "_", -1)
+		fmt.Fprintf(buf, "   %s_vstart         equ     IMAGE_BASE + 0x%08X\n", sectName, sectHdr.RelAddr)
+	}
+	buf.WriteString("\n")
+	for _, sectHdr := range sectHdrs {
+		if sectHdr.VirtSize > sectHdr.Size {
+			// Section with uninitialized data.
+			buf.WriteString(";")
+		}
+		rawName, _ := getSectName(sectHdr.Name)
+		sectName := strings.Replace(rawName, ".", "_", -1)
+		fmt.Fprintf(buf, "   %s_size           equ     0x%08X\n", sectName, sectHdr.Size)
+	}
+	buf.WriteString("\n")
+	for _, sectHdr := range sectHdrs {
+		if sectHdr.VirtSize <= sectHdr.Size {
+			// Section with padding.
+			buf.WriteString(";")
+		}
+		rawName, _ := getSectName(sectHdr.Name)
+		sectName := strings.Replace(rawName, ".", "_", -1)
+		fmt.Fprintf(buf, "   %s_vsize          equ     0x%08X\n", sectName, sectHdr.VirtSize)
+	}
+	buf.WriteString("\n")
+
+	const bitsHeader = `
+BITS 32
+
+SECTION hdr    vstart=hdr_vstart
+`
+	buf.WriteString(bitsHeader[1:])
+
+	prev := "hdr"
+	for _, sectHdr := range sectHdrs {
+		rawName, _ := getSectName(sectHdr.Name)
+		sectName := strings.Replace(rawName, ".", "_", -1)
+		fmt.Fprintf(buf, "SECTION %s  vstart=%s_vstart  follows=%s\n", rawName, sectName, prev)
+		prev = rawName
+	}
+	buf.WriteString("\n")
+	buf.WriteString("%endif ; %ifndef __COMMON_INC__\n")
+
+	// Store output.
+	outPath := filepath.Join(outDir, "common.inc")
+	dbg.Printf("creating %q\n", outPath)
+	if err := ioutil.WriteFile(outPath, buf.Bytes(), 0644); err != nil {
+		return errors.WithStack(err)
+	}
+	return nil
+}
+
+// dumpHeader dumps the PE header of the executable.
+func dumpHeader(file *pe.File) error {
+	buf := &bytes.Buffer{}
 	dosHdr, err := file.DOSHeader()
 	if err != nil {
 		return errors.WithStack(err)
@@ -40,11 +138,8 @@ func dumpHeader(binPath string) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	_ = dosHdr
-	_ = dosStub
-	_ = fileHdr
-	_ = optHdr
-	_ = sectHdrs
+	// Dump common include file.
+
 	// Dump PE pre-header.
 	//
 	// ; PE header
@@ -124,7 +219,6 @@ mz_hdr:                                                         ; IMAGE_DOS_HEAD
 		fmt.Fprintf(buf, "0x%02X", b)
 	}
 	buf.WriteString("\n")
-	fmt.Println(hex.Dump(dosStub))
 
 	// Dump PE header.
 	//
@@ -305,11 +399,7 @@ sect_hdrs:
                         dw      0x%04X                          ;    NumberOfLinenumbers
                         dd      0x%08X                      ;    Characteristics                    (%s)
 `
-		pos := bytes.IndexByte(sectHdr.Name[:], '\x00')
-		if pos == -1 {
-			pos = len(sectHdr.Name)
-		}
-		rawName := string(sectHdr.Name[0:pos])
+		rawName, pos := getSectName(sectHdr.Name)
 		nameArray := "'" + rawName + "'"
 		for i := pos; i < len(sectHdr.Name); i++ {
 			nameArray += ", 0"
@@ -337,4 +427,14 @@ align file_align,       db      0x00
 		return errors.WithStack(err)
 	}
 	return nil
+}
+
+// getSectName returns a Go version of the NULL-terminated string, and the
+// position of the first NULL-byte.
+func getSectName(name [8]byte) (string, int) {
+	pos := bytes.IndexByte(name[:], '\x00')
+	if pos == -1 {
+		pos = len(name)
+	}
+	return string(name[0:pos]), pos
 }

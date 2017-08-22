@@ -1644,7 +1644,7 @@ func (f *Func) liftInstCALL(inst *x86.Inst) error {
 	f.espDisp += purge
 
 	// Handle return value.
-	if !types.Equal(f.Sig.Ret, types.Void) {
+	if !types.Equal(sig.Ret, types.Void) {
 		f.defReg(x86.EAX, result)
 	}
 	return nil

@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"path/filepath"
 	"strings"
-	"unicode"
 
 	"github.com/decomp/exp/bin"
 	"github.com/decomp/exp/disasm/x86"
@@ -210,12 +209,4 @@ times %s_size - ($ - $$) db 0x00
 		fmt.Fprintf(buf, sectFooter, sectName, pad, sectName)
 	}
 	return buf.Bytes()
-}
-
-// isPrint reports if the given byte is printable.
-func isPrint(b byte) bool {
-	if b >= 0x7F {
-		return false
-	}
-	return unicode.IsPrint(rune(b))
 }

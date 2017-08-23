@@ -1,0 +1,148 @@
+; PE header
+;
+;    file offset:    0x00000000
+;    virtual offset: 0x{{ printf "%08X" .OptHdr.ImageBase }}
+
+SECTION hdr
+
+; === [ IMAGE_DOS_HEADER ] =====================================================
+mz_hdr:	; IMAGE_DOS_HEADER
+                        dw      "MZ"	;    e_magic	(Mark Zbikowski)
+                        dw      0x{{ printf "%04X" .DosHdr.LastPageSize }}	;    e_cblp
+                        dw      0x{{ printf "%04X" .DosHdr.NPage }}	;    e_cp
+                        dw      0x{{ printf "%04X" .DosHdr.NReloc }}	;    e_crlc
+                        dw      0x{{ printf "%04X" .DosHdr.NHdrPar }}	;    e_cparhdr
+                        dw      0x{{ printf "%04X" .DosHdr.MinAlloc }}	;    e_minalloc
+                        dw      0x{{ printf "%04X" .DosHdr.MaxAlloc }}	;    e_maxalloc
+                        dw      0x{{ printf "%04X" .DosHdr.SS }}	;    e_ss
+                        dw      0x{{ printf "%04X" .DosHdr.SP }}	;    e_sp
+                        dw      0x{{ printf "%04X" .DosHdr.Checksum }}	;    e_csum
+                        dw      0x{{ printf "%04X" .DosHdr.IP }}	;    e_ip
+                        dw      0x{{ printf "%04X" .DosHdr.CS }}	;    e_cs
+                        dw      0x{{ printf "%04X" .DosHdr.RelocTblOffset }}	;    e_lfarlc
+                        dw      0x{{ printf "%04X" .DosHdr.OverlayNum }}	;    e_ovno
+        times 4         dw      0x0000	;    e_res[4]
+                        dw      0x{{ printf "%04X" .DosHdr.OEMID }}	;    e_oemid
+                        dw      0x{{ printf "%04X" .DosHdr.OEMInfo }}	;    e_oeminfo
+        times 10        dw      0x0000	;    e_res2[10]
+                        dd      pe_hdr - hdr_vstart	;    e_lfanew
+; === [/ IMAGE_DOS_HEADER ] ====================================================
+
+; DOS stub
+{{- range .DOSStub }}
+                        db      0x{{ printf "%02X" . }}{{ if isprint . }}	; {{ printf "%#q" . }}{{ end }}
+{{- end }}
+
+; === [ IMAGE_NT_HEADERS ] =====================================================
+pe_hdr:	; IMAGE_NT_HEADERS
+                        dd      "PE"	;    Signature	(Portable Executable)
+
+; ------ [ IMAGE_FILE_HEADER ] -------------------------------------------------
+coff_hdr:	;    IMAGE_FILE_HEADER
+                        dw      0x{{ ui16 .FileHdr.Arch | printf "%04X" }}	;       Machine	({{ .FileHdr.Arch }})
+                        dw      sect_hdr_count	;       NumberOfSections
+                        dd      0x{{ ui32 .FileHdr.Created | printf "%08X" }}	;       TimeDateStamp	({{ .FileHdr.Created }})
+                        dd      0x{{ printf "%08X" .FileHdr.SymTblOffset }}	;       PointerToSymbolTable
+                        dd      0x{{ printf "%08X" .FileHdr.NSymbol }}	;       NumberOfSymbols
+                        dw      opt_hdr_size	;       SizeOfOptionalHeader
+                        dw      0x{{ ui16 .FileHdr.Flags | printf "%04X" }}	;       Characteristics	({{ .FileHdr.Flags }})
+; ------ [/ IMAGE_FILE_HEADER ] ------------------------------------------------
+
+; ------ [ IMAGE_OPTIONAL_HEADER ] ---------------------------------------------
+opt_hdr:	;    IMAGE_OPTIONAL_HEADER
+
+   file_align           equ     0x{{ printf "%04X" .OptHdr.FileAlign }}
+   sect_align           equ     0x{{ printf "%04X" .OptHdr.SectAlign }} ; (minimum section alignment: {{ .SectAlignKB }} KB)
+
+%define round(n, r)     (((n + (r - 1)) / r) * r)
+
+   file_size            equ     round(hdr_size, sect_align) {{- range .SectHdrs }} + round({{ underline .Name }}_vsize, sect_align) {{- end }}
+   data_size            equ     round({{ .DataSizes }}, file_align)
+
+; ___ [ standard fields ] ______________________________________________________
+                        dw      0x{{ ui16 .OptHdr.State | printf "%04X" }}	;    Magic	({{ .OptHdr.State }})
+                        db      0x{{ printf "%02X" .OptHdr.MajorLinkVer }}	;    MajorLinkerVersion
+                        db      0x{{ printf "%02X" .OptHdr.MinorLinkVer }}	;    MinorLinkerVersion
+                        dd      _text_size	;    SizeOfCode
+                        dd      data_size	;    SizeOfInitializedData
+                        dd      0x{{ .OptHdr.BSSSize }}	;    SizeOfUninitializedData
+                        dd      start - IMAGE_BASE	;    AddressOfEntryPoint
+                        dd      CODE_BASE	;    BaseOfCode
+                        dd      DATA_BASE	;    BaseOfData
+
+; ___ [ Windows-specific fields ] ______________________________________________
+                        dd      IMAGE_BASE	;    ImageBase
+                        dd      sect_align	;    SectionAlignment
+                        dd      file_align	;    FileAlignment
+                        dw      0x{{ printf "%04X" .OptHdr.MajorOSVer }}	;    MajorOperatingSystemVersion
+                        dw      0x{{ printf "%04X" .OptHdr.MinorOSVer }}	;    MinorOperatingSystemVersion
+                        dw      0x{{ printf "%04X" .OptHdr.MajorImageVer }}	;    MajorImageVersion
+                        dw      0x{{ printf "%04X" .OptHdr.MinorImageVer }}	;    MinorImageVersion
+                        dw      0x{{ printf "%04X" .OptHdr.MajorSubsystemVer }}	;    MajorSubsystemVersion
+                        dw      0x{{ printf "%04X" .OptHdr.MinorSubsystemVer }}	;    MinorSubsystemVersion
+                        dd      0x00000000	;    Win32VersionValue
+                        dd      file_size	;    SizeOfImage
+                        dd      round(hdr_size, file_align)	;    SizeOfHeaders
+                        dd      0x{{ printf "%08X" .OptHdr.Checksum }}	;    CheckSum
+                        dw      0x{{ ui16 .OptHdr.Subsystem | printf "%04X" }}	;    Subsystem	({{ .OptHdr.Subsystem }})
+                        dw      0x{{ ui16 .OptHdr.Flags | printf "%04X" }}	;    DllCharacteristics	({{ .OptHdr.Flags }})
+                        dd      0x{{ printf "%08X" .OptHdr.ReserveStackSize }}	;    SizeOfStackReserve
+                        dd      0x{{ printf "%08X" .OptHdr.InitStackSize }}	;    SizeOfStackCommit
+                        dd      0x{{ printf "%08X" .OptHdr.ReserveHeapSize }}	;    SizeOfHeapReserve
+                        dd      0x{{ printf "%08X" .OptHdr.InitHeapSize }}	;    SizeOfHeapCommit
+                        dd      0x{{ printf "%08X" .OptHdr.LoaderFlags }}	;    LoaderFlags
+                        dd      data_dir_count	;    NumberOfRvaAndSizes
+
+; ~~~~~~~~~ [ IMAGE_DATA_DIRECTORY[] ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+data_dirs:
+{{- range $i, $dir := .DataDirs }}
+
+	{{- if eq $i 1 }}
+  .import_table:	;       IMAGE_DATA_DIRECTORY
+                        dd      import_table - IMAGE_BASE	;          VirtualAddress
+                        dd      import_table_size	;          Size
+	{{- else if eq $i 2 }}
+  .resource_table:	;       IMAGE_DATA_DIRECTORY
+                        dd      resource_table - IMAGE_BASE	;          VirtualAddress
+                        dd      resource_table_size	;          Size
+	{{- else if eq $i 12 }}
+  .import_address_table:	;       IMAGE_DATA_DIRECTORY
+                        dd      iat - IMAGE_BASE	;          VirtualAddress
+                        dd      iat_size	;          Size
+	{{- else }}
+	;       IMAGE_DATA_DIRECTORY
+                        dd      0x{{ printf "%08X" $dir.RelAddr }}	;          VirtualAddress
+                        dd      0x{{ printf "%08X" $dir.Size }}	;          Size
+	{{- end }}
+{{- end }}
+
+   data_dir_count       equ     ($ - data_dirs) / 8
+; ~~~~~~~~~ [/ IMAGE_DATA_DIRECTORY[] ] ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   opt_hdr_size         equ     $ - opt_hdr
+; ------ [/ IMAGE_OPTIONAL_HEADER ] --------------------------------------------
+
+; === [/ IMAGE_NT_HEADERS ] ====================================================
+
+; === [ IMAGE_SECTION_HEADER[] ] ===============================================
+sect_hdrs:
+{{- range .SectHdrs }}
+  {{ .Name }}:	; IMAGE_SECTION_HEADER
+                        db      {{ nameArray .Name }}	;    Name[8]
+                        dd      {{ underline .Name }}_vsize	;    VirtualSize
+                        dd      {{ underline .Name }}_vstart - IMAGE_BASE	;    VirtualAddress
+                        dd      {{ underline .Name }}_size	;    SizeOfRawData
+                        dd      section.{{ .Name }}.start	;    PointerToRawData
+                        dd      0x{{ printf "%08X" .RelocsOffset }}	;    PointerToRelocations
+                        dd      0x{{ printf "%08X" .LineNumsOffset }}	;    PointerToLinenumbers
+                        dw      0x{{ printf "%04X" .NReloc }}	;    NumberOfRelocations
+                        dw      0x{{ printf "%04X" .NLineNum }}	;    NumberOfLinenumbers
+                        dd      0x{{ ui32 .Flags | printf "%08X" }}	;    Characteristics	({{ .Flags }})
+{{- end }}
+
+   sect_hdr_count       equ     ($ - sect_hdrs) / 40
+; === [/ IMAGE_SECTION_HEADER[] ] ==============================================
+
+   hdr_size             equ     $ - $$
+
+align file_align,       db      0x00

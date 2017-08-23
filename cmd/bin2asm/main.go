@@ -2,7 +2,6 @@
 package main
 
 import (
-	gope "debug/pe"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -132,27 +131,22 @@ func main() {
 	}
 
 	// Dump main file.
-	pefile, err := gope.Open(binPath)
-	if err != nil {
-		log.Fatalf("%+v", err)
-	}
-	defer pefile.Close()
-	if err := dumpMainAsm(pefile); err != nil {
-		log.Fatalf("%+v", err)
-	}
-
-	// Dump common include file.
 	file, err := pe.Open(binPath)
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
 	defer file.Close()
+	if err := dumpMainAsm(file); err != nil {
+		log.Fatalf("%+v", err)
+	}
+
+	// Dump common include file.
 	if err := dumpCommon(file); err != nil {
 		log.Fatalf("%+v", err)
 	}
 
 	// Dump PE header in NASM syntax.
-	if err := dumpHeader(file); err != nil {
+	if err := dumpPEHeaderAsm(file); err != nil {
 		log.Fatalf("%+v", err)
 	}
 

@@ -7,36 +7,20 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/mewkiz/pkg/goutil"
 	"github.com/mewrev/pe"
 	"github.com/pkg/errors"
 )
 
-// dumpMain dumps the main file of the executable.
-func dumpMain(file *pe.File) error {
-	buf := &bytes.Buffer{}
-	const mainHeader = `
-BITS 32
+// bin2asmDir specifies the source directory of the bin2asm command.
+var bin2asmDir string
 
-%include 'common.inc'
-%include 'pe-hdr.asm'
-`
-	buf.WriteString(mainHeader[1:])
-	sectHdrs, err := file.SectHeaders()
+func init() {
+	var err error
+	bin2asmDir, err = goutil.SrcDir("github.com/decomp/exp/cmd/bin2asm")
 	if err != nil {
-		return errors.WithStack(err)
+		panic(fmt.Errorf("unable to locate source directory of bin2asm; %v", err))
 	}
-	for _, sectHdr := range sectHdrs {
-		rawName, _ := getSectName(sectHdr.Name)
-		sectName := strings.Replace(rawName, ".", "_", -1)
-		fmt.Fprintf(buf, "%%include '%s.asm'\n", sectName)
-	}
-	// Store output.
-	outPath := filepath.Join(outDir, "main.asm")
-	dbg.Printf("creating %q\n", outPath)
-	if err := ioutil.WriteFile(outPath, buf.Bytes(), 0644); err != nil {
-		return errors.WithStack(err)
-	}
-	return nil
 }
 
 // dumpCommon dumps a common include file of the executable.

@@ -1,0 +1,7 @@
+BITS 32
+
+%include 'common.inc'
+%include 'pe-hdr.asm'
+{{- range . }}
+%include '{{ . }}.asm'
+{{- end }}

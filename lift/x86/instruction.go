@@ -5144,8 +5144,19 @@ func (f *Func) liftInstRDTSCP(inst *x86.Inst) error {
 // liftInstROL lifts the given x86 ROL instruction to LLVM IR, emitting code to
 // f.
 func (f *Func) liftInstROL(inst *x86.Inst) error {
-	pretty.Println("inst:", inst)
-	panic("emitInstROL: not yet implemented")
+	// rotate left (ROL)
+	x, y := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1))
+	high := f.cur.NewShl(x, y)
+	typ, ok := y.Type().(*types.IntType)
+	if !ok {
+		panic(fmt.Errorf("invalid count operand type; expected *types.IntType, got %T", y.Type()))
+	}
+	bits := constant.NewInt(int64(typ.Size), typ)
+	shift := f.cur.NewSub(bits, y)
+	low := f.cur.NewLShr(x, shift)
+	result := f.cur.NewOr(low, high)
+	f.defArg(inst.Arg(0), result)
+	return nil
 }
 
 // --- [ ROR ] -----------------------------------------------------------------

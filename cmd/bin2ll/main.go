@@ -184,9 +184,9 @@ func main() {
 	}
 
 	// Create call graph.
-	if err := genCallGraph(l.Funcs); err != nil {
-		log.Fatalf("%+v", err)
-	}
+	//if err := genCallGraph(l.Funcs); err != nil {
+	//	log.Fatalf("%+v", err)
+	//}
 }
 
 // newLifter returns a new x86 to LLVM IR lifter for the given binary

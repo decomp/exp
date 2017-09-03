@@ -288,17 +288,27 @@ func (l *Lifter) getFuncEndAddr(entry bin.Address) bin.Address {
 	if index < len(l.FuncAddrs) {
 		return l.FuncAddrs[index]
 	}
-	// TODO: Implement support for identifying the end of code segments.
-	//return l.getCodeEnd()
-	panic("not yet implemented")
+	return l.getCodeEnd()
 }
 
 //// getCodeStart returns the start address of the code section.
 //func (l *Lifter) getCodeStart() bin.Address {
 //	return bin.Address(d.imageBase + d.codeBase)
 //}
-//
-//// getCodeEnd returns the end address of the code section.
-//func (l *Lifter) getCodeEnd() bin.Address {
-//	return l.getCodeStart() + bin.Address(l.codeSize)
-//}
+
+// getCodeEnd returns the end address of the code section.
+func (l *Lifter) getCodeEnd() bin.Address {
+	var max bin.Address
+	for _, sect := range l.File.Sections {
+		if sect.Perm&bin.PermX != 0 {
+			end := sect.Addr + bin.Address(len(sect.Data))
+			if max < end {
+				max = end
+			}
+		}
+	}
+	if max == 0 {
+		panic("unable to locate end of code segment")
+	}
+	return max
+}

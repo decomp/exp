@@ -13,6 +13,7 @@ import (
 	"github.com/llir/llvm/ir/value"
 	"github.com/pkg/errors"
 	"gonum.org/v1/gonum/graph"
+	"gonum.org/v1/gonum/graph/encoding"
 	"gonum.org/v1/gonum/graph/encoding/dot"
 )
 
@@ -102,9 +103,9 @@ type Node struct {
 	Name string
 }
 
-// DOTAttributes returns the DOT attributes of the node.
-func (n Node) DOTAttributes() []dot.Attribute {
-	return []dot.Attribute{
+// Attributes returns the DOT attributes of the node.
+func (n Node) Attributes() []encoding.Attribute {
+	return []encoding.Attribute{
 		{Key: "label", Value: fmt.Sprintf("%q", n.Name)},
 	}
 }
@@ -112,7 +113,7 @@ func (n Node) DOTAttributes() []dot.Attribute {
 func genCallGraph(funcs map[bin.Address]*x86.Func) error {
 	for _, source := range sources {
 		nodes := make(map[string]graph.Node)
-		g := simple.NewDirectedGraph(0, 0)
+		g := simple.NewDirectedGraph()
 		fmt.Println("source:", source.Name)
 		for addr, f := range funcs {
 			if !(source.Start <= addr && addr <= source.End) {

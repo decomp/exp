@@ -41,7 +41,7 @@ type Disasm struct {
 	Tables map[bin.Address][]bin.Address
 	// Map from basic block address to function address. The basic block is a
 	// function chunk and part of a discontinuous function.
-	Chunks map[bin.Address]bin.Address
+	Chunks map[bin.Address]map[bin.Address]bool
 	// Fragments; sequences of bytes.
 	Frags []*Fragment
 }
@@ -62,7 +62,7 @@ func New(file *bin.File) (*Disasm, error) {
 	dis := &Disasm{
 		File:   file,
 		Tables: make(map[bin.Address][]bin.Address),
-		Chunks: make(map[bin.Address]bin.Address),
+		Chunks: make(map[bin.Address]map[bin.Address]bool),
 	}
 
 	// Parse function addresses.

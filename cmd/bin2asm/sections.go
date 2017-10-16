@@ -11,6 +11,7 @@ import (
 	"github.com/decomp/exp/disasm/x86"
 	"github.com/mewrev/pe"
 	"github.com/pkg/errors"
+	"golang.org/x/arch/x86/x86asm"
 )
 
 // dumpSections dumps the given sections in NASM syntax.
@@ -150,7 +151,7 @@ sub_%06X:
 				if n := 80 - (len("  addr_401000:          db      ") + len("0x00")*inst.Len + len(", ")*(inst.Len-1)); n > 0 {
 					pad = strings.Repeat(" ", n)
 				}
-				fmt.Fprintf(buf, "%s; %s\n", pad, inst.String())
+				fmt.Fprintf(buf, "%s; %s\n", pad, x86asm.IntelSyntax(inst.Inst, uint64(addr), nil))
 				addr += bin.Address(inst.Len)
 				continue
 			}

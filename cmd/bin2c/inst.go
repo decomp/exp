@@ -31,6 +31,8 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseINC(inst)
 	case x86asm.JE:
 		return parseJE(inst, offset)
+	case x86asm.JG:
+		return parseJG(inst, offset)
 	case x86asm.JGE:
 		return parseJGE(inst, offset)
 	case x86asm.JL:
@@ -45,8 +47,12 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseLEA(inst)
 	case x86asm.MOV:
 		return parseMOV(inst)
+	case x86asm.MOVSX:
+		return parseMOVSX(inst)
 	case x86asm.MOVZX:
 		return parseMOVZX(inst)
+	case x86asm.OR:
+		return parseBinaryInst(inst, token.OR)
 	case x86asm.RET:
 		return parseRET(inst)
 	case x86asm.SUB:
@@ -55,7 +61,7 @@ func parseInst(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 		return parseTEST(inst)
 	case x86asm.XOR:
 		return parseBinaryInst(inst, token.XOR)
-	case x86asm.PUSH, x86asm.POP:
+	case x86asm.PUSH, x86asm.POP, x86asm.LEAVE:
 		// ignore for now.
 		return nil, nil
 	default:
@@ -143,9 +149,14 @@ func parseDEC(inst x86asm.Inst) (ast.Stmt, error) {
 // statement.
 func parseIMUL(inst x86asm.Inst) (ast.Stmt, error) {
 	// Parse arguments.
-	x := getArg(inst.Args[0])
-	y := getArg(inst.Args[1])
-	z := getArg(inst.Args[2])
+	var x, y, z ast.Expr
+	x = getArg(inst.Args[0])
+	y = getArg(inst.Args[1])
+	if inst.Args[2] != nil {
+		z = getArg(inst.Args[2])
+	} else {
+		z = y
+	}
 
 	// Create statement.
 	//    x = y * z
@@ -179,7 +190,7 @@ func parseINC(inst x86asm.Inst) (ast.Stmt, error) {
 //    * [ ] JCXZ     Jump if CX register is 0
 //    * [x] JE       Jump if equal (ZF=1)
 //    * [ ] JECXZ    Jump if ECX register is 0
-//    * [ ] JG       Jump if greater (ZF=0 and SF=OF)
+//    * [x] JG       Jump if greater (ZF=0 and SF=OF)
 //    * [x] JGE      Jump if greater or equal (SF=OF)
 //    * [x] JL       Jump if less (SF!=OF)
 //    * [x] JLE      Jump if less or equal (ZF=1 or SF!=OF)
@@ -223,6 +234,49 @@ func parseJE(inst x86asm.Inst, offset int) (ast.Stmt, error) {
 	//       goto x
 	//    }
 	cond := getFlag(ZF)
+	label := getLabel("loc", offset)
+	body := &ast.BranchStmt{
+		Tok:   token.GOTO,
+		Label: label,
+	}
+	stmt := &ast.IfStmt{
+		Cond: cond,
+		Body: &ast.BlockStmt{List: []ast.Stmt{body}},
+	}
+	return stmt, nil
+}
+
+// parseJG parses the given JG instruction and returns a corresponding Go
+// statement.
+func parseJG(inst x86asm.Inst, offset int) (ast.Stmt, error) {
+	// Parse arguments.
+	arg := inst.Args[0]
+	switch arg := arg.(type) {
+	case x86asm.Rel:
+		offset += inst.Len + int(arg)
+	default:
+		return nil, errutil.Newf("support for type %T not yet implemented", arg)
+	}
+
+	// JG      Jump if greater (ZF=0 and SF=OF)
+
+	// Create statement.
+	//    if !zf && sf == of
+	//       goto x
+	//    }
+	expr := &ast.BinaryExpr{
+		X:  getFlag(SF),
+		Op: token.EQL,
+		Y:  getFlag(OF),
+	}
+	cond := &ast.BinaryExpr{
+		X: &ast.UnaryExpr{
+			Op: token.NOT,
+			X:  getFlag(ZF),
+		},
+		Op: token.LOR,
+		Y:  expr,
+	}
 	label := getLabel("loc", offset)
 	body := &ast.BranchStmt{
 		Tok:   token.GOTO,
@@ -435,6 +489,20 @@ func unstar(expr ast.Expr) (ast.Expr, error) {
 // parseMOV parses the given MOV instruction and returns a corresponding Go
 // statement.
 func parseMOV(inst x86asm.Inst) (ast.Stmt, error) {
+	// Parse arguments.
+	x := getArg(inst.Args[0])
+	y := getArg(inst.Args[1])
+
+	// Create statement.
+	//    x = y
+	lhs := x
+	rhs := y
+	return createAssign(lhs, rhs), nil
+}
+
+// parseMOVSX parses the given MOVSX instruction and returns a corresponding Go
+// statement.
+func parseMOVSX(inst x86asm.Inst) (ast.Stmt, error) {
 	// Parse arguments.
 	x := getArg(inst.Args[0])
 	y := getArg(inst.Args[1])

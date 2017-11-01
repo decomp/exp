@@ -42,14 +42,29 @@ func dumpCFG(dis *x86.Disasm, f *x86.Func) (graph.Directed, error) {
 		if !ok {
 			panic(errors.Errorf("unable to locate basic block at %v", block.Addr))
 		}
-		for _, target := range targets {
+		for i, target := range targets {
 			to, ok := nodes[target]
 			if !ok {
 				return nil, errors.Errorf("unable to locate target basic block at %v from %v in function at %v", target, block.Addr, f.Addr)
 			}
-			e := simple.Edge{
-				F: from,
-				T: to,
+			e := &Edge{
+				Edge: simple.Edge{
+					F: from,
+					T: to,
+				},
+				Attrs: make(Attrs),
+			}
+			if len(targets) == 2 {
+				switch i {
+				case 0:
+					// true branch.
+					e.Attrs["label"] = "true"
+					e.Attrs["color"] = "darkgreen"
+				case 1:
+					// false branch.
+					e.Attrs["label"] = "false"
+					e.Attrs["color"] = "red"
+				}
 			}
 			g.SetEdge(e)
 		}
@@ -69,6 +84,13 @@ type Node struct {
 // DOTID returns the DOTID of the node.
 func (n Node) DOTID() string {
 	return n.id
+}
+
+// Edge is an edge between two basic blocks in a function.
+type Edge struct {
+	graph.Edge
+	// DOT attributes.
+	Attrs
 }
 
 // ### [ Helper functions ] ####################################################

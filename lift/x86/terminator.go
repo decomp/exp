@@ -268,7 +268,7 @@ func (f *Func) contains(target bin.Address) bool {
 	}
 	// Target inside function chunk.
 	if funcAddr, ok := f.l.Chunks[target]; ok {
-		if funcAddr == entry {
+		if funcAddr[entry] {
 			return true
 		}
 	}

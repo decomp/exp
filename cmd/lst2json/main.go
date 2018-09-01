@@ -249,13 +249,13 @@ func locateImports(input []byte) (map[bin.Address]FuncSig, error) {
 
 // locateFuncChunks locates addresses of function chunks belonging to parent
 // functions.
-func locateFuncChunks(input []byte) (map[bin.Address]bin.Address, error) {
+func locateFuncChunks(input []byte) (map[bin.Address]map[bin.Address]bool, error) {
 	const regFuncChunk = `[.]text[:]00([0-9a-fA-F]+)[ \t];[ \t]FUNCTION[ \t]CHUNK[ \t]AT[ \t][.]text[:]00([0-9a-fA-F]+)`
 	re, err := regexp.Compile(regFuncChunk)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	chunks := make(map[bin.Address]bin.Address)
+	chunks := make(map[bin.Address]map[bin.Address]bool)
 	subs := re.FindAllSubmatch(input, -1)
 	for _, sub := range subs {
 		// Parent function address.
@@ -268,7 +268,10 @@ func locateFuncChunks(input []byte) (map[bin.Address]bin.Address, error) {
 		if err := chunk.Set(fmt.Sprintf("0x%s", sub[2])); err != nil {
 			return nil, errors.WithStack(err)
 		}
-		chunks[chunk] = parent
+		if _, ok := chunks[chunk]; !ok {
+			chunks[chunk] = make(map[bin.Address]bool)
+		}
+		chunks[chunk][parent] = true
 	}
 	return chunks, nil
 }

@@ -153,7 +153,7 @@ import_table:
 iat:
 
 `
-	bufIAT.WriteString(iatHeader[1:])
+	bufINT.WriteString(iatHeader[1:])
 	var dlls []*DLL
 	for {
 		if err := binary.Read(r, binary.LittleEndian, &impDesc); err != nil {
@@ -189,7 +189,7 @@ iat:
 
 		dllIAT := data(impDesc.ImportAddressTableRVA)
 		r = bytes.NewReader(dllIAT)
-		if err := dumpIAT(name, r, bufIAT, data); err != nil {
+		if err := dumpIAT(name, r, bufINT, data); err != nil {
 			return errors.WithStack(err)
 		}
 		r = bytes.NewReader(dllIAT)
@@ -220,13 +220,13 @@ iat:
 ; === [/ Import Address Tables (IATs) ] ========================================
 
 `
-	bufIAT.WriteString(iatHeaderFooter[1:])
+	bufINT.WriteString(iatHeaderFooter[1:])
 
 	if _, err := buf.Write(bufINT.Bytes()); err != nil {
 		return errors.WithStack(err)
 	}
 
-	if _, err := buf.Write(bufIAT.Bytes()); err != nil {
+	if _, err := buf.Write(bufINT.Bytes()); err != nil {
 		return errors.WithStack(err)
 	}
 

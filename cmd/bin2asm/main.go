@@ -130,13 +130,20 @@ func main() {
 		log.Fatalf("%+v", err)
 	}
 
-	// Dump main file.
+	// Parse overlay.
 	file, err := pe.Open(binPath)
 	if err != nil {
 		log.Fatalf("%+v", err)
 	}
 	defer file.Close()
-	if err := dumpMainAsm(file); err != nil {
+	overlay, err := file.Overlay()
+	if err != nil {
+		log.Fatalf("%+v", err)
+	}
+	hasOverlay := len(overlay) > 0
+
+	// Dump main file.
+	if err := dumpMainAsm(file, hasOverlay); err != nil {
 		log.Fatalf("%+v", err)
 	}
 
@@ -153,6 +160,13 @@ func main() {
 	// Dump sections in NASM syntax.
 	if err := dumpSections(dis.File.Sections, file, fs); err != nil {
 		log.Fatalf("%+v", err)
+	}
+
+	// Dump overlay.
+	if hasOverlay {
+		if err := dumpOverlay(overlay); err != nil {
+			log.Fatalf("%+v", err)
+		}
 	}
 }
 

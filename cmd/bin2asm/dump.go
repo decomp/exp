@@ -15,7 +15,7 @@ import (
 )
 
 // dumpMainAsm dumps the main.asm file of the executable.
-func dumpMainAsm(file *pe.File) error {
+func dumpMainAsm(file *pe.File, hasOverlay bool) error {
 	t, err := parseTemplate("main.asm.tmpl")
 	if err != nil {
 		return errors.WithStack(err)
@@ -24,13 +24,16 @@ func dumpMainAsm(file *pe.File) error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	var sectNames []string
+	var data []string
 	for _, sectHdr := range sectHdrs {
 		sectName := underline(sectHdr.Name)
-		sectNames = append(sectNames, sectName)
+		data = append(data, sectName)
+	}
+	if hasOverlay {
+		data = append(data, "overlay")
 	}
 	// Store output.
-	if err := writeFile(t, "main.asm", sectNames); err != nil {
+	if err := writeFile(t, "main.asm", data); err != nil {
 		return errors.WithStack(err)
 	}
 	return nil

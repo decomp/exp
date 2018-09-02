@@ -24,9 +24,9 @@ var (
 	// dbg represents a logger with the "bin2asm:" prefix, which logs debug
 	// messages to standard error.
 	dbg = log.New(os.Stderr, term.YellowBold("bin2asm:")+" ", 0)
-	// warn represents a logger with the "warning:" prefix, which logs warning
+	// warn represents a logger with the "bin2asm:" prefix, which logs warning
 	// messages to standard error.
-	warn = log.New(os.Stderr, term.RedBold("warning:")+" ", 0)
+	warn = log.New(os.Stderr, term.RedBold("bin2asm:")+" ", 0)
 )
 
 func usage() {

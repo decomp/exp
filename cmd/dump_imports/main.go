@@ -111,9 +111,6 @@ type importName struct {
 // parseImports parses the given import table and import address table.
 func parseImports(it []byte, data func(addr uint32) []byte) error {
 	buf := &bytes.Buffer{}
-	bufINT := &bytes.Buffer{}
-	var impDesc importDesc
-	r := bytes.NewReader(it)
 	const itHeader = `
 ; === [ import table ] =========================================================
 ;
@@ -125,7 +122,45 @@ func parseImports(it []byte, data func(addr uint32) []byte) error {
 import_table:
 `
 	buf.WriteString(itHeader[1:])
+	r := bytes.NewReader(it)
+	var impDescs []importDesc
+	for {
+		var impDesc importDesc
+		if err := binary.Read(r, binary.LittleEndian, &impDesc); err != nil {
+			if errors.Cause(err) == io.EOF {
+				break
+			}
+			return errors.WithStack(err)
+		}
+		if impDesc == (importDesc{}) {
+			buf.WriteString("   times 5              dd      0x00000000\n\n")
+			break
+		}
+		impDescs = append(impDescs, impDesc)
+		pretty.Println("import descriptor:", impDesc)
+		dllName := parseString(data(impDesc.DLLNameRVA))
+		fmt.Println("  => DLL name:", dllName)
 
+		const importDescFormat = `
+                        dd      int_%s - IMAGE_BASE      ; pINT_first_trunk
+                        dd      0x%08X                         ; TimeDateStamp
+                        dd      0x%08X                         ; pForwardChain
+                        dd      sz%s_dll - IMAGE_BASE
+                        dd      iat_%s - IMAGE_BASE      ; pIAT_first_trunk
+
+`
+		name := strings.ToLower(pathutil.TrimExt(dllName))
+		fmt.Fprintf(buf, importDescFormat[1:], name, impDesc.Date, impDesc.ForwardChain, strings.Title(name), name)
+	}
+	const importTableFooter = `
+   import_table_size    equ     $ - import_table
+
+; === [/ import table ] ========================================================
+
+`
+	buf.WriteString(importTableFooter[1:])
+
+	// Dump INTs.
 	const intHeader = `
 ; === [ Import Name Tables (INTs) ] ============================================
 ;
@@ -134,11 +169,34 @@ import_table:
 ;
 ;     This entire table is UNUSED. It is sometimes refered to as the
 ;     "hint table", which is never overwritten or altered.
+;
 ; ------------------------------------------------------------------------------
 
-`
-	bufINT.WriteString(intHeader[1:])
+int:
 
+`
+	buf.WriteString(intHeader[1:])
+	sort.Slice(impDescs, func(i, j int) bool {
+		return impDescs[i].ImportNameTableRVA < impDescs[j].ImportNameTableRVA
+	})
+	for _, impDesc := range impDescs {
+		dllINT := data(impDesc.ImportNameTableRVA)
+		r := bytes.NewReader(dllINT)
+		dllName := parseString(data(impDesc.DLLNameRVA))
+		name := strings.ToLower(pathutil.TrimExt(dllName))
+		if err := dumpINT(name, r, buf, data); err != nil {
+			return errors.WithStack(err)
+		}
+	}
+	const intHeaderFooter = `
+   int_size             equ     $ - int
+
+; === [/ Import Name Tables (INTs) ] ===========================================
+
+`
+	buf.WriteString(intHeaderFooter[1:])
+
+	// Dump IATs.
 	const iatHeader = `
 ; === [ Import Address Tables (IATs) ] =========================================
 ;
@@ -153,46 +211,34 @@ import_table:
 iat:
 
 `
-	bufINT.WriteString(iatHeader[1:])
-	var dlls []*DLL
-	for {
-		if err := binary.Read(r, binary.LittleEndian, &impDesc); err != nil {
-			if errors.Cause(err) == io.EOF {
-				break
-			}
+	buf.WriteString(iatHeader[1:])
+	sort.Slice(impDescs, func(i, j int) bool {
+		return impDescs[i].ImportAddressTableRVA < impDescs[j].ImportAddressTableRVA
+	})
+	for _, impDesc := range impDescs {
+		dllIAT := data(impDesc.ImportAddressTableRVA)
+		r := bytes.NewReader(dllIAT)
+		dllName := parseString(data(impDesc.DLLNameRVA))
+		name := strings.ToLower(pathutil.TrimExt(dllName))
+		if err := dumpIAT(name, r, buf, data); err != nil {
 			return errors.WithStack(err)
 		}
-		if impDesc == (importDesc{}) {
-			buf.WriteString("   times 5              dd      0x00000000\n\n")
-			break
-		}
-		fmt.Println("import descriptor:", impDesc)
-		dllName := parseString(data(impDesc.DLLNameRVA))
+	}
+	const iatHeaderFooter = `
+   iat_size             equ     $ - iat
 
-		const importDescFormat = `
-                        dd      int_%s - IMAGE_BASE      ; pINT_first_trunk
-                        dd      0x%08X                         ; TimeDateStamp
-                        dd      0x%08X                         ; pForwardChain
-                        dd      sz%s_dll - IMAGE_BASE
-                        dd      iat_%s - IMAGE_BASE      ; pIAT_first_trunk
+; === [/ Import Address Tables (IATs) ] ========================================
 
 `
-		name := strings.ToLower(pathutil.TrimExt(dllName))
-		fmt.Fprintf(buf, importDescFormat[1:], name, impDesc.Date, impDesc.ForwardChain, strings.Title(name), name)
+	buf.WriteString(iatHeaderFooter[1:])
 
-		fmt.Println("  => DLL name:", dllName)
-		dllINT := data(impDesc.ImportNameTableRVA)
-		r := bytes.NewReader(dllINT)
-		if err := dumpINT(name, r, bufINT, data); err != nil {
-			return errors.WithStack(err)
-		}
+	// Dump DLL strings.
 
+	var dlls []*DLL
+	for _, impDesc := range impDescs {
 		dllIAT := data(impDesc.ImportAddressTableRVA)
 		r = bytes.NewReader(dllIAT)
-		if err := dumpIAT(name, r, bufINT, data); err != nil {
-			return errors.WithStack(err)
-		}
-		r = bytes.NewReader(dllIAT)
+		dllName := parseString(data(impDesc.DLLNameRVA))
 		dll, err := parseDLL(dllName, r, data)
 		if err != nil {
 			return errors.WithStack(err)
@@ -200,40 +246,9 @@ iat:
 		dll.Addr = impDesc.DLLNameRVA
 		dlls = append(dlls, dll)
 	}
-	const importTableFooter = `
-   import_table_size    equ     $ - import_table
-
-; === [/ import table ] ========================================================
-
-`
-	buf.WriteString(importTableFooter[1:])
-
-	const intHeaderFooter = `
-; === [/ Import Name Tables (INTs) ] ===========================================
-
-`
-	bufINT.WriteString(intHeaderFooter[1:])
-
-	const iatHeaderFooter = `
-   iat_size             equ     $ - iat
-
-; === [/ Import Address Tables (IATs) ] ========================================
-
-`
-	bufINT.WriteString(iatHeaderFooter[1:])
-
-	if _, err := buf.Write(bufINT.Bytes()); err != nil {
-		return errors.WithStack(err)
-	}
-
-	if _, err := buf.Write(bufINT.Bytes()); err != nil {
-		return errors.WithStack(err)
-	}
-
-	less := func(i, j int) bool {
+	sort.Slice(dlls, func(i, j int) bool {
 		return dlls[i].Addr < dlls[j].Addr
-	}
-	sort.Slice(dlls, less)
+	})
 	pretty.Println(dlls)
 	dumpDLLs(dlls, buf)
 

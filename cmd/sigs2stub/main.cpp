@@ -5,7 +5,6 @@
 
 #include "clang/Tooling/Tooling.h"
 #include "clang/AST/AST.h"
-//#include "clang/Sema/Sema.h"
 
 // read_file reads and returns the contents of the given file. The returned
 // boolean indicates success.
@@ -45,6 +44,12 @@ void dump_func(const clang::FunctionDecl *f) {
 		return;
 	}
 	std::cout << "address: " << addr << std::endl;
+	for (clang::ParmVarDecl *param : f->parameters()) {
+		param->dump();
+		std::string param_name = param->getName().str();
+		clang::QualType param_type = param->getType();
+		std::cout << "param: " << param_name << std::endl;
+	}
 }
 
 // visit_decl vists the declaration of the AST.

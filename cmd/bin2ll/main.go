@@ -175,9 +175,9 @@ func main() {
 		globals = append(globals, g)
 	}
 	m := &ir.Module{
-		Types:   l.Types,
-		Globals: globals,
-		Funcs:   funcs,
+		TypeDefs: l.TypeDefs,
+		Globals:  globals,
+		Funcs:    funcs,
 	}
 	if _, err := fmt.Fprintln(w, m); err != nil {
 		log.Fatalf("%+v", err)

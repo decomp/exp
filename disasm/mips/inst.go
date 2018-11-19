@@ -132,8 +132,8 @@ func (dis *Disasm) isTailCall(funcEntry bin.Address, target bin.Address) bool {
 		// Target inside function body.
 		return false
 	}
-	if funcAddr, ok := dis.Chunks[target]; ok {
-		if funcAddr == funcEntry {
+	if chunk, ok := dis.Chunks[target]; ok {
+		if chunk[funcEntry] {
 			// Target part of function chunk.
 			return false
 		}

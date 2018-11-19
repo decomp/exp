@@ -93,6 +93,8 @@ func locateData(addr Address, sects []*Section) ([]byte, bool) {
 	return nil, false
 }
 
+//go:generate stringer -linecomment -type Arch
+
 // Arch represents the set of machine architectures.
 type Arch uint
 
@@ -100,14 +102,14 @@ type Arch uint
 const (
 	// ArchX86_32 represents the 32-bit x86 machine architecture, as used by
 	// Intel and AMD.
-	ArchX86_32 Arch = 1 + iota
+	ArchX86_32 Arch = 1 + iota // x86_32
 	// ArchX86_64 represents the 64-bit x86-64 machine architecture, as used by
 	// Intel and AMD.
-	ArchX86_64
+	ArchX86_64 // x86_64
 	// ArchMIPS_32 represents the 32-bit MIPS machine architecture.
-	ArchMIPS_32
+	ArchMIPS_32 // MIPS_32
 	// ArchPowerPC_32 represents the 32-bit PowerPC machine architecture.
-	ArchPowerPC_32
+	ArchPowerPC_32 // PowerPC_32
 )
 
 // BitSize returns the bit size of the machine architecture.
@@ -144,23 +146,6 @@ func (arch *Arch) Set(s string) error {
 	}
 	sort.Strings(ss)
 	return fmt.Errorf("support for machine architecture %q not yet implemented;\n\tsupported machine architectures: %v", s, strings.Join(ss, ", "))
-}
-
-// String returns a string representation of the machine architecture.
-func (arch Arch) String() string {
-	m := map[Arch]string{
-		ArchX86_32:     "x86_32",
-		ArchX86_64:     "x86_64",
-		ArchMIPS_32:    "MIPS_32",
-		ArchPowerPC_32: "PowerPC_32",
-	}
-	if s, ok := m[arch]; ok {
-		return s
-	}
-	if arch == 0 {
-		return "machine architecture NONE"
-	}
-	panic(fmt.Errorf("support for machine architecture %v not yet implemented", uint(arch)))
 }
 
 // A Section represents a continuous section of memory.

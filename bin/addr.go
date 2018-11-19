@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/llir/llvm/ir/metadata"
 	"github.com/pkg/errors"
 )
 
@@ -38,6 +37,7 @@ func (v Address) MarshalText() ([]byte, error) {
 	return []byte(v.String()), nil
 }
 
+/*
 // UnmarshalMetadata unmarshals the metadata node into v.
 func (v *Address) UnmarshalMetadata(node metadata.Node) error {
 	md, ok := node.(*metadata.Metadata)
@@ -54,6 +54,7 @@ func (v *Address) UnmarshalMetadata(node metadata.Node) error {
 	}
 	return v.Set(s.Val)
 }
+*/
 
 // InsertAddr inserts the given address within the sorted slice of addresses.
 //

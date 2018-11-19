@@ -80,7 +80,7 @@ func main() {
 		w = f
 	}
 	module := ir.NewModule()
-	module.Types = old.Types
+	module.TypeDefs = old.TypeDefs
 	module.Funcs = funcs
 	if _, err := w.WriteString(module.String()); err != nil {
 		log.Fatalf("%+v", err)

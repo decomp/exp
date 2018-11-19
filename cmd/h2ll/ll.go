@@ -9,7 +9,6 @@ import (
 	"github.com/decomp/exp/bin"
 	"github.com/llir/llvm/asm"
 	"github.com/llir/llvm/ir"
-	"github.com/llir/llvm/ir/metadata"
 	"github.com/pkg/errors"
 )
 
@@ -18,10 +17,10 @@ func llFuncSigs(module *ir.Module, sigs map[bin.Address]FuncSig, funcAddrs []bin
 	var funcs []*ir.Function
 	nameToFunc := make(map[string]*ir.Function)
 	for _, f := range module.Funcs {
-		if _, ok := nameToFunc[f.Name]; ok {
-			return nil, errors.Errorf("function name %q already present", f.Name)
+		if _, ok := nameToFunc[f.GlobalName]; ok {
+			return nil, errors.Errorf("function name %q already present", f.Ident())
 		}
-		nameToFunc[f.Name] = f
+		nameToFunc[f.GlobalName] = f
 	}
 	for _, funcAddr := range funcAddrs {
 		sig := sigs[funcAddr]
@@ -29,13 +28,15 @@ func llFuncSigs(module *ir.Module, sigs map[bin.Address]FuncSig, funcAddrs []bin
 		if !ok {
 			return nil, errors.Errorf("unable to locate function %q", sig.Name)
 		}
-		f.Parent = nil
 		f.Blocks = nil
-		f.Metadata = map[string]*metadata.Metadata{
-			"addr": {
-				Nodes: []metadata.Node{&metadata.String{Val: funcAddr.String()}},
-			},
-		}
+		// TODO: add support for metadata.
+		/*
+			f.Metadata = map[string]*metadata.Metadata{
+				"addr": {
+					Nodes: []metadata.Node{&metadata.String{Val: funcAddr.String()}},
+				},
+			}
+		*/
 		funcs = append(funcs, f)
 	}
 	return funcs, nil
@@ -91,7 +92,7 @@ func compile(input string) (*ir.Module, error) {
 	if err := cmd.Run(); err != nil {
 		return nil, errors.WithStack(err)
 	}
-	module, err := asm.ParseBytes(out.Bytes())
+	module, err := asm.ParseBytes("<stdin>", out.Bytes())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

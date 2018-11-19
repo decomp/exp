@@ -154,7 +154,7 @@ func main() {
 			log.Fatalf("%+v", err)
 		}
 		name := strconv.Quote(f.Addr.String())
-		data, err := dot.Marshal(g, name, "", "\t", false)
+		data, err := dot.Marshal(g, name, "", "\t")
 		if err != nil {
 			log.Fatalf("%+v", errors.WithStack(err))
 		}

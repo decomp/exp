@@ -132,7 +132,7 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 
 // Lift lifts the function from input assembly to LLVM IR.
 func (f *Func) Lift() {
-	dbg.Printf("lifting function %q at %v", f.Name, f.AsmFunc.Addr)
+	dbg.Printf("lifting function %q at %v", f.Ident(), f.AsmFunc.Addr)
 	// Allocate a local variable for the FPU stack top used within the function.
 	if f.usesFPU {
 		v := ir.NewAlloca(types.I8)

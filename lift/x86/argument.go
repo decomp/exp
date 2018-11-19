@@ -657,11 +657,11 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, enum.Calling
 					typ := v.Type()
 					ptr, ok := typ.(*types.PointerType)
 					if !ok {
-						panic(fmt.Errorf("invalid function pointer type of function parameter %q referenced from instruction at address %v; expected *types.PointerType, got %T; ", f.Params[p].Name, arg.Parent.Addr, typ))
+						panic(fmt.Errorf("invalid function pointer type of function parameter %q referenced from instruction at address %v; expected *types.PointerType, got %T; ", f.Params[p].Ident(), arg.Parent.Addr, typ))
 					}
 					sig, ok := ptr.ElemType.(*types.FuncType)
 					if !ok {
-						panic(fmt.Errorf("invalid function type of function parameter %q referenced from instruction at address %v; expected *types.FuncType, got %T; ", f.Params[p].Name, arg.Parent.Addr, ptr.ElemType))
+						panic(fmt.Errorf("invalid function type of function parameter %q referenced from instruction at address %v; expected *types.FuncType, got %T; ", f.Params[p].Ident(), arg.Parent.Addr, ptr.ElemType))
 					}
 					// TODO: Figure out how to recover calling convention.
 					// Perhaps through context.json at call sites?
@@ -769,11 +769,11 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, enum.Calling
 					typ := v.Type()
 					ptr, ok := typ.(*types.PointerType)
 					if !ok {
-						panic(fmt.Errorf("invalid function pointer type of function parameter %q referenced from instruction at address %v; expected *types.PointerType, got %T; ", f.Sig.Params[p].Name, arg.Parent.Addr, typ))
+						panic(fmt.Errorf("invalid function pointer type of function parameter %q referenced from instruction at address %v; expected *types.PointerType, got %T; ", f.Params[p].Ident(), arg.Parent.Addr, typ))
 					}
 					sig, ok := ptr.ElemType.(*types.FuncType)
 					if !ok {
-						panic(fmt.Errorf("invalid function type of function parameter %q referenced from instruction at address %v; expected *types.FuncType, got %T; ", f.Sig.Params[p].Name, arg.Parent.Addr, ptr.ElemType))
+						panic(fmt.Errorf("invalid function type of function parameter %q referenced from instruction at address %v; expected *types.FuncType, got %T; ", f.Params[p].Ident(), arg.Parent.Addr, ptr.ElemType))
 					}
 					// TODO: Figure out how to recover calling convention.
 					// Perhaps through context.json at call sites?

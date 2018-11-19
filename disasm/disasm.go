@@ -172,5 +172,6 @@ func parseJSON(jsonPath string, v interface{}) error {
 		warn.Printf("unable to locate JSON file %q", jsonPath)
 		return nil
 	}
+	dbg.Printf("parsing: %q", jsonPath)
 	return jsonutil.ParseFile(jsonPath, v)
 }

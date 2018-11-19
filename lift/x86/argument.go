@@ -10,7 +10,7 @@ import (
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
-	"github.com/llir/llvm/ir/metadata"
+	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	"golang.org/x/arch/x86/x86asm"
@@ -28,7 +28,7 @@ func (f *Func) useArg(arg *x86.Arg) value.Value {
 		mem := x86.NewMem(a, arg.Parent)
 		return f.useMem(mem)
 	case x86asm.Imm:
-		return constant.NewInt(int64(a), types.I32)
+		return constant.NewInt(types.I32, int64(a))
 	case x86asm.Rel:
 		next := arg.Parent.Addr + bin.Address(arg.Parent.Len)
 		addr := next + bin.Address(a)
@@ -272,18 +272,21 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 			// TODO: Remove once the lift library matures a bit.
 			warn.Printf("unknown global variable type at address %v; guessing i32", addr)
 			name := fmt.Sprintf("g_%06X", uint64(addr))
-			content := types.I32
-			typ := types.NewPointer(content)
+			contentType := types.I32
+			typ := types.NewPointer(contentType)
 			g := &ir.Global{
-				Name:    name,
-				Typ:     typ,
-				Content: content,
-				Init:    constant.NewZeroInitializer(content),
-				Metadata: map[string]*metadata.Metadata{
-					"addr": {
-						Nodes: []metadata.Node{&metadata.String{Val: addr.String()}},
+				GlobalName:  name,
+				Typ:         typ,
+				ContentType: contentType,
+				Init:        constant.NewZeroInitializer(contentType),
+				// TODO: add support for metadata.
+				/*
+					Metadata: map[string]*metadata.Metadata{
+						"addr": {
+							Nodes: []metadata.Node{&metadata.String{Val: addr.String()}},
+						},
 					},
-				},
+				*/
 			}
 			return g
 			panic(fmt.Errorf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.Parent.Op, mem.Parent.Addr))
@@ -340,18 +343,18 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 // precedence.
 func (f *Func) castToPtr(src value.Value, parent *x86.Inst) value.Value {
 	elem := src.Type()
-	var preBits int
+	var preBitSize int64
 	if typ, ok := src.Type().(*types.PointerType); ok {
-		elem = typ.Elem
+		elem = typ.ElemType
 		if elem, ok := elem.(*types.IntType); ok {
-			preBits = elem.Size
+			preBitSize = elem.BitSize
 		}
 	}
 	// Derive element size from the parent instruction.
-	var bits int
+	var bitSize int64
 	if parent != nil {
 		if parent.MemBytes != 0 {
-			bits = parent.MemBytes * 8
+			bitSize = int64(parent.MemBytes) * 8
 		}
 		for _, prefix := range parent.Prefix[:] {
 			// The first zero in the array marks the end of the prefixes.
@@ -360,7 +363,7 @@ func (f *Func) castToPtr(src value.Value, parent *x86.Inst) value.Value {
 			}
 			switch prefix &^ x86asm.PrefixImplicit {
 			case x86asm.PrefixData16:
-				bits = 16
+				bitSize = 16
 			case x86asm.PrefixREP, x86asm.PrefixREPN:
 				// nothing to do.
 			case x86asm.PrefixREX | x86asm.PrefixREXW:
@@ -370,18 +373,18 @@ func (f *Func) castToPtr(src value.Value, parent *x86.Inst) value.Value {
 			}
 		}
 	}
-	if bits != 0 {
-		elem = types.NewInt(bits)
+	if bitSize != 0 {
+		elem = types.NewInt(bitSize)
 	}
 	needCast := !types.IsPointer(src.Type())
-	if bits != 0 && preBits != 0 && bits != preBits {
+	if bitSize != 0 && preBitSize != 0 && bitSize != preBitSize {
 		needCast = true
 	}
 	if needCast {
 		typ := types.NewPointer(elem)
 		var s string
 		if v, ok := src.(value.Named); ok {
-			if name := v.GetName(); len(name) > 0 {
+			if name := v.Name(); len(name) > 0 {
 				s = fmt.Sprintf(" %q", name)
 			}
 		}
@@ -590,7 +593,7 @@ func (f *Func) global(addr bin.Address) (value.Named, bool) {
 	if 0 <= index && index < len(globalAddrs) {
 		start := globalAddrs[index]
 		g := f.l.Globals[start]
-		size := f.l.sizeOfType(g.Typ.Elem)
+		size := f.l.sizeOfType(g.Typ.ElemType)
 		end := start + bin.Address(size)
 		if start <= addr && addr < end {
 			offset := int64(addr - start)
@@ -629,7 +632,7 @@ func (f *Func) getAddr(arg *x86.Arg) (bin.Address, bool) {
 
 // getFunc resolves the function, function type, and calling convention of the
 // given argument. The boolean return value indicates success.
-func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv, bool) {
+func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, enum.CallingConv, bool) {
 	// Check if register symbol context present.
 	switch a := arg.Arg.(type) {
 	case x86asm.Reg:
@@ -641,28 +644,28 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 					if !ok {
 						panic(fmt.Errorf("unable to locate external function %q", fname))
 					}
-					return fn, fn.Sig, fn.CallConv, true
+					return fn, fn.Sig, fn.CallingConv, true
 				}
 				// TODO: Remove poor man's type propagation once the type analysis and
 				// data flow analysis phases have been properly implemented.
 				if param, ok := c["param"]; ok {
 					p := param.Int64()
-					if p >= int64(len(f.Sig.Params)) {
-						panic(fmt.Errorf("invalid function parameter index; expected < %d, got %d", len(f.Sig.Params), p))
+					if p >= int64(len(f.Params)) {
+						panic(fmt.Errorf("invalid function parameter index; expected < %d, got %d", len(f.Params), p))
 					}
-					v := f.Sig.Params[p]
+					v := f.Params[p]
 					typ := v.Type()
 					ptr, ok := typ.(*types.PointerType)
 					if !ok {
-						panic(fmt.Errorf("invalid function pointer type of function parameter %q referenced from instruction at address %v; expected *types.PointerType, got %T; ", f.Sig.Params[p].Name, arg.Parent.Addr, typ))
+						panic(fmt.Errorf("invalid function pointer type of function parameter %q referenced from instruction at address %v; expected *types.PointerType, got %T; ", f.Params[p].Name, arg.Parent.Addr, typ))
 					}
-					sig, ok := ptr.Elem.(*types.FuncType)
+					sig, ok := ptr.ElemType.(*types.FuncType)
 					if !ok {
-						panic(fmt.Errorf("invalid function type of function parameter %q referenced from instruction at address %v; expected *types.FuncType, got %T; ", f.Sig.Params[p].Name, arg.Parent.Addr, ptr.Elem))
+						panic(fmt.Errorf("invalid function type of function parameter %q referenced from instruction at address %v; expected *types.FuncType, got %T; ", f.Params[p].Name, arg.Parent.Addr, ptr.ElemType))
 					}
 					// TODO: Figure out how to recover calling convention.
 					// Perhaps through context.json at call sites?
-					return v, sig, ir.CallConvNone, true
+					return v, sig, enum.CallingConvNone, true
 				}
 			}
 		}
@@ -671,21 +674,21 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 	if addr, ok := f.getAddr(arg); ok {
 		if fn, ok := f.l.Funcs[addr]; ok {
 			v := fn.Function
-			return v, v.Sig, v.CallConv, true
+			return v, v.Sig, v.CallingConv, true
 		}
 		if g, ok := f.l.Globals[addr]; ok {
-			ptr, ok := g.Typ.Elem.(*types.PointerType)
+			ptr, ok := g.Typ.ElemType.(*types.PointerType)
 			if !ok {
-				panic(fmt.Errorf("invalid function pointer type of global variable at address %v referenced from instruction at address %v; expected *types.PointerType, got %T; ", addr, arg.Parent.Addr, g.Typ.Elem))
+				panic(fmt.Errorf("invalid function pointer type of global variable at address %v referenced from instruction at address %v; expected *types.PointerType, got %T; ", addr, arg.Parent.Addr, g.Typ.ElemType))
 			}
-			sig, ok := ptr.Elem.(*types.FuncType)
+			sig, ok := ptr.ElemType.(*types.FuncType)
 			if !ok {
-				panic(fmt.Errorf("invalid function type of global variable at address %v referenced from instruction at address %v; expected *types.FuncType, got %T; ", addr, arg.Parent.Addr, ptr.Elem))
+				panic(fmt.Errorf("invalid function type of global variable at address %v referenced from instruction at address %v; expected *types.FuncType, got %T; ", addr, arg.Parent.Addr, ptr.ElemType))
 			}
 			v := f.cur.NewLoad(g)
 			// TODO: Figure out how to recover calling convention.
 			// Perhaps through context.json at call sites?
-			return v, sig, ir.CallConvNone, true
+			return v, sig, enum.CallingConvNone, true
 		}
 		panic(fmt.Errorf("unable to locate function at address %v referenced from instruction at address %v", addr, arg.Parent.Addr))
 	}
@@ -710,10 +713,10 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 					v = f.getElementPtr(v, a.Disp)
 					v = f.cur.NewLoad(v)
 					if typ, ok := v.Type().(*types.PointerType); ok {
-						if sig := typ.Elem.(*types.FuncType); ok {
+						if sig := typ.ElemType.(*types.FuncType); ok {
 							// TODO: Figure out how to recover calling convention.
 							// Perhaps through context.json at call sites?
-							return v, sig, ir.CallConvNone, true
+							return v, sig, enum.CallingConvNone, true
 						}
 					}
 					panic(fmt.Errorf("invalid callee type; expected pointer to function type, got %v", v.Type()))
@@ -726,16 +729,16 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 						fmt.Println("extractvalue:", v)
 						fmt.Println("extractvalue.Type():", v.Type())
 						// TODO: Handle index based on Index regster if present.
-						v = f.cur.NewExtractValue(v, []int64{0})
+						v = f.cur.NewExtractValue(v, 0)
 					}
 					// TODO: Figure out how to handle negative offsets.
 					v = f.getElementPtr(v, a.Disp)
 					v = f.cur.NewLoad(v)
 					if typ, ok := v.Type().(*types.PointerType); ok {
-						if sig := typ.Elem.(*types.FuncType); ok {
+						if sig := typ.ElemType.(*types.FuncType); ok {
 							// TODO: Figure out how to recover calling convention.
 							// Perhaps through context.json at call sites?
-							return v, sig, ir.CallConvNone, true
+							return v, sig, enum.CallingConvNone, true
 						}
 					}
 					panic(fmt.Errorf("invalid callee type; expected pointer to function type, got %v", v.Type()))
@@ -744,10 +747,10 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 					addr := bin.Address(a.Disp + min.Int64())
 					v := f.useAddr(addr)
 					if typ, ok := v.Type().(*types.PointerType); ok {
-						if sig := typ.Elem.(*types.FuncType); ok {
+						if sig := typ.ElemType.(*types.FuncType); ok {
 							// TODO: Figure out how to recover calling convention.
 							// Perhaps through context.json at call sites?
-							return v, sig, ir.CallConvNone, true
+							return v, sig, enum.CallingConvNone, true
 						}
 					}
 					panic(fmt.Errorf("invalid callee type; expected pointer to function type, got %v", v.Type()))
@@ -759,22 +762,22 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 				// data flow analysis phases have been properly implemented.
 				if param, ok := c["param"]; ok {
 					p := param.Int64()
-					if p >= int64(len(f.Sig.Params)) {
-						panic(fmt.Errorf("invalid function parameter index; expected < %d, got %d", len(f.Sig.Params), p))
+					if p >= int64(len(f.Params)) {
+						panic(fmt.Errorf("invalid function parameter index; expected < %d, got %d", len(f.Params), p))
 					}
-					v := f.Sig.Params[p]
+					v := f.Params[p]
 					typ := v.Type()
 					ptr, ok := typ.(*types.PointerType)
 					if !ok {
 						panic(fmt.Errorf("invalid function pointer type of function parameter %q referenced from instruction at address %v; expected *types.PointerType, got %T; ", f.Sig.Params[p].Name, arg.Parent.Addr, typ))
 					}
-					sig, ok := ptr.Elem.(*types.FuncType)
+					sig, ok := ptr.ElemType.(*types.FuncType)
 					if !ok {
-						panic(fmt.Errorf("invalid function type of function parameter %q referenced from instruction at address %v; expected *types.FuncType, got %T; ", f.Sig.Params[p].Name, arg.Parent.Addr, ptr.Elem))
+						panic(fmt.Errorf("invalid function type of function parameter %q referenced from instruction at address %v; expected *types.FuncType, got %T; ", f.Sig.Params[p].Name, arg.Parent.Addr, ptr.ElemType))
 					}
 					// TODO: Figure out how to recover calling convention.
 					// Perhaps through context.json at call sites?
-					return v, sig, ir.CallConvNone, true
+					return v, sig, enum.CallingConvNone, true
 				}
 			}
 
@@ -790,10 +793,10 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 					addr := bin.Address(a.Disp + int64(a.Scale)*min.Int64())
 					v := f.useAddr(addr)
 					if typ, ok := v.Type().(*types.PointerType); ok {
-						if sig := typ.Elem.(*types.FuncType); ok {
+						if sig := typ.ElemType.(*types.FuncType); ok {
 							// TODO: Figure out how to recover calling convention.
 							// Perhaps through context.json at call sites?
-							return v, sig, ir.CallConvNone, true
+							return v, sig, enum.CallingConvNone, true
 						}
 					}
 					// HACK: Use gep as a fallback for 0 element offsets.
@@ -804,10 +807,10 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, ir.CallConv,
 					fallback = f.getElementPtr(fallback, 0)
 					v = f.cur.NewLoad(fallback)
 					if typ, ok := v.Type().(*types.PointerType); ok {
-						if sig := typ.Elem.(*types.FuncType); ok {
+						if sig := typ.ElemType.(*types.FuncType); ok {
 							// TODO: Figure out how to recover calling convention.
 							// Perhaps through context.json at call sites?
-							return v, sig, ir.CallConvNone, true
+							return v, sig, enum.CallingConvNone, true
 						}
 					}
 					panic(fmt.Errorf("invalid callee type; expected pointer to function type, got %v", v.Type()))

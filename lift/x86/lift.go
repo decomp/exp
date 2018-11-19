@@ -9,7 +9,6 @@ import (
 	"github.com/decomp/exp/disasm/x86"
 	"github.com/llir/llvm/asm"
 	"github.com/llir/llvm/ir"
-	"github.com/llir/llvm/ir/metadata"
 	"github.com/llir/llvm/ir/types"
 	"github.com/mewkiz/pkg/osutil"
 	"github.com/mewkiz/pkg/term"
@@ -37,7 +36,7 @@ var (
 type Lifter struct {
 	*x86.Disasm
 	// Type definitions.
-	Types []types.Type
+	TypeDefs []types.Type
 	// Functions.
 	Funcs map[bin.Address]*Func
 	// Map from function name to function. May also contain external functions
@@ -87,38 +86,44 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 	}
 
 	// Parse types.
-	l.Types = module.Types
+	l.TypeDefs = module.TypeDefs
 
 	// Parse globals.
-	for _, g := range module.Globals {
-		node, ok := g.Metadata["addr"]
-		if !ok {
-			return nil, errors.Errorf(`unable to locate "addr" metadata for global variable %q`, g.Name)
+	// TODO: add support for metadata.
+	/*
+		for _, g := range module.Globals {
+				node, ok := g.Metadata["addr"]
+				if !ok {
+					return nil, errors.Errorf(`unable to locate "addr" metadata for global variable %q`, g.Name)
+				}
+				var addr bin.Address
+				if err := metadata.Unmarshal(node, &addr); err != nil {
+					return nil, errors.WithStack(err)
+				}
+				l.Globals[addr] = g
 		}
-		var addr bin.Address
-		if err := metadata.Unmarshal(node, &addr); err != nil {
-			return nil, errors.WithStack(err)
-		}
-		l.Globals[addr] = g
-	}
+	*/
 
 	// Parse function signatures.
-	for _, f := range module.Funcs {
-		l.FuncByName[f.Name] = f
-		node, ok := f.Metadata["addr"]
-		if !ok {
-			warn.Printf(`unable to locate "addr" metadata for function %q; potentially external function without associated virtual addresses (e.g. loaded with GetProcAddress)`, f.Name)
-			continue
+	// TODO: add support for metadata.
+	/*
+		for _, f := range module.Funcs {
+				l.FuncByName[f.Name] = f
+				node, ok := f.Metadata["addr"]
+				if !ok {
+					warn.Printf(`unable to locate "addr" metadata for function %q; potentially external function without associated virtual addresses (e.g. loaded with GetProcAddress)`, f.Name)
+					continue
+				}
+				var entry bin.Address
+				if err := metadata.Unmarshal(node, &entry); err != nil {
+					return nil, errors.WithStack(err)
+				}
+				fn := &Func{
+					Function: f,
+				}
+				l.Funcs[entry] = fn
 		}
-		var entry bin.Address
-		if err := metadata.Unmarshal(node, &entry); err != nil {
-			return nil, errors.WithStack(err)
-		}
-		fn := &Func{
-			Function: f,
-		}
-		l.Funcs[entry] = fn
-	}
+	*/
 
 	// Parse imports.
 	addFunc := func(entry bin.Address, name string) {
@@ -127,14 +132,17 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 		sig := types.NewFunc(types.Void)
 		typ := types.NewPointer(sig)
 		f := &ir.Function{
-			Name: name,
-			Typ:  typ,
-			Sig:  sig,
-			Metadata: map[string]*metadata.Metadata{
-				"addr": {
-					Nodes: []metadata.Node{&metadata.String{Val: entry.String()}},
+			GlobalName: name,
+			Typ:        typ,
+			Sig:        sig,
+			// TODO: add support for metadata.
+			/*
+				Metadata: map[string]*metadata.Metadata{
+					"addr": {
+						Nodes: []metadata.Node{&metadata.String{Val: entry.String()}},
+					},
 				},
-			},
+			*/
 		}
 		fn := &Func{
 			Function: f,

@@ -4,6 +4,7 @@ import (
 	"github.com/decomp/exp/disasm/x86"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 )
@@ -53,8 +54,8 @@ func (f *Func) liftInstSETA(inst *x86.Inst) error {
 	//    (CF=0 and ZF=0)
 	cf := f.useStatus(CF)
 	zf := f.useStatus(ZF)
-	cond1 := f.cur.NewICmp(ir.IntEQ, cf, constant.False)
-	cond2 := f.cur.NewICmp(ir.IntEQ, zf, constant.False)
+	cond1 := f.cur.NewICmp(enum.IPredEQ, cf, constant.False)
+	cond2 := f.cur.NewICmp(enum.IPredEQ, zf, constant.False)
 	cond := f.cur.NewAnd(cond1, cond2)
 	return f.liftInstSETcc(inst.Arg(0), cond)
 }
@@ -67,7 +68,7 @@ func (f *Func) liftInstSETAE(inst *x86.Inst) error {
 	// Set byte if above or equal.
 	//    (CF=0)
 	cf := f.useStatus(CF)
-	cond := f.cur.NewICmp(ir.IntEQ, cf, constant.False)
+	cond := f.cur.NewICmp(enum.IPredEQ, cf, constant.False)
 	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
@@ -106,7 +107,7 @@ func (f *Func) liftInstSETNO(inst *x86.Inst) error {
 	// Set byte if not overflow.
 	//    (OF=0)
 	of := f.useStatus(OF)
-	cond := f.cur.NewICmp(ir.IntEQ, of, constant.False)
+	cond := f.cur.NewICmp(enum.IPredEQ, of, constant.False)
 	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
@@ -130,7 +131,7 @@ func (f *Func) liftInstSETNP(inst *x86.Inst) error {
 	// Set byte if not parity.
 	//    (PF=0)
 	pf := f.useStatus(PF)
-	cond := f.cur.NewICmp(ir.IntEQ, pf, constant.False)
+	cond := f.cur.NewICmp(enum.IPredEQ, pf, constant.False)
 	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
@@ -154,7 +155,7 @@ func (f *Func) liftInstSETNS(inst *x86.Inst) error {
 	// Set byte if not sign.
 	//    (SF=0)
 	sf := f.useStatus(SF)
-	cond := f.cur.NewICmp(ir.IntEQ, sf, constant.False)
+	cond := f.cur.NewICmp(enum.IPredEQ, sf, constant.False)
 	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
@@ -179,7 +180,7 @@ func (f *Func) liftInstSETGE(inst *x86.Inst) error {
 	//    (SF=OF)
 	sf := f.useStatus(SF)
 	of := f.useStatus(OF)
-	cond := f.cur.NewICmp(ir.IntEQ, sf, of)
+	cond := f.cur.NewICmp(enum.IPredEQ, sf, of)
 	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
@@ -192,7 +193,7 @@ func (f *Func) liftInstSETL(inst *x86.Inst) error {
 	//    (SF≠OF)
 	sf := f.useStatus(SF)
 	of := f.useStatus(OF)
-	cond := f.cur.NewICmp(ir.IntNE, sf, of)
+	cond := f.cur.NewICmp(enum.IPredNE, sf, of)
 	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
@@ -206,8 +207,8 @@ func (f *Func) liftInstSETG(inst *x86.Inst) error {
 	zf := f.useStatus(ZF)
 	sf := f.useStatus(SF)
 	of := f.useStatus(OF)
-	cond1 := f.cur.NewICmp(ir.IntEQ, zf, constant.False)
-	cond2 := f.cur.NewICmp(ir.IntEQ, sf, of)
+	cond1 := f.cur.NewICmp(enum.IPredEQ, zf, constant.False)
+	cond2 := f.cur.NewICmp(enum.IPredEQ, sf, of)
 	cond := f.cur.NewAnd(cond1, cond2)
 	return f.liftInstSETcc(inst.Arg(0), cond)
 }
@@ -220,7 +221,7 @@ func (f *Func) liftInstSETNE(inst *x86.Inst) error {
 	// Set byte if not equal.
 	//    (ZF=0)
 	zf := f.useStatus(ZF)
-	cond := f.cur.NewICmp(ir.IntEQ, zf, constant.False)
+	cond := f.cur.NewICmp(enum.IPredEQ, zf, constant.False)
 	return f.liftInstSETcc(inst.Arg(0), cond)
 }
 
@@ -235,7 +236,7 @@ func (f *Func) liftInstSETLE(inst *x86.Inst) error {
 	sf := f.useStatus(SF)
 	of := f.useStatus(OF)
 	cond1 := zf
-	cond2 := f.cur.NewICmp(ir.IntNE, sf, of)
+	cond2 := f.cur.NewICmp(enum.IPredNE, sf, of)
 	cond := f.cur.NewOr(cond1, cond2)
 	return f.liftInstSETcc(inst.Arg(0), cond)
 }
@@ -259,11 +260,11 @@ func (f *Func) liftInstSETE(inst *x86.Inst) error {
 func (f *Func) liftInstSETcc(arg *x86.Arg, cond value.Value) error {
 	targetTrue := &ir.BasicBlock{}
 	exit := &ir.BasicBlock{}
-	f.AppendBlock(targetTrue)
-	f.AppendBlock(exit)
+	f.Blocks = append(f.Blocks, targetTrue)
+	f.Blocks = append(f.Blocks, exit)
 	f.cur.NewCondBr(cond, targetTrue, exit)
 	f.cur = targetTrue
-	one := constant.NewInt(1, types.I8)
+	one := constant.NewInt(types.I8, 1)
 	f.defArgElem(arg, one, types.I8)
 	targetTrue.NewBr(exit)
 	f.cur = exit

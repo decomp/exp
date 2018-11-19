@@ -16,20 +16,20 @@ func (l *Lifter) sizeOfTypeInBits(t types.Type) int64 {
 	case *types.FuncType:
 		panic("invalid type to sizeof; function type has no size")
 	case *types.IntType:
-		return int64(t.Size)
+		return int64(t.BitSize)
 	case *types.FloatType:
 		switch t.Kind {
-		case types.FloatKindIEEE_16:
+		case types.FloatKindHalf:
 			return 16
-		case types.FloatKindIEEE_32:
+		case types.FloatKindFloat:
 			return 32
-		case types.FloatKindIEEE_64:
+		case types.FloatKindDouble:
 			return 64
-		case types.FloatKindIEEE_128:
+		case types.FloatKindFP128:
 			return 128
-		case types.FloatKindDoubleExtended_80:
+		case types.FloatKindX86FP80:
 			return 80
-		case types.FloatKindDoubleDouble_128:
+		case types.FloatKindPPCFP128:
 			return 128
 		default:
 			panic(fmt.Errorf("support for floating-point kind %v not yet implemented", t.Kind))
@@ -37,13 +37,13 @@ func (l *Lifter) sizeOfTypeInBits(t types.Type) int64 {
 	case *types.PointerType:
 		return int64(l.Mode)
 	case *types.VectorType:
-		return t.Len * l.sizeOfTypeInBits(t.Elem)
+		return t.Len * l.sizeOfTypeInBits(t.ElemType)
 	case *types.LabelType:
 		panic("invalid type to sizeof; label type has no size")
 	case *types.MetadataType:
 		panic("invalid type to sizeof; metadata type has no size")
 	case *types.ArrayType:
-		return t.Len * l.sizeOfTypeInBits(t.Elem)
+		return t.Len * l.sizeOfTypeInBits(t.ElemType)
 	case *types.StructType:
 		total := int64(0)
 		for _, field := range t.Fields {
@@ -67,13 +67,13 @@ func (l *Lifter) sizeOfType(t types.Type) int64 {
 // parseType returns the LLVM IR type represented by the given string.
 func (l *Lifter) parseType(typStr string) types.Type {
 	module := &ir.Module{
-		Types: l.Types,
+		TypeDefs: l.TypeDefs,
 	}
 	// HACK but works :)
 	s := fmt.Sprintf("%s\n\n@dummy = external global %s", module, typStr)
-	m, err := asm.ParseString(s)
+	m, err := asm.ParseString("<stdin>", s)
 	if err != nil {
 		panic(fmt.Errorf("unable to parse type %q; %v", s, err))
 	}
-	return m.Globals[0].Typ.Elem
+	return m.Globals[0].Typ.ElemType
 }

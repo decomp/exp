@@ -7,6 +7,7 @@ import (
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
 	"github.com/pkg/errors"
 	"golang.org/x/arch/x86/x86asm"
@@ -29,15 +30,15 @@ func (f *Func) liftREPInst(inst *x86.Inst) error {
 	loop := &ir.BasicBlock{}
 	body := &ir.BasicBlock{}
 	exit := &ir.BasicBlock{}
-	f.AppendBlock(loop)
-	f.AppendBlock(body)
-	f.AppendBlock(exit)
+	f.Blocks = append(f.Blocks, loop)
+	f.Blocks = append(f.Blocks, body)
+	f.Blocks = append(f.Blocks, exit)
 	f.cur.NewBr(loop)
 	// Generate loop basic block.
 	f.cur = loop
 	ecx := f.useReg(x86.ECX)
-	zero := constant.NewInt(0, types.I32)
-	cond := f.cur.NewICmp(ir.IntNE, ecx, zero)
+	zero := constant.NewInt(types.I32, 0)
+	cond := f.cur.NewICmp(enum.IPredNE, ecx, zero)
 	f.cur.NewCondBr(cond, body, exit)
 	// Generate body basic block.
 	f.cur = body
@@ -66,7 +67,7 @@ func (f *Func) liftREPInst(inst *x86.Inst) error {
 		panic(fmt.Errorf("support for REP prefixed %v instruction not yet implemented", inst.Op))
 	}
 	ecx = f.useReg(x86.ECX)
-	one := constant.NewInt(1, types.I32)
+	one := constant.NewInt(types.I32, 1)
 	tmp := f.cur.NewSub(ecx, one)
 	f.defReg(x86.ECX, tmp)
 	f.cur.NewBr(loop)

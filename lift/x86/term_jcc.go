@@ -4,8 +4,8 @@ import (
 	"github.com/decomp/exp/bin"
 	"github.com/decomp/exp/disasm/x86"
 	"github.com/kr/pretty"
-	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	"github.com/pkg/errors"
@@ -58,8 +58,8 @@ func (f *Func) liftTermJA(term *x86.Inst) error {
 	//    (CF=0 and ZF=0)
 	cf := f.useStatus(CF)
 	zf := f.useStatus(ZF)
-	cond1 := f.cur.NewICmp(ir.IntEQ, cf, constant.False)
-	cond2 := f.cur.NewICmp(ir.IntEQ, zf, constant.False)
+	cond1 := f.cur.NewICmp(enum.IPredEQ, cf, constant.False)
+	cond2 := f.cur.NewICmp(enum.IPredEQ, zf, constant.False)
 	cond := f.cur.NewAnd(cond1, cond2)
 	return f.liftTermJcc(term.Arg(0), cond)
 }
@@ -71,7 +71,7 @@ func (f *Func) liftTermJAE(term *x86.Inst) error {
 	// Jump if above or equal.
 	//    (CF=0)
 	cf := f.useStatus(CF)
-	cond := f.cur.NewICmp(ir.IntEQ, cf, constant.False)
+	cond := f.cur.NewICmp(enum.IPredEQ, cf, constant.False)
 	return f.liftTermJcc(term.Arg(0), cond)
 }
 
@@ -119,8 +119,8 @@ func (f *Func) liftTermJECXZ(term *x86.Inst) error {
 	// Jump if ECX register is zero.
 	//    (ECX=0)
 	ecx := f.useReg(x86.ECX)
-	zero := constant.NewInt(0, types.I32)
-	cond := f.cur.NewICmp(ir.IntEQ, ecx, zero)
+	zero := constant.NewInt(types.I32, 0)
+	cond := f.cur.NewICmp(enum.IPredEQ, ecx, zero)
 	return f.liftTermJcc(term.Arg(0), cond)
 }
 
@@ -131,7 +131,7 @@ func (f *Func) liftTermJNO(term *x86.Inst) error {
 	// Jump if not overflow.
 	//    (OF=0)
 	of := f.useStatus(OF)
-	cond := f.cur.NewICmp(ir.IntEQ, of, constant.False)
+	cond := f.cur.NewICmp(enum.IPredEQ, of, constant.False)
 	return f.liftTermJcc(term.Arg(0), cond)
 }
 
@@ -153,7 +153,7 @@ func (f *Func) liftTermJNP(term *x86.Inst) error {
 	// Jump if not parity.
 	//    (PF=0)
 	pf := f.useStatus(PF)
-	cond := f.cur.NewICmp(ir.IntEQ, pf, constant.False)
+	cond := f.cur.NewICmp(enum.IPredEQ, pf, constant.False)
 	return f.liftTermJcc(term.Arg(0), cond)
 }
 
@@ -186,7 +186,7 @@ func (f *Func) liftTermJNS(term *x86.Inst) error {
 	// Jump if not sign.
 	//    (SF=0)
 	sf := f.useStatus(SF)
-	cond := f.cur.NewICmp(ir.IntEQ, sf, constant.False)
+	cond := f.cur.NewICmp(enum.IPredEQ, sf, constant.False)
 	return f.liftTermJcc(term.Arg(0), cond)
 }
 
@@ -209,7 +209,7 @@ func (f *Func) liftTermJGE(term *x86.Inst) error {
 	//    (SF=OF)
 	sf := f.useStatus(SF)
 	of := f.useStatus(OF)
-	cond := f.cur.NewICmp(ir.IntEQ, sf, of)
+	cond := f.cur.NewICmp(enum.IPredEQ, sf, of)
 	return f.liftTermJcc(term.Arg(0), cond)
 }
 
@@ -221,7 +221,7 @@ func (f *Func) liftTermJL(term *x86.Inst) error {
 	//    (SF≠OF)
 	sf := f.useStatus(SF)
 	of := f.useStatus(OF)
-	cond := f.cur.NewICmp(ir.IntNE, sf, of)
+	cond := f.cur.NewICmp(enum.IPredNE, sf, of)
 	return f.liftTermJcc(term.Arg(0), cond)
 }
 
@@ -234,8 +234,8 @@ func (f *Func) liftTermJG(term *x86.Inst) error {
 	zf := f.useStatus(ZF)
 	sf := f.useStatus(SF)
 	of := f.useStatus(OF)
-	cond1 := f.cur.NewICmp(ir.IntEQ, zf, constant.False)
-	cond2 := f.cur.NewICmp(ir.IntEQ, sf, of)
+	cond1 := f.cur.NewICmp(enum.IPredEQ, zf, constant.False)
+	cond2 := f.cur.NewICmp(enum.IPredEQ, sf, of)
 	cond := f.cur.NewAnd(cond1, cond2)
 	return f.liftTermJcc(term.Arg(0), cond)
 }
@@ -247,7 +247,7 @@ func (f *Func) liftTermJNE(term *x86.Inst) error {
 	// Jump if not equal.
 	//    (ZF=0)
 	zf := f.useStatus(ZF)
-	cond := f.cur.NewICmp(ir.IntEQ, zf, constant.False)
+	cond := f.cur.NewICmp(enum.IPredEQ, zf, constant.False)
 	return f.liftTermJcc(term.Arg(0), cond)
 }
 
@@ -261,7 +261,7 @@ func (f *Func) liftTermJLE(term *x86.Inst) error {
 	sf := f.useStatus(SF)
 	of := f.useStatus(OF)
 	cond1 := zf
-	cond2 := f.cur.NewICmp(ir.IntNE, sf, of)
+	cond2 := f.cur.NewICmp(enum.IPredNE, sf, of)
 	cond := f.cur.NewOr(cond1, cond2)
 	return f.liftTermJcc(term.Arg(0), cond)
 }

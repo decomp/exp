@@ -32,7 +32,7 @@ func regType(reg x86asm.Reg) types.Type {
 		return types.I64
 	// 387 floating point registers.
 	case x86asm.F0, x86asm.F1, x86asm.F2, x86asm.F3, x86asm.F4, x86asm.F5, x86asm.F6, x86asm.F7:
-		return types.X86_FP80
+		return types.X86FP80
 	// MMX registers.
 	case x86asm.M0, x86asm.M1, x86asm.M2, x86asm.M3, x86asm.M4, x86asm.M5, x86asm.M6, x86asm.M7:
 		panic(fmt.Errorf("support for register %v not yet implemented", reg))

@@ -8,7 +8,7 @@ import (
 	"github.com/decomp/exp/disasm/x86"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
-	"github.com/llir/llvm/ir/metadata"
+	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
 	"golang.org/x/arch/x86/x86asm"
 )
@@ -63,14 +63,17 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 		typ := types.NewPointer(sig)
 		f = &Func{
 			Function: &ir.Function{
-				Name: name,
-				Typ:  typ,
-				Sig:  sig,
-				Metadata: map[string]*metadata.Metadata{
-					"addr": {
-						Nodes: []metadata.Node{&metadata.String{Val: entry.String()}},
+				GlobalName: name,
+				Typ:        typ,
+				Sig:        sig,
+				// TODO: add support for metadata.
+				/*
+					Metadata: map[string]*metadata.Metadata{
+						"addr": {
+							Nodes: []metadata.Node{&metadata.String{Val: entry.String()}},
+						},
 					},
-				},
+				*/
 			},
 		}
 	}
@@ -85,7 +88,7 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 	for addr := range asmFunc.Blocks {
 		label := fmt.Sprintf("block_%06X", uint64(addr))
 		block := &ir.BasicBlock{
-			Name: label,
+			LocalName: label,
 		}
 		f.blocks[addr] = block
 	}
@@ -155,27 +158,27 @@ func (f *Func) Lift() {
 		// Allocate local variables for each register used within the function.
 		for reg := x86.FirstReg; reg <= x86.LastReg; reg++ {
 			if inst, ok := f.regs[reg]; ok {
-				entry.AppendInst(inst)
+				entry.Insts = append(entry.Insts, inst)
 			}
 		}
 		// Allocate local variables for the FPU register stack used within the
 		// function.
 		if f.usesFPU {
-			entry.AppendInst(f.st)
-			seven := constant.NewInt(7, types.I8)
+			entry.Insts = append(entry.Insts, f.st)
+			seven := constant.NewInt(types.I8, 7)
 			entry.NewStore(seven, f.st)
 		}
 		// Allocate local variables for each status flag used within the function.
 		for status := firstStatusFlag; status <= lastStatusFlag; status++ {
 			if inst, ok := f.statusFlags[status]; ok {
-				entry.AppendInst(inst)
+				entry.Insts = append(entry.Insts, inst)
 			}
 		}
 		// Allocate local variables for each FPU status flag used within the
 		// function.
 		for fstatus := fpuFirstStatusFlag; fstatus <= fpuLastStatusFlag; fstatus++ {
 			if inst, ok := f.fstatusFlags[fstatus]; ok {
-				entry.AppendInst(inst)
+				entry.Insts = append(entry.Insts, inst)
 			}
 		}
 		// Allocate local variables for each local variable used within the
@@ -187,7 +190,7 @@ func (f *Func) Lift() {
 		sort.Strings(names)
 		for _, name := range names {
 			inst := f.locals[name]
-			entry.AppendInst(inst)
+			entry.Insts = append(entry.Insts, inst)
 		}
 		// Handle calling conventions.
 		f.cur = entry
@@ -195,10 +198,10 @@ func (f *Func) Lift() {
 		// block translation. Move this code to before f.translateBlock, and remove
 		// f.espDisp = 0.
 		f.espDisp = 0
-		for i, param := range f.Sig.Params {
+		for i, param := range f.Params {
 			// Use parameter in register.
-			switch f.CallConv {
-			case ir.CallConvX86_FastCall:
+			switch f.CallingConv {
+			case enum.CallingConvX86FastCall:
 				switch i {
 				case 0:
 					f.defReg(x86.ECX, param)

@@ -7,6 +7,7 @@ import (
 	"github.com/kr/pretty"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	"github.com/pkg/errors"
@@ -1609,7 +1610,7 @@ func (f *Func) liftInstCALL(inst *x86.Inst) error {
 	for i := range sig.Params {
 		// Pass argument in register.
 		switch callconv {
-		case ir.CallConvX86_FastCall:
+		case enum.CallingConvX86FastCall:
 			switch i {
 			case 0:
 				arg := f.useReg(x86.ECX)
@@ -1627,10 +1628,10 @@ func (f *Func) liftInstCALL(inst *x86.Inst) error {
 		arg := f.pop()
 		args = append(args, arg)
 		switch callconv {
-		case ir.CallConvX86_FastCall, ir.CallConvX86_StdCall:
+		case enum.CallingConvX86FastCall, enum.CallingConvX86StdCall:
 			// callee purge.
 			purge += 4
-		case ir.CallConvC:
+		case enum.CallingConvC:
 			// caller purge; nothing to do.
 		default:
 			// TODO: Add support for more calling conventions.
@@ -1644,7 +1645,7 @@ func (f *Func) liftInstCALL(inst *x86.Inst) error {
 	f.espDisp += purge
 
 	// Handle return value.
-	if !types.Equal(sig.Ret, types.Void) {
+	if !types.Equal(sig.RetType, types.Void) {
 		f.defReg(x86.EAX, result)
 	}
 	return nil
@@ -1666,19 +1667,19 @@ func (f *Func) liftInstCBW(inst *x86.Inst) error {
 func (f *Func) liftInstCDQ(inst *x86.Inst) error {
 	// EDX:EAX = sign-extend of EAX.
 	eax := f.useReg(x86.EAX)
-	tmp := f.cur.NewLShr(eax, constant.NewInt(31, types.I32))
+	tmp := f.cur.NewLShr(eax, constant.NewInt(types.I32, 31))
 	cond := f.cur.NewTrunc(tmp, types.I1)
 	targetTrue := &ir.BasicBlock{}
 	targetFalse := &ir.BasicBlock{}
 	exit := &ir.BasicBlock{}
-	f.AppendBlock(targetTrue)
-	f.AppendBlock(targetFalse)
-	f.AppendBlock(exit)
+	f.Blocks = append(f.Blocks, targetTrue)
+	f.Blocks = append(f.Blocks, targetFalse)
+	f.Blocks = append(f.Blocks, exit)
 	f.cur.NewCondBr(cond, targetTrue, targetFalse)
 	f.cur = targetTrue
-	f.defReg(x86.EDX, constant.NewInt(0xFFFFFFFF, types.I32))
+	f.defReg(x86.EDX, constant.NewInt(types.I32, 0xFFFFFFFF))
 	f.cur = targetFalse
-	f.defReg(x86.EDX, constant.NewInt(0, types.I32))
+	f.defReg(x86.EDX, constant.NewInt(types.I32, 0))
 	targetTrue.NewBr(exit)
 	targetFalse.NewBr(exit)
 	f.cur = exit
@@ -1920,8 +1921,8 @@ func (f *Func) liftInstCMP(inst *x86.Inst) error {
 	// TODO: Add support for the AF status flag.
 
 	// ZF (bit 6) Zero flag - Set if the result is zero; cleared otherwise.
-	zero := constant.NewInt(0, types.I32)
-	zf := f.cur.NewICmp(ir.IntEQ, result, zero)
+	zero := constant.NewInt(types.I32, 0)
+	zf := f.cur.NewICmp(enum.IPredEQ, result, zero)
 	f.defStatus(ZF, zf)
 
 	// SF (bit 7) Sign flag - Set equal to the most-significant bit of the
@@ -2330,7 +2331,7 @@ func (f *Func) liftInstDEC(inst *x86.Inst) error {
 // dec decrements the given argument by 1, stores and returns the result.
 func (f *Func) dec(arg *x86.Arg) value.Value {
 	x := f.useArg(arg)
-	one := constant.NewInt(1, x.Type())
+	one := constant.NewInt(x.Type().(*types.IntType), 1)
 	result := f.cur.NewSub(x, one)
 	f.defArg(arg, result)
 	return result
@@ -2349,7 +2350,7 @@ func (f *Func) liftInstDIV(inst *x86.Inst) error {
 	if !ok {
 		return errors.Errorf("invalid argument type in instruction %v; expected *types.IntType, got %T", inst, arg.Type())
 	}
-	switch typ.Size {
+	switch typ.BitSize {
 	case 8:
 		// Unsigned divide AX by r/m8, with result stored in:
 		//
@@ -2395,7 +2396,7 @@ func (f *Func) liftInstDIV(inst *x86.Inst) error {
 		f.defReg(x86.RAX, quo)
 		f.defReg(x86.RDX, rem)
 	default:
-		panic(fmt.Errorf("support for argument bit size %d not yet implemented", typ.Size))
+		panic(fmt.Errorf("support for argument bit size %d not yet implemented", typ.BitSize))
 	}
 	return nil
 }
@@ -2686,7 +2687,7 @@ func (f *Func) liftInstIN(inst *x86.Inst) error {
 // f.
 func (f *Func) liftInstINC(inst *x86.Inst) error {
 	x := f.useArg(inst.Arg(0))
-	one := constant.NewInt(1, types.I32)
+	one := constant.NewInt(types.I32, 1)
 	result := f.cur.NewAdd(x, one)
 	f.defArg(inst.Arg(0), result)
 	return nil
@@ -3487,7 +3488,7 @@ func (f *Func) liftInstMOVSW(inst *x86.Inst) error {
 // liftInstMOVSX lifts the given x86 MOVSX instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) liftInstMOVSX(inst *x86.Inst) error {
-	size := inst.MemBytes * 8
+	size := int64(inst.MemBytes) * 8
 	elem := types.NewInt(size)
 	src := f.useArgElem(inst.Arg(1), elem)
 	// TODO: Handle dst type dynamically.
@@ -3528,7 +3529,7 @@ func (f *Func) liftInstMOVUPS(inst *x86.Inst) error {
 // liftInstMOVZX lifts the given x86 MOVZX instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) liftInstMOVZX(inst *x86.Inst) error {
-	size := inst.MemBytes * 8
+	size := int64(inst.MemBytes) * 8
 	elem := types.NewInt(size)
 	src := f.useArgElem(inst.Arg(1), elem)
 	// TODO: Handle dst type dynamically.
@@ -3639,7 +3640,7 @@ func (f *Func) liftInstMWAIT(inst *x86.Inst) error {
 // f.
 func (f *Func) liftInstNEG(inst *x86.Inst) error {
 	x := f.useArg(inst.Arg(0))
-	zero := constant.NewInt(0, x.Type())
+	zero := constant.NewInt(x.Type().(*types.IntType), 0)
 	result := f.cur.NewSub(zero, x)
 	f.defArg(inst.Arg(0), result)
 	return nil
@@ -3664,17 +3665,21 @@ func (f *Func) liftInstNOT(inst *x86.Inst) error {
 	if !ok {
 		panic(fmt.Errorf("invalid NOT operand type; expected *types.IntType, got %T", x.Type()))
 	}
-	switch typ.Size {
+	switch typ.BitSize {
 	case 8:
-		mask = constant.NewInt(0xFF, types.I8)
+		mask = constant.NewInt(types.I8, 0xFF)
 	case 16:
-		mask = constant.NewInt(0xFFFF, types.I16)
+		mask = constant.NewInt(types.I16, 0xFFFF)
 	case 32:
-		mask = constant.NewInt(0xFFFFFFFF, types.I32)
+		mask = constant.NewInt(types.I32, 0xFFFFFFFF)
 	case 64:
-		mask = constant.NewIntFromString("0xFFFFFFFFFFFFFFFF", types.I64)
+		v, err := constant.NewIntFromString(types.I64, "0xFFFFFFFFFFFFFFFF")
+		if err != nil {
+			panic(fmt.Errorf("unable to parse integer constant; %v", err))
+		}
+		mask = v
 	default:
-		panic(fmt.Errorf("support for operand bit size %d not yet implemented", typ.Size))
+		panic(fmt.Errorf("support for operand bit size %d not yet implemented", typ.BitSize))
 	}
 	result := f.cur.NewXor(x, mask)
 	f.defArg(inst.Arg(0), result)
@@ -5151,7 +5156,7 @@ func (f *Func) liftInstROL(inst *x86.Inst) error {
 	if !ok {
 		panic(fmt.Errorf("invalid count operand type; expected *types.IntType, got %T", y.Type()))
 	}
-	bits := constant.NewInt(int64(typ.Size), typ)
+	bits := constant.NewInt(typ, int64(typ.BitSize))
 	shift := f.cur.NewSub(bits, y)
 	low := f.cur.NewLShr(x, shift)
 	result := f.cur.NewOr(low, high)
@@ -5171,7 +5176,7 @@ func (f *Func) liftInstROR(inst *x86.Inst) error {
 	if !ok {
 		panic(fmt.Errorf("invalid count operand type; expected *types.IntType, got %T", y.Type()))
 	}
-	bits := constant.NewInt(int64(typ.Size), typ)
+	bits := constant.NewInt(typ, int64(typ.BitSize))
 	shift := f.cur.NewSub(bits, y)
 	high := f.cur.NewShl(x, shift)
 	result := f.cur.NewOr(low, high)
@@ -5383,7 +5388,7 @@ func (f *Func) liftInstSHLD(inst *x86.Inst) error {
 	// Shift a1 to left a3 places while shifting bits from a2 in from the right.
 	a1, a2, a3 := f.useArg(inst.Arg(0)), f.useArg(inst.Arg(1)), f.useArg(inst.Arg(2))
 	tmp1 := f.cur.NewZExt(a1, types.I64)
-	n32 := constant.NewInt(32, types.I64)
+	n32 := constant.NewInt(types.I64, 32)
 	high := f.cur.NewShl(tmp1, n32)
 	low := f.cur.NewZExt(a2, types.I64)
 	tmp3 := f.cur.NewOr(high, low)
@@ -5688,8 +5693,8 @@ func (f *Func) liftInstTEST(inst *x86.Inst) error {
 	// TODO: Add support for the PF status flag.
 
 	// ZF (bit 6) Zero flag - Set if the result is zero; cleared otherwise.
-	zero := constant.NewInt(0, types.I32)
-	zf := f.cur.NewICmp(ir.IntEQ, result, zero)
+	zero := constant.NewInt(types.I32, 0)
+	zf := f.cur.NewICmp(enum.IPredEQ, result, zero)
 	f.defStatus(ZF, zf)
 
 	// SF (bit 7) Sign flag - Set equal to the most-significant bit of the

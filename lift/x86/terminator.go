@@ -117,7 +117,7 @@ func (f *Func) liftTermJMP(term *x86.Inst) error {
 			return errors.WithStack(err)
 		}
 		// Handle return values.
-		if !types.Equal(f.Sig.Ret, types.Void) {
+		if !types.Equal(f.Sig.RetType, types.Void) {
 			// Non-void functions, pass return value in EAX.
 			result := f.useReg(x86.EAX)
 			f.cur.NewRet(result)
@@ -167,7 +167,7 @@ func (f *Func) liftTermJMP(term *x86.Inst) error {
 			index := f.useReg(mem.Index())
 			unreachable := &ir.BasicBlock{}
 			unreachable.NewUnreachable()
-			f.AppendBlock(unreachable)
+			f.Blocks = append(f.Blocks, unreachable)
 			targetDefault := unreachable
 			var cases []*ir.Case
 			for i, targetAddr := range targetAddrs {
@@ -175,7 +175,7 @@ func (f *Func) liftTermJMP(term *x86.Inst) error {
 				if !ok {
 					return errors.Errorf("unable to locate basic block at %v", targetAddr)
 				}
-				ii := constant.NewInt(int64(i), index.Type())
+				ii := constant.NewInt(index.Type().(*types.IntType), int64(i))
 				c := ir.NewCase(ii, target)
 				cases = append(cases, c)
 			}
@@ -193,7 +193,7 @@ func (f *Func) liftTermJMP(term *x86.Inst) error {
 // f.
 func (f *Func) liftTermRET(term *x86.Inst) error {
 	// Handle return values of non-void functions (passed through EAX).
-	if !types.Equal(f.Sig.Ret, types.Void) {
+	if !types.Equal(f.Sig.RetType, types.Void) {
 		result := f.useReg(x86.EAX)
 		f.cur.NewRet(result)
 		return nil

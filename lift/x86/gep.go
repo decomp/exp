@@ -17,7 +17,7 @@ func (f *Func) getElementPtr(src value.Value, offset int64) *ir.InstGetElementPt
 	if !ok {
 		panic(fmt.Errorf("invalid source address type; expected *types.PointerType, got %T", src.Type()))
 	}
-	elem := srcType.Elem
+	elem := srcType.ElemType
 	e := elem
 	total := int64(0)
 	var indices []value.Value
@@ -35,7 +35,7 @@ loop:
 			// src.
 			//
 			// ref: http://llvm.org/docs/GetElementPtr.html#why-is-the-extra-0-index-required
-			index := constant.NewInt(0, types.I64)
+			index := constant.NewInt(types.I64, 0)
 			indices = append(indices, index)
 			continue
 		}
@@ -47,7 +47,7 @@ loop:
 			// ref: http://llvm.org/docs/GetElementPtr.html#what-is-dereferenced-by-gep
 			panic("unable to index into element of pointer type; for more information, see http://llvm.org/docs/GetElementPtr.html#what-is-dereferenced-by-gep")
 		case *types.ArrayType:
-			elemSize := f.l.sizeOfType(t.Elem)
+			elemSize := f.l.sizeOfType(t.ElemType)
 			j := int64(0)
 			for ; j < t.Len; j++ {
 				if total+elemSize > offset {
@@ -55,9 +55,9 @@ loop:
 				}
 				total += elemSize
 			}
-			index := constant.NewInt(j, types.I64)
+			index := constant.NewInt(types.I64, j)
 			indices = append(indices, index)
-			e = t.Elem
+			e = t.ElemType
 		case *types.StructType:
 			j := int64(0)
 			for ; j < int64(len(t.Fields)); j++ {
@@ -67,7 +67,7 @@ loop:
 				}
 				total += fieldSize
 			}
-			index := constant.NewInt(j, types.I64)
+			index := constant.NewInt(types.I64, j)
 			indices = append(indices, index)
 			e = t.Fields[j]
 		case *types.IntType:
@@ -75,7 +75,7 @@ loop:
 				break loop
 			}
 			warn.Printf("indexing into the middle of an integer element at offset %d in type %v", total, src.Type())
-			n = int64(t.Size / 8)
+			n = int64(t.BitSize / 8)
 			if total+n < offset {
 				panic(fmt.Errorf("unable to locate offset %d in type %v; indexing into integer type of byte size %d when at total offset %d", offset, src.Type(), n, total))
 			}
@@ -87,11 +87,11 @@ loop:
 	v := f.cur.NewGetElementPtr(src, indices...)
 	if n > 0 {
 		src := f.cur.NewLoad(v)
-		typ := types.NewPointer(types.NewArray(types.I8, n))
+		typ := types.NewPointer(types.NewArray(n, types.I8))
 		tmp1 := f.cur.NewBitCast(src, typ)
 		indices := []value.Value{
-			constant.NewInt(0, types.I64),
-			constant.NewInt(offset-total, types.I64),
+			constant.NewInt(types.I64, 0),
+			constant.NewInt(types.I64, offset-total),
 		}
 		tmp2 := f.cur.NewGetElementPtr(tmp1, indices...)
 		return tmp2

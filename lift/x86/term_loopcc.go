@@ -2,8 +2,8 @@ package x86
 
 import (
 	"github.com/decomp/exp/disasm/x86"
-	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/enum"
 	"github.com/llir/llvm/ir/types"
 	"golang.org/x/arch/x86/x86asm"
 )
@@ -25,8 +25,8 @@ func (f *Func) liftTermLOOP(term *x86.Inst) error {
 	// Loop if ECX register is not zero.
 	//    (ECX≠0)
 	ecx := f.dec(x86.NewArg(x86asm.ECX, term))
-	zero := constant.NewInt(0, types.I32)
-	cond := f.cur.NewICmp(ir.IntNE, ecx, zero)
+	zero := constant.NewInt(types.I32, 0)
+	cond := f.cur.NewICmp(enum.IPredNE, ecx, zero)
 	return f.liftTermJcc(term.Arg(0), cond)
 }
 
@@ -38,9 +38,9 @@ func (f *Func) liftTermLOOPE(term *x86.Inst) error {
 	// Loop if equal and ECX register is not zero.
 	//    (ECX≠0 and ZF=1)
 	ecx := f.dec(x86.NewArg(x86asm.ECX, term))
-	zero := constant.NewInt(0, types.I32)
+	zero := constant.NewInt(types.I32, 0)
 	zf := f.useStatus(ZF)
-	cond1 := f.cur.NewICmp(ir.IntNE, ecx, zero)
+	cond1 := f.cur.NewICmp(enum.IPredNE, ecx, zero)
 	cond2 := zf
 	cond := f.cur.NewAnd(cond1, cond2)
 	return f.liftTermJcc(term.Arg(0), cond)
@@ -54,10 +54,10 @@ func (f *Func) liftTermLOOPNE(term *x86.Inst) error {
 	// Loop if not equal and ECX register is not zero.
 	//    (ECX≠0 and ZF=0)
 	ecx := f.dec(x86.NewArg(x86asm.ECX, term))
-	zero := constant.NewInt(0, types.I32)
+	zero := constant.NewInt(types.I32, 0)
 	zf := f.useStatus(ZF)
-	cond1 := f.cur.NewICmp(ir.IntNE, ecx, zero)
-	cond2 := f.cur.NewICmp(ir.IntEQ, zf, constant.False)
+	cond1 := f.cur.NewICmp(enum.IPredNE, ecx, zero)
+	cond2 := f.cur.NewICmp(enum.IPredEQ, zf, constant.False)
 	cond := f.cur.NewAnd(cond1, cond2)
 	return f.liftTermJcc(term.Arg(0), cond)
 }

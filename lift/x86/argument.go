@@ -151,7 +151,30 @@ func (f *Func) reg(reg x86asm.Reg) value.Value {
 // code to f.
 func (f *Func) useMem(mem *x86.Mem) value.Named {
 	src := f.mem(mem)
-	return f.cur.NewLoad(src)
+	v := f.cur.NewLoad(src)
+	if mem.Parent != nil && mem.Parent.MemBytes != 0 {
+		if t, ok := src.Type().(*types.PointerType); ok {
+			var indices []uint64
+			elemType := t.ElemType
+			for {
+				switch e := elemType.(type) {
+				case *types.ArrayType:
+					indices = append(indices, 0)
+					elemType = e.ElemType
+					continue
+				case *types.StructType:
+					indices = append(indices, 0)
+					elemType = e.Fields[0]
+					continue
+				}
+				break
+			}
+			if len(indices) > 0 {
+				return f.cur.NewExtractValue(v, indices...)
+			}
+		}
+	}
+	return v
 }
 
 // useMemElem loads and returns a value of the specified element type from the

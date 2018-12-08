@@ -149,9 +149,9 @@ func (f *Func) Lift() {
 		bb := f.AsmFunc.Blocks[blockAddr]
 		f.liftBlock(bb)
 	}
-	// Add new entry basic block to define registers and status flags used within
-	// the function.
-	if len(f.regs) > 0 || len(f.statusFlags) > 0 || len(f.fstatusFlags) > 0 || f.usesFPU {
+	// Add new entry basic block to define registers, status flags, and local
+	// variables (allocated on the stack) used within the function.
+	if len(f.regs) > 0 || len(f.statusFlags) > 0 || len(f.fstatusFlags) > 0 || f.usesFPU || len(f.locals) > 0 {
 		entry := &ir.BasicBlock{}
 		// Allocate local variables for each register used within the function.
 		for reg := x86.FirstReg; reg <= x86.LastReg; reg++ {

@@ -159,8 +159,12 @@ func main() {
 		w = f
 	}
 	var funcs []*ir.Function
-	sort.Sort(funcAddrs)
-	for _, funcAddr := range funcAddrs {
+	var allFuncAddrs bin.Addresses
+	for funcAddr := range l.Funcs {
+		allFuncAddrs = append(allFuncAddrs, funcAddr)
+	}
+	sort.Sort(allFuncAddrs)
+	for _, funcAddr := range allFuncAddrs {
 		f := l.Funcs[funcAddr]
 		funcs = append(funcs, f.Function)
 	}

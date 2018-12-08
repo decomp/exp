@@ -125,6 +125,7 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 	addFunc := func(entry bin.Address, name string) {
 		// TODO: Mark function signature as unknown (using metadata), so that type
 		// analysis may replace it.
+		name = fmt.Sprintf("_imp_%s", name)
 		sig := types.NewFunc(types.Void)
 		typ := types.NewPointer(sig)
 		f := &ir.Function{
@@ -149,6 +150,7 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 			// Skip import if already specified through function signature.
 			continue
 		}
+		dbg.Printf("function import at %v: %v\n", entry, fname)
 		addFunc(entry, fname)
 	}
 

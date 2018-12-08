@@ -9,6 +9,7 @@ import (
 	"github.com/decomp/exp/bin"
 	"github.com/llir/llvm/asm"
 	"github.com/llir/llvm/ir"
+	"github.com/llir/llvm/ir/metadata"
 	"github.com/pkg/errors"
 )
 
@@ -29,14 +30,13 @@ func llFuncSigs(module *ir.Module, sigs map[bin.Address]FuncSig, funcAddrs []bin
 			return nil, errors.Errorf("unable to locate function %q", sig.Name)
 		}
 		f.Blocks = nil
-		// TODO: add support for metadata.
-		/*
-			f.Metadata = map[string]*metadata.Metadata{
-				"addr": {
-					Nodes: []metadata.Node{&metadata.String{Val: funcAddr.String()}},
-				},
-			}
-		*/
+		md := &metadata.Attachment{
+			Name: "addr",
+			Node: &metadata.Tuple{
+				Fields: []metadata.Field{&metadata.String{Value: funcAddr.String()}},
+			},
+		}
+		f.Metadata = append(f.Metadata, md)
 		funcs = append(funcs, f)
 	}
 	return funcs, nil

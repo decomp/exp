@@ -3488,7 +3488,7 @@ func (f *Func) liftInstMOVSW(inst *x86.Inst) error {
 // liftInstMOVSX lifts the given x86 MOVSX instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) liftInstMOVSX(inst *x86.Inst) error {
-	size := int64(inst.MemBytes) * 8
+	size := uint64(inst.MemBytes) * 8
 	elem := types.NewInt(size)
 	src := f.useArgElem(inst.Arg(1), elem)
 	// TODO: Handle dst type dynamically.
@@ -3529,7 +3529,7 @@ func (f *Func) liftInstMOVUPS(inst *x86.Inst) error {
 // liftInstMOVZX lifts the given x86 MOVZX instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) liftInstMOVZX(inst *x86.Inst) error {
-	size := int64(inst.MemBytes) * 8
+	size := uint64(inst.MemBytes) * 8
 	elem := types.NewInt(size)
 	src := f.useArgElem(inst.Arg(1), elem)
 	// TODO: Handle dst type dynamically.

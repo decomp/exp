@@ -9,14 +9,14 @@ import (
 )
 
 // sizeOfTypeInBits returns the size in bits of the given type.
-func (l *Lifter) sizeOfTypeInBits(t types.Type) int64 {
+func (l *Lifter) sizeOfTypeInBits(t types.Type) uint64 {
 	switch t := t.(type) {
 	case *types.VoidType:
 		panic("invalid type to sizeof; void type has no size")
 	case *types.FuncType:
 		panic("invalid type to sizeof; function type has no size")
 	case *types.IntType:
-		return int64(t.BitSize)
+		return t.BitSize
 	case *types.FloatType:
 		switch t.Kind {
 		case types.FloatKindHalf:
@@ -35,7 +35,7 @@ func (l *Lifter) sizeOfTypeInBits(t types.Type) int64 {
 			panic(fmt.Errorf("support for floating-point kind %v not yet implemented", t.Kind))
 		}
 	case *types.PointerType:
-		return int64(l.Mode)
+		return uint64(l.Mode)
 	case *types.VectorType:
 		return t.Len * l.sizeOfTypeInBits(t.ElemType)
 	case *types.LabelType:
@@ -45,7 +45,7 @@ func (l *Lifter) sizeOfTypeInBits(t types.Type) int64 {
 	case *types.ArrayType:
 		return t.Len * l.sizeOfTypeInBits(t.ElemType)
 	case *types.StructType:
-		total := int64(0)
+		total := uint64(0)
 		for _, field := range t.Fields {
 			total += l.sizeOfTypeInBits(field)
 		}
@@ -56,7 +56,7 @@ func (l *Lifter) sizeOfTypeInBits(t types.Type) int64 {
 }
 
 // sizeOfType returns the size of the given type in number of bytes.
-func (l *Lifter) sizeOfType(t types.Type) int64 {
+func (l *Lifter) sizeOfType(t types.Type) uint64 {
 	bits := l.sizeOfTypeInBits(t)
 	if bits%8 != 0 {
 		panic(fmt.Errorf("invalid type to sizeof; expected size in bits to be divisible by 8, got %d bits remainder", bits%8))

@@ -10,6 +10,4 @@ import (
 var (
 	_ flag.Value               = (*bin.Address)(nil)
 	_ encoding.TextUnmarshaler = (*bin.Address)(nil)
-	// TODO: add support for metadata.
-	//_ metadata.Unmarshaler     = (*bin.Address)(nil)
 )

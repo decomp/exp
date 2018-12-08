@@ -13,6 +13,7 @@ import (
 	_ "github.com/decomp/exp/bin/pef" // register PEF decoder
 	"github.com/decomp/exp/bin/raw"
 	"github.com/llir/llvm/ir"
+	"github.com/mewkiz/pkg/diffutil"
 	"github.com/pkg/errors"
 )
 
@@ -156,6 +157,7 @@ func TestLift(t *testing.T) {
 		got := module.String()
 		want := string(buf)
 		if got != want {
+			diffutil.Diff(want, got, false, g.in)
 			t.Errorf("%q: module mismatch; expected `%v`, got `%v`", in, want, got)
 			continue
 		}

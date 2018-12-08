@@ -11,7 +11,7 @@ import (
 
 // getElementPtr returns a pointer to the LLVM IR value located at the specified
 // offset from the source value.
-func (f *Func) getElementPtr(src value.Value, offset int64) *ir.InstGetElementPtr {
+func (f *Func) getElementPtr(src value.Value, offset uint64) *ir.InstGetElementPtr {
 	fmt.Println("offset:", offset)
 	srcType, ok := src.Type().(*types.PointerType)
 	if !ok {
@@ -19,10 +19,10 @@ func (f *Func) getElementPtr(src value.Value, offset int64) *ir.InstGetElementPt
 	}
 	elem := srcType.ElemType
 	e := elem
-	total := int64(0)
+	total := uint64(0)
 	var indices []value.Value
 	// n specifies a byte offset into an integer element.
-	var n int64
+	var n uint64
 loop:
 	for i := int64(0); ; i++ {
 		if total > offset {
@@ -49,7 +49,7 @@ loop:
 		case *types.ArrayType:
 			elemSize := f.l.sizeOfType(t.ElemType)
 			j := int64(0)
-			for ; j < t.Len; j++ {
+			for ; j < int64(t.Len); j++ {
 				if total+elemSize > offset {
 					break
 				}
@@ -75,7 +75,7 @@ loop:
 				break loop
 			}
 			warn.Printf("indexing into the middle of an integer element at offset %d in type %v", total, src.Type())
-			n = int64(t.BitSize / 8)
+			n = t.BitSize / 8
 			if total+n < offset {
 				panic(fmt.Errorf("unable to locate offset %d in type %v; indexing into integer type of byte size %d when at total offset %d", offset, src.Type(), n, total))
 			}
@@ -87,11 +87,11 @@ loop:
 	v := f.cur.NewGetElementPtr(src, indices...)
 	if n > 0 {
 		src := f.cur.NewLoad(v)
-		typ := types.NewPointer(types.NewArray(n, types.I8))
+		typ := types.NewPointer(types.NewArray(uint64(n), types.I8))
 		tmp1 := f.cur.NewBitCast(src, typ)
 		indices := []value.Value{
 			constant.NewInt(types.I64, 0),
-			constant.NewInt(types.I64, offset-total),
+			constant.NewInt(types.I64, int64(offset)-int64(total)),
 		}
 		tmp2 := f.cur.NewGetElementPtr(tmp1, indices...)
 		return tmp2

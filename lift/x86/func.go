@@ -9,6 +9,7 @@ import (
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
+	"github.com/llir/llvm/ir/metadata"
 	"github.com/llir/llvm/ir/types"
 	"golang.org/x/arch/x86/x86asm"
 )
@@ -63,19 +64,18 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 		typ := types.NewPointer(sig)
 		f = &Func{
 			Function: &ir.Function{
-				GlobalName: name,
-				Typ:        typ,
-				Sig:        sig,
-				// TODO: add support for metadata.
-				/*
-					Metadata: map[string]*metadata.Metadata{
-						"addr": {
-							Nodes: []metadata.Node{&metadata.String{Val: entry.String()}},
-						},
-					},
-				*/
+				Typ: typ,
+				Sig: sig,
 			},
 		}
+		f.SetName(name)
+		md := &metadata.Attachment{
+			Name: "addr",
+			Node: &metadata.Tuple{
+				Fields: []metadata.Field{&metadata.String{Value: entry.String()}},
+			},
+		}
+		f.Metadata = append(f.Metadata, md)
 	}
 	f.AsmFunc = asmFunc
 	f.blocks = make(map[bin.Address]*ir.BasicBlock)
@@ -87,9 +87,7 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 	// Prepare output LLVM IR basic blocks.
 	for addr := range asmFunc.Blocks {
 		label := fmt.Sprintf("block_%06X", uint64(addr))
-		block := &ir.BasicBlock{
-			LocalName: label,
-		}
+		block := ir.NewBlock(label)
 		f.blocks[addr] = block
 	}
 	// Preprocess the function to assess if any instruction makes use of EDX:EAX

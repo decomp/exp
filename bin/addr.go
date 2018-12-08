@@ -37,25 +37,6 @@ func (v Address) MarshalText() ([]byte, error) {
 	return []byte(v.String()), nil
 }
 
-/*
-// UnmarshalMetadata unmarshals the metadata node into v.
-func (v *Address) UnmarshalMetadata(node metadata.Node) error {
-	md, ok := node.(*metadata.Metadata)
-	if !ok {
-		return errors.Errorf("invalid metadata type; expected *metadata.Metadata, got %T", node)
-	}
-	if len(md.Nodes) != 1 {
-		return errors.Errorf("invalid number of metadata nodes; expected 1, got %d", len(md.Nodes))
-	}
-	n := md.Nodes[0]
-	s, ok := n.(*metadata.String)
-	if !ok {
-		return errors.Errorf("invalid metadata string type; expected *metadata.String, got %T", n)
-	}
-	return v.Set(s.Val)
-}
-*/
-
 // InsertAddr inserts the given address within the sorted slice of addresses.
 //
 // pre-condition: addrs must be sorted in ascending order.

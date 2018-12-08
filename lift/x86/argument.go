@@ -11,6 +11,7 @@ import (
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
+	"github.com/llir/llvm/ir/metadata"
 	"github.com/llir/llvm/ir/types"
 	"github.com/llir/llvm/ir/value"
 	"golang.org/x/arch/x86/x86asm"
@@ -240,8 +241,8 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 		if context, ok := f.l.Contexts[mem.Parent.Addr]; ok {
 			if c, ok := context.Args[mem.OpIndex]; ok {
 				if o, ok := c["Mem.offset"]; ok {
-					offset := o.Int64()
-					addr := rel + bin.Address(mem.Disp-offset)
+					offset := o.Uint64()
+					addr := rel + bin.Address(uint64(mem.Disp)-offset)
 					v, ok := f.addr(addr)
 					if !ok {
 						panic(fmt.Errorf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.Parent.Op, mem.Parent.Addr))
@@ -275,19 +276,18 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 			contentType := types.I32
 			typ := types.NewPointer(contentType)
 			g := &ir.Global{
-				GlobalName:  name,
 				Typ:         typ,
 				ContentType: contentType,
 				Init:        constant.NewZeroInitializer(contentType),
-				// TODO: add support for metadata.
-				/*
-					Metadata: map[string]*metadata.Metadata{
-						"addr": {
-							Nodes: []metadata.Node{&metadata.String{Val: addr.String()}},
-						},
-					},
-				*/
 			}
+			g.SetName(name)
+			md := &metadata.Attachment{
+				Name: "addr",
+				Node: &metadata.Tuple{
+					Fields: []metadata.Field{&metadata.String{Value: addr.String()}},
+				},
+			}
+			g.Metadata = append(g.Metadata, md)
 			return g
 			panic(fmt.Errorf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.Parent.Op, mem.Parent.Addr))
 		}
@@ -343,7 +343,7 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 // precedence.
 func (f *Func) castToPtr(src value.Value, parent *x86.Inst) value.Value {
 	elem := src.Type()
-	var preBitSize int64
+	var preBitSize uint64
 	if typ, ok := src.Type().(*types.PointerType); ok {
 		elem = typ.ElemType
 		if elem, ok := elem.(*types.IntType); ok {
@@ -351,10 +351,10 @@ func (f *Func) castToPtr(src value.Value, parent *x86.Inst) value.Value {
 		}
 	}
 	// Derive element size from the parent instruction.
-	var bitSize int64
+	var bitSize uint64
 	if parent != nil {
 		if parent.MemBytes != 0 {
-			bitSize = int64(parent.MemBytes) * 8
+			bitSize = uint64(parent.MemBytes) * 8
 		}
 		for _, prefix := range parent.Prefix[:] {
 			// The first zero in the array marks the end of the prefixes.
@@ -596,7 +596,7 @@ func (f *Func) global(addr bin.Address) (value.Named, bool) {
 		size := f.l.sizeOfType(g.Typ.ElemType)
 		end := start + bin.Address(size)
 		if start <= addr && addr < end {
-			offset := int64(addr - start)
+			offset := uint64(addr - start)
 			return f.getElementPtr(g, offset), true
 		}
 	}
@@ -710,7 +710,7 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, enum.Calling
 					var v value.Named = f.cur.NewBitCast(reg, typ)
 					v = f.cur.NewLoad(v)
 					// TODO: Figure out how to handle negative offsets.
-					v = f.getElementPtr(v, a.Disp)
+					v = f.getElementPtr(v, uint64(a.Disp))
 					v = f.cur.NewLoad(v)
 					if typ, ok := v.Type().(*types.PointerType); ok {
 						if sig := typ.ElemType.(*types.FuncType); ok {
@@ -732,7 +732,7 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, enum.Calling
 						v = f.cur.NewExtractValue(v, 0)
 					}
 					// TODO: Figure out how to handle negative offsets.
-					v = f.getElementPtr(v, a.Disp)
+					v = f.getElementPtr(v, uint64(a.Disp))
 					v = f.cur.NewLoad(v)
 					if typ, ok := v.Type().(*types.PointerType); ok {
 						if sig := typ.ElemType.(*types.FuncType); ok {

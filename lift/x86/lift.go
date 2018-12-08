@@ -2,6 +2,7 @@
 package x86
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/decomp/exp/disasm/x86"
 	"github.com/llir/llvm/asm"
 	"github.com/llir/llvm/ir"
+	"github.com/llir/llvm/ir/metadata"
 	"github.com/llir/llvm/ir/types"
 	"github.com/mewkiz/pkg/osutil"
 	"github.com/mewkiz/pkg/term"
@@ -89,41 +91,35 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 	l.TypeDefs = module.TypeDefs
 
 	// Parse globals.
-	// TODO: add support for metadata.
-	/*
-		for _, g := range module.Globals {
-				node, ok := g.Metadata["addr"]
-				if !ok {
-					return nil, errors.Errorf(`unable to locate "addr" metadata for global variable %q`, g.Name)
-				}
-				var addr bin.Address
-				if err := metadata.Unmarshal(node, &addr); err != nil {
-					return nil, errors.WithStack(err)
-				}
-				l.Globals[addr] = g
+	for _, g := range module.Globals {
+		node, ok := findMetadataAttachment(g.Metadata, "addr")
+		if !ok {
+			return nil, errors.Errorf(`unable to locate "addr" metadata for global variable %q`, g.Ident())
 		}
-	*/
+		addr, err := parseMetadataAddr(node)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		l.Globals[addr] = g
+	}
 
 	// Parse function signatures.
-	// TODO: add support for metadata.
-	/*
-		for _, f := range module.Funcs {
-				l.FuncByName[f.Name] = f
-				node, ok := f.Metadata["addr"]
-				if !ok {
-					warn.Printf(`unable to locate "addr" metadata for function %q; potentially external function without associated virtual addresses (e.g. loaded with GetProcAddress)`, f.Name)
-					continue
-				}
-				var entry bin.Address
-				if err := metadata.Unmarshal(node, &entry); err != nil {
-					return nil, errors.WithStack(err)
-				}
-				fn := &Func{
-					Function: f,
-				}
-				l.Funcs[entry] = fn
+	for _, f := range module.Funcs {
+		l.FuncByName[f.Name()] = f
+		node, ok := findMetadataAttachment(f.Metadata, "addr")
+		if !ok {
+			warn.Printf(`unable to locate "addr" metadata for function %q; potentially external function without associated virtual addresses (e.g. loaded with GetProcAddress)`, f.Ident())
+			continue
 		}
-	*/
+		entry, err := parseMetadataAddr(node)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+		fn := &Func{
+			Function: f,
+		}
+		l.Funcs[entry] = fn
+	}
 
 	// Parse imports.
 	addFunc := func(entry bin.Address, name string) {
@@ -132,18 +128,17 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 		sig := types.NewFunc(types.Void)
 		typ := types.NewPointer(sig)
 		f := &ir.Function{
-			GlobalName: name,
-			Typ:        typ,
-			Sig:        sig,
-			// TODO: add support for metadata.
-			/*
-				Metadata: map[string]*metadata.Metadata{
-					"addr": {
-						Nodes: []metadata.Node{&metadata.String{Val: entry.String()}},
-					},
-				},
-			*/
+			Typ: typ,
+			Sig: sig,
 		}
+		f.SetName(name)
+		md := &metadata.Attachment{
+			Name: "addr",
+			Node: &metadata.Tuple{
+				Fields: []metadata.Field{&metadata.String{Value: entry.String()}},
+			},
+		}
+		f.Metadata = append(f.Metadata, md)
 		fn := &Func{
 			Function: f,
 		}
@@ -178,4 +173,37 @@ func parseModule(llPath string) (*ir.Module, error) {
 		return &ir.Module{}, nil
 	}
 	return asm.ParseFile(llPath)
+}
+
+// findMetadataAttachment locates the metadata node of the given metadata
+// attachment. The boolean return value indicates success.
+func findMetadataAttachment(mds []*metadata.Attachment, name string) (metadata.MDNode, bool) {
+	for _, md := range mds {
+		if md.Name == name {
+			return md.Node, true
+		}
+	}
+	return nil, false
+}
+
+// parseMetadataAddr returns the address corresponding to the given "addr"
+// metadata node.
+func parseMetadataAddr(node metadata.MDNode) (bin.Address, error) {
+	switch node := node.(type) {
+	case *metadata.Tuple:
+		if len(node.Fields) != 1 {
+			return 0, errors.Errorf(`invalid number of fields in "addr" metadata node, expected 1, got %d`, len(node.Fields))
+		}
+		field, ok := node.Fields[0].(*metadata.String)
+		if !ok {
+			panic(fmt.Errorf("invalid metadata field type; expected *metadata.String, got %T", node.Fields[0]))
+		}
+		var addr bin.Address
+		if err := addr.Set(field.Value); err != nil {
+			return 0, errors.WithStack(err)
+		}
+		return addr, nil
+	default:
+		panic(fmt.Errorf("support for metadata node %T not yet implemented", node))
+	}
 }

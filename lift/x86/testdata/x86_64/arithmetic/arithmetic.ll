@@ -6,6 +6,7 @@ define void @div_r8() !addr !{!"0x10000000"} {
 	%ax = alloca i16
 	%rax = alloca i64
 	br label %block_10000000
+
 block_10000000:
 	store i32 84, i16* %ax
 	store i32 2, i8* %bl
@@ -29,6 +30,7 @@ define void @div_m8() !addr !{!"0x1000000F"} {
 	%ax = alloca i16
 	%rax = alloca i64
 	br label %block_1000000F
+
 block_1000000F:
 	store i32 84, i16* %ax
 	store i32 2, i8* @m8
@@ -51,14 +53,15 @@ define void @div_r16() !addr !{!"0x10000027"} {
 	%dx = alloca i16
 	%bx = alloca i16
 	%rax = alloca i64
-	%"dx\3Aax" = alloca i32
+	%"dx:ax" = alloca i32
 	br label %block_10000027
+
 block_10000027:
 	store i32 0, i16* %dx
 	store i32 84, i16* %ax
 	store i32 2, i16* %bx
 	%1 = load i16, i16* %bx
-	%2 = load i32, i32* %"dx\3Aax"
+	%2 = load i32, i32* %"dx:ax"
 	%3 = zext i16 %1 to i32
 	%4 = udiv i32 %2, %3
 	%5 = urem i32 %2, %3
@@ -75,14 +78,15 @@ define void @div_m16() !addr !{!"0x1000003D"} {
 	%ax = alloca i16
 	%dx = alloca i16
 	%rax = alloca i64
-	%"dx\3Aax" = alloca i32
+	%"dx:ax" = alloca i32
 	br label %block_1000003D
+
 block_1000003D:
 	store i32 0, i16* %dx
 	store i32 84, i16* %ax
 	store i32 2, i16* @m16
 	%1 = load i16, i16* @m16
-	%2 = load i32, i32* %"dx\3Aax"
+	%2 = load i32, i32* %"dx:ax"
 	%3 = zext i16 %1 to i32
 	%4 = udiv i32 %2, %3
 	%5 = urem i32 %2, %3
@@ -101,14 +105,15 @@ define void @div_r32() !addr !{!"0x1000005C"} {
 	%ebx = alloca i32
 	%rax = alloca i64
 	%rbx = alloca i64
-	%"edx\3Aeax" = alloca i64
+	%"edx:eax" = alloca i64
 	br label %block_1000005C
+
 block_1000005C:
 	store i32 0, i32* %edx
 	store i32 84, i32* %eax
 	store i32 2, i32* %ebx
 	%1 = load i32, i32* %ebx
-	%2 = load i64, i64* %"edx\3Aeax"
+	%2 = load i64, i64* %"edx:eax"
 	%3 = zext i32 %1 to i64
 	%4 = udiv i64 %2, %3
 	%5 = urem i64 %2, %3
@@ -129,14 +134,15 @@ define void @div_m32() !addr !{!"0x10000076"} {
 	%ebx = alloca i32
 	%rax = alloca i64
 	%rbx = alloca i64
-	%"edx\3Aeax" = alloca i64
+	%"edx:eax" = alloca i64
 	br label %block_10000076
+
 block_10000076:
 	store i32 0, i32* %edx
 	store i32 84, i32* %eax
 	store i32 2, i32* @m32
 	%1 = load i32, i32* @m32
-	%2 = load i64, i64* %"edx\3Aeax"
+	%2 = load i64, i64* %"edx:eax"
 	%3 = zext i32 %1 to i64
 	%4 = udiv i64 %2, %3
 	%5 = urem i64 %2, %3
@@ -158,14 +164,15 @@ define void @div_r64() !addr !{!"0x10000099"} {
 	%rax = alloca i64
 	%rdx = alloca i64
 	%rbx = alloca i64
-	%"rdx\3Arax" = alloca i128
+	%"rdx:rax" = alloca i128
 	br label %block_10000099
+
 block_10000099:
 	store i32 0, i32* %edx
 	store i32 84, i32* %eax
 	store i32 2, i32* %ebx
 	%1 = load i64, i64* %rbx
-	%2 = load i128, i128* %"rdx\3Arax"
+	%2 = load i128, i128* %"rdx:rax"
 	%3 = zext i64 %1 to i128
 	%4 = udiv i128 %2, %3
 	%5 = urem i128 %2, %3
@@ -180,14 +187,15 @@ define void @div_m64() !addr !{!"0x100000AC"} {
 	%edx = alloca i32
 	%rax = alloca i64
 	%rdx = alloca i64
-	%"rdx\3Arax" = alloca i128
+	%"rdx:rax" = alloca i128
 	br label %block_100000AC
+
 block_100000AC:
 	store i32 0, i32* %edx
 	store i32 84, i32* %eax
 	store i32 2, i64* @m64
 	%1 = load i64, i64* @m64
-	%2 = load i128, i128* %"rdx\3Arax"
+	%2 = load i128, i128* %"rdx:rax"
 	%3 = zext i64 %1 to i128
 	%4 = udiv i128 %2, %3
 	%5 = urem i128 %2, %3

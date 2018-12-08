@@ -135,13 +135,13 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	sort.Slice(file.Sections, less)
 
 	// Parse import address table (IAT).
-	fmt.Println("iat")
+	fmt.Fprintln(os.Stderr, "iat")
 	if iatSize != 0 {
 		iatAddr := bin.Address(imageBase + iatRVA)
-		fmt.Println("iat addr:", iatAddr)
+		fmt.Fprintln(os.Stderr, "iat addr:", iatAddr)
 		data := file.Data(iatAddr)
 		data = data[:iatSize]
-		fmt.Println(hex.Dump(data))
+		fmt.Fprintln(os.Stderr, hex.Dump(data))
 	}
 
 	// Early return if import table not present.
@@ -150,12 +150,12 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	}
 
 	// Parse import table.
-	fmt.Println("it")
+	fmt.Fprintln(os.Stderr, "it")
 	itAddr := bin.Address(imageBase + itRVA)
-	fmt.Println("it addr:", itAddr)
+	fmt.Fprintln(os.Stderr, "it addr:", itAddr)
 	data := file.Data(itAddr)
 	data = data[:itSize]
-	fmt.Println(hex.Dump(data))
+	fmt.Fprintln(os.Stderr, hex.Dump(data))
 	br := bytes.NewReader(data)
 	zero := importDesc{}
 	var impDescs []importDesc
@@ -176,7 +176,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		dllNameAddr := bin.Address(imageBase) + bin.Address(impDesc.DLLNameRVA)
 		data := file.Data(dllNameAddr)
 		dllName := parseString(data)
-		fmt.Println("dll name:", dllName)
+		fmt.Fprintln(os.Stderr, "dll name:", dllName)
 		// Parse import name table and import address table.
 		impNameTableAddr := bin.Address(imageBase) + bin.Address(impDesc.ImportNameTableRVA)
 		impAddrTableAddr := bin.Address(imageBase) + bin.Address(impDesc.ImportAddressTableRVA)
@@ -190,11 +190,11 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			impAddr := iaAddr
 			inAddr += bin.Address(n)
 			iaAddr += bin.Address(n)
-			fmt.Println("impAddr:", impAddr)
+			fmt.Fprintln(os.Stderr, "impAddr:", impAddr)
 			if impNameRVA&0x80000000 != 0 {
 				// ordinal
 				ordinal := impNameRVA &^ 0x80000000
-				fmt.Println("===> ordinal", ordinal)
+				fmt.Fprintln(os.Stderr, "===> ordinal", ordinal)
 				impName := fmt.Sprintf("%s_ordinal_%d", pathutil.TrimExt(dllName), ordinal)
 				file.Imports[impAddr] = impName
 				continue
@@ -204,11 +204,11 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			ordinal := binary.LittleEndian.Uint16(data)
 			data = data[2:]
 			impName := parseString(data)
-			fmt.Println("ordinal:", ordinal)
-			fmt.Println("impName:", impName)
+			fmt.Fprintln(os.Stderr, "ordinal:", ordinal)
+			fmt.Fprintln(os.Stderr, "impName:", impName)
 			file.Imports[impAddr] = impName
 		}
-		fmt.Println()
+		fmt.Fprintln(os.Stderr)
 	}
 
 	return file, nil

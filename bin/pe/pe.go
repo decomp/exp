@@ -169,10 +169,8 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		}
 		impDescs = append(impDescs, impDesc)
 	}
-	pretty.Println("impDescs:", impDescs)
-
 	for _, impDesc := range impDescs {
-		pretty.Println("impDesc:", impDesc)
+		fmt.Fprintf(os.Stderr, "impDesc: %#v\n", pretty.Formatter(impDesc))
 		dllNameAddr := bin.Address(imageBase) + bin.Address(impDesc.DLLNameRVA)
 		data := file.Data(dllNameAddr)
 		dllName := parseString(data)

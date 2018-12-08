@@ -241,8 +241,8 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 		if context, ok := f.l.Contexts[mem.Parent.Addr]; ok {
 			if c, ok := context.Args[mem.OpIndex]; ok {
 				if o, ok := c["Mem.offset"]; ok {
-					offset := o.Uint64()
-					addr := rel + bin.Address(uint64(mem.Disp)-offset)
+					offset := o.Int64()
+					addr := rel + bin.Address(mem.Disp-offset)
 					v, ok := f.addr(addr)
 					if !ok {
 						panic(fmt.Errorf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.Parent.Op, mem.Parent.Addr))
@@ -251,7 +251,7 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 					if offset < 0 {
 						disp = v
 					} else {
-						disp = f.getElementPtr(v, offset)
+						disp = f.getElementPtr(v, uint64(offset))
 					}
 				}
 			}

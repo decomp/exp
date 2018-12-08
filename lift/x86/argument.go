@@ -728,7 +728,7 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, enum.Calling
 			if c, ok := context.Regs[x86.Register(a.Base)]; ok {
 				if typStr, ok := c["type"]; ok {
 					typ := f.l.parseType(typStr.String())
-					fmt.Println("context type:", typ)
+					dbg.Println("context type:", typ)
 					reg := f.reg(a.Base)
 					var v value.Named = f.cur.NewBitCast(reg, typ)
 					v = f.cur.NewLoad(v)
@@ -749,8 +749,8 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, enum.Calling
 					// HACK: Remove once proper type and data flow analysis has been
 					// implemented.
 					if extractvalue, ok := c["extractvalue"]; ok && extractvalue.Bool() {
-						fmt.Println("extractvalue:", v)
-						fmt.Println("extractvalue.Type():", v.Type())
+						dbg.Println("extractvalue:", v)
+						dbg.Println("extractvalue.Type():", v.Type())
 						// TODO: Handle index based on Index regster if present.
 						v = f.cur.NewExtractValue(v, 0)
 					}
@@ -842,15 +842,15 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, enum.Calling
 		}
 	}
 
-	fmt.Printf("unable to locate function for argument %v of instruction at address %v\n", arg.Arg, arg.Parent.Addr)
+	dbg.Printf("unable to locate function for argument %v of instruction at address %v\n", arg.Arg, arg.Parent.Addr)
 	switch a := arg.Arg.(type) {
 	case x86asm.Rel:
 		next := arg.Parent.Addr + bin.Address(arg.Parent.Len)
 		addr := next + bin.Address(a)
-		fmt.Println("   addr:", addr)
+		dbg.Println("   addr:", addr)
 	case x86asm.Mem:
 		addr := bin.Address(a.Disp)
-		fmt.Println("   addr:", addr)
+		dbg.Println("   addr:", addr)
 	}
 	panic("not yet implemented")
 }

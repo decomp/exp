@@ -212,7 +212,7 @@ func (f *Func) isTailCall(inst *x86.Inst) bool {
 			return false
 		}
 		if !f.l.IsFunc(target) {
-			fmt.Println("arg:", arg)
+			dbg.Println("arg:", arg)
 			pretty.Println(arg)
 			panic(fmt.Errorf("tail call to non-function address %v", target))
 		}
@@ -225,7 +225,7 @@ func (f *Func) isTailCall(inst *x86.Inst) bool {
 			for _, target := range targets {
 				if !f.contains(target) {
 					if !f.l.IsFunc(target) {
-						fmt.Println("arg:", arg)
+						dbg.Println("arg:", arg)
 						pretty.Println(arg)
 						panic(fmt.Errorf("tail call to non-function address %v", target))
 					}
@@ -252,7 +252,7 @@ func (f *Func) isTailCall(inst *x86.Inst) bool {
 		return true
 	}
 
-	fmt.Println("arg:", arg)
+	dbg.Println("arg:", arg)
 	pretty.Println(arg)
 	panic("not yet implemented")
 }

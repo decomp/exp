@@ -8,13 +8,21 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"sort"
 
 	"github.com/decomp/exp/bin"
 	"github.com/kr/pretty"
 	"github.com/mewkiz/pkg/pathutil"
+	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
+)
+
+var (
+	// dbg is a logger which logs debug messages with "pe:" prefix to standard
+	// error.
+	dbg = log.New(os.Stderr, term.MagentaBold("pe:")+" ", 0)
 )
 
 // Register PE format.
@@ -135,13 +143,13 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	sort.Slice(file.Sections, less)
 
 	// Parse import address table (IAT).
-	fmt.Fprintln(os.Stderr, "iat")
+	dbg.Println("iat")
 	if iatSize != 0 {
 		iatAddr := bin.Address(imageBase + iatRVA)
-		fmt.Fprintln(os.Stderr, "iat addr:", iatAddr)
+		dbg.Println("iat addr:", iatAddr)
 		data := file.Data(iatAddr)
 		data = data[:iatSize]
-		fmt.Fprintln(os.Stderr, hex.Dump(data))
+		dbg.Println(hex.Dump(data))
 	}
 
 	// Early return if import table not present.
@@ -150,12 +158,12 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	}
 
 	// Parse import table.
-	fmt.Fprintln(os.Stderr, "it")
+	dbg.Println("it")
 	itAddr := bin.Address(imageBase + itRVA)
-	fmt.Fprintln(os.Stderr, "it addr:", itAddr)
+	dbg.Println("it addr:", itAddr)
 	data := file.Data(itAddr)
 	data = data[:itSize]
-	fmt.Fprintln(os.Stderr, hex.Dump(data))
+	dbg.Println(hex.Dump(data))
 	br := bytes.NewReader(data)
 	zero := importDesc{}
 	var impDescs []importDesc
@@ -170,11 +178,11 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		impDescs = append(impDescs, impDesc)
 	}
 	for _, impDesc := range impDescs {
-		fmt.Fprintf(os.Stderr, "impDesc: %#v\n", pretty.Formatter(impDesc))
+		dbg.Printf("impDesc: %#v\n", pretty.Formatter(impDesc))
 		dllNameAddr := bin.Address(imageBase) + bin.Address(impDesc.DLLNameRVA)
 		data := file.Data(dllNameAddr)
 		dllName := parseString(data)
-		fmt.Fprintln(os.Stderr, "dll name:", dllName)
+		dbg.Println("dll name:", dllName)
 		// Parse import name table and import address table.
 		impNameTableAddr := bin.Address(imageBase) + bin.Address(impDesc.ImportNameTableRVA)
 		impAddrTableAddr := bin.Address(imageBase) + bin.Address(impDesc.ImportAddressTableRVA)
@@ -188,11 +196,11 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			impAddr := iaAddr
 			inAddr += bin.Address(n)
 			iaAddr += bin.Address(n)
-			fmt.Fprintln(os.Stderr, "impAddr:", impAddr)
+			dbg.Println("impAddr:", impAddr)
 			if impNameRVA&0x80000000 != 0 {
 				// ordinal
 				ordinal := impNameRVA &^ 0x80000000
-				fmt.Fprintln(os.Stderr, "===> ordinal", ordinal)
+				dbg.Println("===> ordinal", ordinal)
 				impName := fmt.Sprintf("%s_ordinal_%d", pathutil.TrimExt(dllName), ordinal)
 				file.Imports[impAddr] = impName
 				continue
@@ -202,11 +210,11 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			ordinal := binary.LittleEndian.Uint16(data)
 			data = data[2:]
 			impName := parseString(data)
-			fmt.Fprintln(os.Stderr, "ordinal:", ordinal)
-			fmt.Fprintln(os.Stderr, "impName:", impName)
+			dbg.Println("ordinal:", ordinal)
+			dbg.Println("impName:", impName)
 			file.Imports[impAddr] = impName
 		}
-		fmt.Fprintln(os.Stderr)
+		dbg.Println()
 	}
 
 	return file, nil

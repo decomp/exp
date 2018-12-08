@@ -138,14 +138,14 @@ func main() {
 	// Lift functions.
 	for i, funcAddr := range funcAddrs {
 		if i != 0 {
-			fmt.Println()
+			dbg.Println()
 		}
 		f, ok := l.Funcs[funcAddr]
 		if !ok {
 			continue
 		}
 		f.Lift()
-		fmt.Println(f)
+		dbg.Println(f)
 	}
 
 	// Store LLVM IR output.

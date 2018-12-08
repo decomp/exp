@@ -255,6 +255,7 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 			v := ir.NewAlloca(types.I32)
 			v.SetName(name)
 			f.locals[name] = v
+			dbg.Printf("local %v of %q: %v\n", name, f.Ident(), v)
 			return v
 		}
 	}

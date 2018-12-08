@@ -192,10 +192,35 @@ func (f *Func) Lift() {
 		}
 		// Handle calling conventions.
 		f.cur = entry
+
+		f.espDisp = 8
+		for i := range f.Params {
+			// Use parameter in register.
+			switch f.CallingConv {
+			case enum.CallingConvX86FastCall:
+				switch i {
+				case 0:
+					continue
+				case 1:
+					continue
+				}
+			default:
+				// TODO: Add support for more calling conventions.
+			}
+			name := fmt.Sprintf("esp_%d", f.espDisp)
+			if _, ok := f.locals[name]; !ok {
+				inst := ir.NewAlloca(types.I32)
+				inst.SetName(name)
+				entry.Insts = append(entry.Insts, inst)
+			}
+			f.espDisp += 4
+		}
+
 		// TODO: Initialize parameter initialization in entry block prior to basic
 		// block translation. Move this code to before f.translateBlock, and remove
 		// f.espDisp = 0.
 		f.espDisp = 0
+		disp := int64(8)
 		for i, param := range f.Params {
 			// Use parameter in register.
 			switch f.CallingConv {
@@ -214,8 +239,9 @@ func (f *Func) Lift() {
 			// Use parameter on stack.
 			m := x86asm.Mem{
 				Base: x86asm.ESP,
-				Disp: 4,
+				Disp: disp,
 			}
+			disp += 4
 			mem := x86.NewMem(m, nil)
 			f.defMem(mem, param)
 		}

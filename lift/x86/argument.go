@@ -311,6 +311,9 @@ func (f *Func) mem(mem *x86.Mem) value.Value {
 				},
 			}
 			g.Metadata = append(g.Metadata, md)
+			// TODO: don't write to f.l from here as it should be read-only to
+			// allow for concurrent execution.
+			f.l.Globals[addr] = g
 			return g
 			panic(fmt.Errorf("unable to locate value at address %v; referenced from %v instruction at %v", addr, mem.Parent.Op, mem.Parent.Addr))
 		}

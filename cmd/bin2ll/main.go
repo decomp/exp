@@ -17,6 +17,8 @@ import (
 	"github.com/decomp/exp/bin/raw"
 	"github.com/decomp/exp/lift/x86"
 	"github.com/llir/llvm/ir"
+	"github.com/llir/llvm/ir/constant"
+	"github.com/llir/llvm/ir/types"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
 )
@@ -60,6 +62,8 @@ func main() {
 		lastAddr bin.Address
 		// output specifies the output path.
 		output string
+		// cfgonly specifies whether to output minimal LLVM IR needed for CFG generation.
+		cfgonly bool
 		// quiet specifies whether to suppress non-error messages.
 		quiet bool
 		// rawArch specifies the machine architecture of a raw binary executable.
@@ -76,6 +80,7 @@ func main() {
 	flag.Var(&lastAddr, "last", "last function address to lift")
 	flag.StringVar(&output, "o", "", "output path")
 	flag.BoolVar(&quiet, "q", false, "suppress non-error messages")
+	flag.BoolVar(&cfgonly, "cfg-only", false, "output minimal LLVM IR needed for CFG generation")
 	flag.Var(&rawArch, "raw", "machine architecture of raw binary executable (x86_32, x86_64, PowerPC_32, ...)")
 	flag.Var(&rawEntry, "rawentry", "entry point of raw binary executable")
 	flag.Var(&rawBase, "rawbase", "base address of raw binary executable")
@@ -183,6 +188,9 @@ func main() {
 		Globals:  globals,
 		Funcs:    funcs,
 	}
+	if cfgonly {
+		pruneModule(m)
+	}
 	if _, err := fmt.Fprintln(w, m); err != nil {
 		log.Fatalf("%+v", err)
 	}
@@ -212,4 +220,58 @@ func newLifter(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) 
 		return nil, errors.WithStack(err)
 	}
 	return x86.NewLifter(file)
+}
+
+// pruneModule prunes the LLVM IR module to the minimal needed for CFG
+// generation.
+func pruneModule(m *ir.Module) {
+	condNum := 0
+	xNum := 0
+	for _, f := range m.Funcs {
+		if len(f.Blocks) == 0 {
+			continue
+		}
+		entry := f.Blocks[0]
+		entry.Insts = entry.Insts[:0]
+		for _, block := range f.Blocks {
+			// Prune instructions.
+			block.Insts = block.Insts[:0]
+			switch term := block.Term.(type) {
+			case *ir.TermRet:
+				if term.X != nil {
+					term.X = constant.NewZeroInitializer(f.Sig.RetType)
+				}
+			case *ir.TermBr:
+				// nothing to do.
+			case *ir.TermCondBr:
+				// Allocate dummy condition variable.
+				condName := fmt.Sprintf("c%d", condNum)
+				condNum++
+				condMem := entry.NewAlloca(types.I1)
+				condMem.SetName(condName + "_mem")
+				cond := block.NewLoad(condMem)
+				cond.SetName(condName)
+				term.Cond = cond
+			case *ir.TermSwitch:
+				// Allocate dummy control variable.
+				xName := fmt.Sprintf("x%d", xNum)
+				xNum++
+				xMem := entry.NewAlloca(term.X.Type())
+				xMem.SetName(xName + "_mem")
+				x := block.NewLoad(xMem)
+				x.SetName(xName)
+				term.X = x
+			//case *ir.TermIndirectBr:
+			//case *ir.TermInvoke:
+			//case *ir.TermResume:
+			//case *ir.TermCatchSwitch:
+			//case *ir.TermCatchRet:
+			//case *ir.TermCleanupRet:
+			case *ir.TermUnreachable:
+				// nothing to do.
+			default:
+				panic(fmt.Errorf("support for terminator %T not yet implemented", term))
+			}
+		}
+	}
 }

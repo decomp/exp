@@ -225,9 +225,9 @@ func newLifter(binPath string, rawArch bin.Arch, rawEntry, rawBase bin.Address) 
 // pruneModule prunes the LLVM IR module to the minimal needed for CFG
 // generation.
 func pruneModule(m *ir.Module) {
-	condNum := 0
-	xNum := 0
 	for _, f := range m.Funcs {
+		condNum := 0
+		xNum := 0
 		if len(f.Blocks) == 0 {
 			continue
 		}

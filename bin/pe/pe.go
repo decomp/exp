@@ -57,6 +57,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 	// Parse machine architecture.
 	file := &bin.File{
 		Imports: make(map[bin.Address]string),
+		// TODO: implement exports
 	}
 	switch f.FileHeader.Machine {
 	case pe.IMAGE_FILE_MACHINE_I386:

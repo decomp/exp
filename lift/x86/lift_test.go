@@ -147,7 +147,7 @@ func TestLift(t *testing.T) {
 				continue
 			}
 			f.Lift()
-			module.Funcs = append(module.Funcs, f.Function)
+			module.Funcs = append(module.Funcs, f.Func)
 		}
 		buf, err := ioutil.ReadFile(g.out)
 		if err != nil {

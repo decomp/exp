@@ -591,7 +591,7 @@ func (f *Func) addr(addr bin.Address) (value.Named, bool) {
 		return g, true
 	}
 	if fn, ok := f.l.Funcs[addr]; ok {
-		return fn.Function, true
+		return fn.Func, true
 	}
 	// TODO: Add support for lookup of more globally addressable values.
 	return nil, false
@@ -700,7 +700,7 @@ func (f *Func) getFunc(arg *x86.Arg) (value.Named, *types.FuncType, enum.Calling
 
 	if addr, ok := f.getAddr(arg); ok {
 		if fn, ok := f.l.Funcs[addr]; ok {
-			v := fn.Function
+			v := fn.Func
 			return v, v.Sig, v.CallingConv, true
 		}
 		if g, ok := f.l.Globals[addr]; ok {

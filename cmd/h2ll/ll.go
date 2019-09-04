@@ -14,9 +14,9 @@ import (
 )
 
 // llFuncSigs translates the given function signatures from C to LLVM IR.
-func llFuncSigs(module *ir.Module, sigs map[bin.Address]FuncSig, funcAddrs []bin.Address) ([]*ir.Function, error) {
-	var funcs []*ir.Function
-	nameToFunc := make(map[string]*ir.Function)
+func llFuncSigs(module *ir.Module, sigs map[bin.Address]FuncSig, funcAddrs []bin.Address) ([]*ir.Func, error) {
+	var funcs []*ir.Func
+	nameToFunc := make(map[string]*ir.Func)
 	for _, f := range module.Funcs {
 		if _, ok := nameToFunc[f.GlobalName]; ok {
 			return nil, errors.Errorf("function name %q already present", f.Ident())
@@ -43,7 +43,7 @@ func llFuncSigs(module *ir.Module, sigs map[bin.Address]FuncSig, funcAddrs []bin
 }
 
 // locateFunc locates the named function.
-func locateFunc(funcName string, nameToFunc map[string]*ir.Function) (*ir.Function, bool) {
+func locateFunc(funcName string, nameToFunc map[string]*ir.Func) (*ir.Func, bool) {
 	// IDA may include _imp prefix to imports.
 	//
 	//    a: ExitProcess

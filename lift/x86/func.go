@@ -17,13 +17,13 @@ import (
 // A Func is a function lifter.
 type Func struct {
 	// Output LLVM IR of the function.
-	*ir.Function
+	*ir.Func
 	// Input assembly of the function.
 	AsmFunc *x86.Func
 	// Current basic block being generated.
-	cur *ir.BasicBlock
+	cur *ir.Block
 	// LLVM IR basic blocks of the function.
-	blocks map[bin.Address]*ir.BasicBlock
+	blocks map[bin.Address]*ir.Block
 	// Registers used within the function.
 	regs map[x86asm.Reg]*ir.InstAlloca
 	// Status flags used within the function.
@@ -63,7 +63,7 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 		sig := types.NewFunc(types.Void)
 		typ := types.NewPointer(sig)
 		f = &Func{
-			Function: &ir.Function{
+			Func: &ir.Func{
 				Typ: typ,
 				Sig: sig,
 			},
@@ -78,7 +78,7 @@ func (l *Lifter) NewFunc(asmFunc *x86.Func) *Func {
 		f.Metadata = append(f.Metadata, md)
 	}
 	f.AsmFunc = asmFunc
-	f.blocks = make(map[bin.Address]*ir.BasicBlock)
+	f.blocks = make(map[bin.Address]*ir.Block)
 	f.regs = make(map[x86asm.Reg]*ir.InstAlloca)
 	f.statusFlags = make(map[StatusFlag]*ir.InstAlloca)
 	f.fstatusFlags = make(map[FStatusFlag]*ir.InstAlloca)
@@ -152,7 +152,7 @@ func (f *Func) Lift() {
 	// Add new entry basic block to define registers, status flags, and local
 	// variables (allocated on the stack) used within the function.
 	if len(f.regs) > 0 || len(f.statusFlags) > 0 || len(f.fstatusFlags) > 0 || f.usesFPU || len(f.locals) > 0 {
-		entry := &ir.BasicBlock{}
+		entry := &ir.Block{}
 		// Allocate local variables for each register used within the function.
 		for reg := x86.FirstReg; reg <= x86.LastReg; reg++ {
 			if inst, ok := f.regs[reg]; ok {
@@ -247,7 +247,7 @@ func (f *Func) Lift() {
 		}
 		target := f.Blocks[0]
 		entry.NewBr(target)
-		f.Blocks = append([]*ir.BasicBlock{entry}, f.Blocks...)
+		f.Blocks = append([]*ir.Block{entry}, f.Blocks...)
 	}
 }
 

@@ -1,5 +1,3 @@
-//+build ignore
-
 package main
 
 import (
@@ -121,19 +119,19 @@ func genCallGraph(funcs map[bin.Address]*x86.Func) error {
 			if !(source.Start <= addr && addr <= source.End) {
 				continue
 			}
-			fmt.Println("   func:", addr, f.Name)
-			fn, ok := nodes[f.Name]
+			fmt.Println("   func:", addr, f.Name())
+			fn, ok := nodes[f.Name()]
 			if !ok {
 				node := Node{
 					Node: g.NewNode(),
-					Name: f.Name,
+					Name: f.Name(),
 				}
 				fn = node
-				nodes[f.Name] = node
+				nodes[f.Name()] = node
 				g.AddNode(fn)
 			}
 			// Callers.
-			names := getCallerNames(funcs, f.Name)
+			names := getCallerNames(funcs, f.Name())
 			for _, name := range names {
 				caller, ok := nodes[name]
 				if !ok {
@@ -152,7 +150,7 @@ func genCallGraph(funcs map[bin.Address]*x86.Func) error {
 				g.SetEdge(e)
 			}
 			// Callees.
-			names = getCalleeNames(f.Function)
+			names = getCalleeNames(f.Func)
 			for _, name := range names {
 				callee, ok := nodes[name]
 				if !ok {
@@ -171,7 +169,7 @@ func genCallGraph(funcs map[bin.Address]*x86.Func) error {
 				g.SetEdge(e)
 			}
 		}
-		data, err := dot.Marshal(g, "", "", "\t", false)
+		data, err := dot.Marshal(g, "", "", "\t")
 		if err != nil {
 			return errors.WithStack(err)
 		}
@@ -189,12 +187,12 @@ func calls(funcs map[bin.Address]*x86.Func) (callers, callees map[string]string)
 	callers = make(map[string]string)
 	callees = make(map[string]string)
 	for _, f := range funcs {
-		caller := f.Name
+		caller := f.Name()
 		for _, block := range f.Blocks {
 			for _, inst := range block.Insts {
 				if inst, ok := inst.(*ir.InstCall); ok {
 					if c, ok := inst.Callee.(value.Named); ok {
-						callee := c.GetName()
+						callee := c.Name()
 						callers[callee] = caller
 						callees[caller] = callee
 					} else {
@@ -214,11 +212,11 @@ func getCallerNames(funcs map[bin.Address]*x86.Func, name string) []string {
 			for _, inst := range block.Insts {
 				if inst, ok := inst.(*ir.InstCall); ok {
 					if c, ok := inst.Callee.(value.Named); ok {
-						if c.GetName() == name {
-							m[f.Name] = true
+						if c.Name() == name {
+							m[f.Name()] = true
 						}
 					} else {
-						log.Fatalf("unable to locate name of callee `%v` in function %q", inst.Callee, f.Name)
+						log.Fatalf("unable to locate name of callee `%v` in function %q", inst.Callee, f.Name())
 					}
 				}
 			}
@@ -232,13 +230,13 @@ func getCallerNames(funcs map[bin.Address]*x86.Func, name string) []string {
 	return names
 }
 
-func getCalleeNames(f *ir.Function) []string {
+func getCalleeNames(f *ir.Func) []string {
 	m := make(map[string]bool)
 	for _, block := range f.Blocks {
 		for _, inst := range block.Insts {
 			if inst, ok := inst.(*ir.InstCall); ok {
 				if c, ok := inst.Callee.(value.Named); ok {
-					m[c.GetName()] = true
+					m[c.Name()] = true
 				} else {
 					log.Fatalf("unable to locate name of callee `%v`", inst.Callee)
 				}

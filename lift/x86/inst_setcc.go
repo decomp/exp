@@ -258,8 +258,8 @@ func (f *Func) liftInstSETE(inst *x86.Inst) error {
 // liftInstSETcc lifts the given x86 SETcc instruction to LLVM IR, emitting code
 // to f.
 func (f *Func) liftInstSETcc(arg *x86.Arg, cond value.Value) error {
-	targetTrue := &ir.BasicBlock{}
-	exit := &ir.BasicBlock{}
+	targetTrue := &ir.Block{}
+	exit := &ir.Block{}
 	f.Blocks = append(f.Blocks, targetTrue)
 	f.Blocks = append(f.Blocks, exit)
 	f.cur.NewCondBr(cond, targetTrue, exit)

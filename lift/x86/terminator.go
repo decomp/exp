@@ -165,7 +165,7 @@ func (f *Func) liftTermJMP(term *x86.Inst) error {
 			//
 			//    targets[values[index]]
 			index := f.useReg(mem.Index())
-			unreachable := &ir.BasicBlock{}
+			unreachable := &ir.Block{}
 			unreachable.NewUnreachable()
 			f.Blocks = append(f.Blocks, unreachable)
 			targetDefault := unreachable
@@ -244,7 +244,7 @@ func (f *Func) isTailCall(inst *x86.Inst) bool {
 	// invoke f.getFunc (which may emit load instructions) to figure out if we
 	// are jumping to a function.
 	cur := f.cur
-	dummy := &ir.BasicBlock{}
+	dummy := &ir.Block{}
 	f.cur = dummy
 	_, _, _, ok := f.getFunc(arg)
 	f.cur = cur

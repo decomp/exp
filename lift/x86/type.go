@@ -27,9 +27,9 @@ func (l *Lifter) sizeOfTypeInBits(t types.Type) uint64 {
 			return 64
 		case types.FloatKindFP128:
 			return 128
-		case types.FloatKindX86FP80:
+		case types.FloatKindX86_FP80:
 			return 80
-		case types.FloatKindPPCFP128:
+		case types.FloatKindPPC_FP128:
 			return 128
 		default:
 			panic(fmt.Errorf("support for floating-point kind %v not yet implemented", t.Kind))

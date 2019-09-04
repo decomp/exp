@@ -40,8 +40,8 @@ func (f *Func) liftInstFLD(inst *x86.Inst) error {
 	// point format before being pushed on the stack.
 	src := f.useArg(inst.Arg(0))
 	// TODO: Verify that FLD ST(i) is handled correctly.
-	if !types.Equal(src.Type(), types.X86FP80) {
-		src = f.cur.NewFPExt(src, types.X86FP80)
+	if !types.Equal(src.Type(), types.X86_FP80) {
+		src = f.cur.NewFPExt(src, types.X86_FP80)
 	}
 	f.fpush(src)
 	return nil
@@ -131,7 +131,7 @@ func (f *Func) liftInstFILD(inst *x86.Inst) error {
 	// Converts the signed-integer source operand into double extended-precision
 	// floating-point format and pushes the value onto the FPU register stack.
 	arg := f.useArg(inst.Arg(0))
-	src := f.cur.NewSIToFP(arg, types.X86FP80)
+	src := f.cur.NewSIToFP(arg, types.X86_FP80)
 	f.fpush(src)
 	return nil
 }
@@ -309,7 +309,7 @@ func (f *Func) liftInstFADD(inst *x86.Inst) error {
 	}
 	// One-operand form.
 	src := f.useArg(inst.Arg(0))
-	v := f.cur.NewFPExt(src, types.X86FP80)
+	v := f.cur.NewFPExt(src, types.X86_FP80)
 	st0 := f.fload()
 	result := f.cur.NewFAdd(st0, v)
 	f.fstore(result)
@@ -412,7 +412,7 @@ func (f *Func) liftInstFISUB(inst *x86.Inst) error {
 	// Subtracts the source operand from the destination operand and stores the
 	// difference in the destination location.
 	arg := f.useArg(inst.Arg(0))
-	src := f.cur.NewSIToFP(arg, types.X86FP80)
+	src := f.cur.NewSIToFP(arg, types.X86_FP80)
 	st0 := f.fload()
 	result := f.cur.NewFSub(st0, src)
 	f.fstore(result)
@@ -473,7 +473,7 @@ func (f *Func) liftInstFMUL(inst *x86.Inst) error {
 	}
 	// One-operand form.
 	arg := f.useArg(inst.Arg(0))
-	src := f.cur.NewFPExt(arg, types.X86FP80)
+	src := f.cur.NewFPExt(arg, types.X86_FP80)
 	st0 := f.fload()
 	result := f.cur.NewFMul(st0, src)
 	f.fstore(result)
@@ -509,7 +509,7 @@ func (f *Func) liftInstFIMUL(inst *x86.Inst) error {
 	// Multiplies the destination and source operands and stores the product in
 	// the destination location.
 	arg := f.useArg(inst.Arg(0))
-	src := f.cur.NewSIToFP(arg, types.X86FP80)
+	src := f.cur.NewSIToFP(arg, types.X86_FP80)
 	st0 := f.fload()
 	result := f.cur.NewFMul(st0, src)
 	f.fstore(result)
@@ -540,7 +540,7 @@ func (f *Func) liftInstFDIV(inst *x86.Inst) error {
 	}
 	// One-operand form.
 	arg := f.useArg(inst.Arg(0))
-	src := f.cur.NewFPExt(arg, types.X86FP80)
+	src := f.cur.NewFPExt(arg, types.X86_FP80)
 	st0 := f.fload()
 	result := f.cur.NewFDiv(st0, src)
 	f.fstore(result)
@@ -590,7 +590,7 @@ func (f *Func) liftInstFIDIV(inst *x86.Inst) error {
 	// Convert an integer source operand to double extended-precision floating-
 	// point format before performing the division.
 	arg := f.useArg(inst.Arg(0))
-	src := f.cur.NewSIToFP(arg, types.X86FP80)
+	src := f.cur.NewSIToFP(arg, types.X86_FP80)
 	st0 := f.fload()
 	result := f.cur.NewFDiv(st0, src)
 	f.fstore(result)
@@ -771,36 +771,36 @@ func (f *Func) liftInstFCOM(inst *x86.Inst) error {
 		panic(fmt.Errorf("support for zero-operand FCOM not yet implemented; instruction %v at address %v", inst, inst.Addr))
 	}
 	src := f.useArg(inst.Arg(0))
-	if !types.Equal(src.Type(), types.X86FP80) {
-		src = f.cur.NewFPExt(src, types.X86FP80)
+	if !types.Equal(src.Type(), types.X86_FP80) {
+		src = f.cur.NewFPExt(src, types.X86_FP80)
 	}
 	st0 := f.fload()
 	a := f.cur.NewFCmp(enum.FPredOGT, st0, src)
 	b := f.cur.NewFCmp(enum.FPredOLT, st0, src)
 	c := f.cur.NewFCmp(enum.FPredOEQ, st0, src)
 	d := f.cur.NewFCmp(enum.FPredUNO, st0, src)
-	end := &ir.BasicBlock{}
-	targetA := &ir.BasicBlock{}
+	end := &ir.Block{}
+	targetA := &ir.Block{}
 	targetA.NewBr(end)
-	targetB := &ir.BasicBlock{}
+	targetB := &ir.Block{}
 	targetB.NewBr(end)
-	targetC := &ir.BasicBlock{}
+	targetC := &ir.Block{}
 	targetC.NewBr(end)
-	targetD := &ir.BasicBlock{}
+	targetD := &ir.Block{}
 	targetD.NewBr(end)
-	next := &ir.BasicBlock{}
+	next := &ir.Block{}
 	f.cur.NewCondBr(a, targetA, next)
 	f.cur = next
 	f.Blocks = append(f.Blocks, next)
-	next = &ir.BasicBlock{}
+	next = &ir.Block{}
 	f.cur.NewCondBr(b, targetB, next)
 	f.cur = next
 	f.Blocks = append(f.Blocks, next)
-	next = &ir.BasicBlock{}
+	next = &ir.Block{}
 	f.cur.NewCondBr(c, targetC, next)
 	f.cur = next
 	f.Blocks = append(f.Blocks, next)
-	next = &ir.BasicBlock{}
+	next = &ir.Block{}
 	f.cur.NewCondBr(d, targetD, end)
 	f.cur = targetA
 	f.Blocks = append(f.Blocks, targetA)
@@ -1088,7 +1088,7 @@ func (f *Func) liftInstFLD1(inst *x86.Inst) error {
 	//
 	// Push one of seven commonly used constants (in double extended-precision
 	// floating-point format) onto the FPU register stack.
-	src := constant.NewFloat(types.X86FP80, 1)
+	src := constant.NewFloat(types.X86_FP80, 1)
 	f.fpush(src)
 	return nil
 }
@@ -1104,7 +1104,7 @@ func (f *Func) liftInstFLDZ(inst *x86.Inst) error {
 	//
 	// Push one of seven commonly used constants (in double extended-precision
 	// floating-point format) onto the FPU register stack.
-	src := constant.NewFloat(types.X86FP80, 0)
+	src := constant.NewFloat(types.X86_FP80, 0)
 	f.fpush(src)
 	return nil
 }
@@ -1120,7 +1120,7 @@ func (f *Func) liftInstFLDPI(inst *x86.Inst) error {
 	//
 	// Push one of seven commonly used constants (in double extended-precision
 	// floating-point format) onto the FPU register stack.
-	src := constant.NewFloat(types.X86FP80, math.Pi)
+	src := constant.NewFloat(types.X86_FP80, math.Pi)
 	f.fpush(src)
 	return nil
 }
@@ -1136,7 +1136,7 @@ func (f *Func) liftInstFLDL2E(inst *x86.Inst) error {
 	//
 	// Push one of seven commonly used constants (in double extended-precision
 	// floating-point format) onto the FPU register stack.
-	src := constant.NewFloat(types.X86FP80, math.Log2E)
+	src := constant.NewFloat(types.X86_FP80, math.Log2E)
 	f.fpush(src)
 	return nil
 }
@@ -1152,7 +1152,7 @@ func (f *Func) liftInstFLDLN2(inst *x86.Inst) error {
 	//
 	// Push one of seven commonly used constants (in double extended-precision
 	// floating-point format) onto the FPU register stack.
-	src := constant.NewFloat(types.X86FP80, math.Ln2)
+	src := constant.NewFloat(types.X86_FP80, math.Ln2)
 	f.fpush(src)
 	return nil
 }
@@ -1168,7 +1168,7 @@ func (f *Func) liftInstFLDL2T(inst *x86.Inst) error {
 	//
 	// Push one of seven commonly used constants (in double extended-precision
 	// floating-point format) onto the FPU register stack.
-	src := constant.NewFloat(types.X86FP80, math.Log2(10))
+	src := constant.NewFloat(types.X86_FP80, math.Log2(10))
 	f.fpush(src)
 	return nil
 }
@@ -1184,7 +1184,7 @@ func (f *Func) liftInstFLDLG2(inst *x86.Inst) error {
 	//
 	// Push one of seven commonly used constants (in double extended-precision
 	// floating-point format) onto the FPU register stack.
-	src := constant.NewFloat(types.X86FP80, math.Log10(2))
+	src := constant.NewFloat(types.X86_FP80, math.Log10(2))
 	f.fpush(src)
 	return nil
 }
@@ -1498,9 +1498,9 @@ func (f *Func) liftInstFNOP(inst *x86.Inst) error {
 func (f *Func) fpush(src value.Value) {
 	// Decrement st.
 	tmp1 := f.cur.NewLoad(f.st)
-	targetTrue := &ir.BasicBlock{}
-	targetFalse := &ir.BasicBlock{}
-	follow := &ir.BasicBlock{}
+	targetTrue := &ir.Block{}
+	targetFalse := &ir.Block{}
+	follow := &ir.Block{}
 	targetTrue.NewBr(follow)
 	targetFalse.NewBr(follow)
 	zero := constant.NewInt(types.I8, 0)
@@ -1531,9 +1531,9 @@ func (f *Func) fpop() value.Value {
 
 	// Increment st.
 	tmp1 := f.cur.NewLoad(f.st)
-	targetTrue := &ir.BasicBlock{}
-	targetFalse := &ir.BasicBlock{}
-	follow := &ir.BasicBlock{}
+	targetTrue := &ir.Block{}
+	targetFalse := &ir.Block{}
+	follow := &ir.Block{}
 	targetTrue.NewBr(follow)
 	targetFalse.NewBr(follow)
 	zero := constant.NewInt(types.I8, 7)
@@ -1558,12 +1558,12 @@ func (f *Func) fpop() value.Value {
 // fstore stores the source value to the top FPU register, emitting code to f.
 func (f *Func) fstore(src value.Value) {
 	// Store arg at st(0).
-	end := &ir.BasicBlock{}
+	end := &ir.Block{}
 	cur := f.cur
 	var cases []*ir.Case
 	regs := []x86asm.Reg{x86asm.F0, x86asm.F1, x86asm.F2, x86asm.F3, x86asm.F4, x86asm.F5, x86asm.F6, x86asm.F7}
 	for i, reg := range regs {
-		block := &ir.BasicBlock{}
+		block := &ir.Block{}
 		block.NewBr(end)
 		f.cur = block
 		f.Blocks = append(f.Blocks, block)
@@ -1574,7 +1574,7 @@ func (f *Func) fstore(src value.Value) {
 	}
 	f.cur = cur
 	st := f.cur.NewLoad(f.st)
-	defaultTarget := &ir.BasicBlock{}
+	defaultTarget := &ir.Block{}
 	defaultTarget.NewUnreachable()
 	f.Blocks = append(f.Blocks, defaultTarget)
 	f.cur.NewSwitch(st, defaultTarget, cases...)
@@ -1585,13 +1585,13 @@ func (f *Func) fstore(src value.Value) {
 // fload returns the value of the top FPU register, emitting code to f.
 func (f *Func) fload() value.Value {
 	// Load value from st(0).
-	end := &ir.BasicBlock{}
+	end := &ir.Block{}
 	cur := f.cur
 	var cases []*ir.Case
 	regs := []x86asm.Reg{x86asm.F0, x86asm.F1, x86asm.F2, x86asm.F3, x86asm.F4, x86asm.F5, x86asm.F6, x86asm.F7}
 	var incs []*ir.Incoming
 	for i, reg := range regs {
-		block := &ir.BasicBlock{}
+		block := &ir.Block{}
 		block.NewBr(end)
 		f.cur = block
 		f.Blocks = append(f.Blocks, block)
@@ -1607,7 +1607,7 @@ func (f *Func) fload() value.Value {
 	}
 	f.cur = cur
 	st := f.cur.NewLoad(f.st)
-	defaultTarget := &ir.BasicBlock{}
+	defaultTarget := &ir.Block{}
 	defaultTarget.NewUnreachable()
 	f.Blocks = append(f.Blocks, defaultTarget)
 	f.cur.NewSwitch(st, defaultTarget, cases...)

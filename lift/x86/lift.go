@@ -43,7 +43,7 @@ type Lifter struct {
 	Funcs map[bin.Address]*Func
 	// Map from function name to function. May also contain external functions
 	// without associated virtual addresses (e.g. loaded using GetProcAddress).
-	FuncByName map[string]*ir.Function
+	FuncByName map[string]*ir.Func
 	// Global variables.
 	Globals map[bin.Address]*ir.Global
 }
@@ -76,7 +76,7 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 	l := &Lifter{
 		Disasm:     dis,
 		Funcs:      make(map[bin.Address]*Func),
-		FuncByName: make(map[string]*ir.Function),
+		FuncByName: make(map[string]*ir.Func),
 		Globals:    make(map[bin.Address]*ir.Global),
 	}
 
@@ -116,7 +116,7 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 			return nil, errors.WithStack(err)
 		}
 		fn := &Func{
-			Function: f,
+			Func: f,
 		}
 		l.Funcs[entry] = fn
 	}
@@ -128,7 +128,7 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 		name = fmt.Sprintf("_imp_%s", name)
 		sig := types.NewFunc(types.Void)
 		typ := types.NewPointer(sig)
-		f := &ir.Function{
+		f := &ir.Func{
 			Typ: typ,
 			Sig: sig,
 		}
@@ -141,7 +141,7 @@ func NewLifter(file *bin.File) (*Lifter, error) {
 		}
 		f.Metadata = append(f.Metadata, md)
 		fn := &Func{
-			Function: f,
+			Func: f,
 		}
 		l.Funcs[entry] = fn
 	}

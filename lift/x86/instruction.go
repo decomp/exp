@@ -1669,9 +1669,9 @@ func (f *Func) liftInstCDQ(inst *x86.Inst) error {
 	eax := f.useReg(x86.EAX)
 	tmp := f.cur.NewLShr(eax, constant.NewInt(types.I32, 31))
 	cond := f.cur.NewTrunc(tmp, types.I1)
-	targetTrue := &ir.BasicBlock{}
-	targetFalse := &ir.BasicBlock{}
-	exit := &ir.BasicBlock{}
+	targetTrue := &ir.Block{}
+	targetFalse := &ir.Block{}
+	exit := &ir.Block{}
 	f.Blocks = append(f.Blocks, targetTrue)
 	f.Blocks = append(f.Blocks, targetFalse)
 	f.Blocks = append(f.Blocks, exit)

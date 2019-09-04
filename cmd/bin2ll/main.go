@@ -163,7 +163,7 @@ func main() {
 		defer f.Close()
 		w = f
 	}
-	var funcs []*ir.Function
+	var funcs []*ir.Func
 	var allFuncAddrs bin.Addresses
 	for funcAddr := range l.Funcs {
 		allFuncAddrs = append(allFuncAddrs, funcAddr)
@@ -171,7 +171,7 @@ func main() {
 	sort.Sort(allFuncAddrs)
 	for _, funcAddr := range allFuncAddrs {
 		f := l.Funcs[funcAddr]
-		funcs = append(funcs, f.Function)
+		funcs = append(funcs, f.Func)
 	}
 	var globals []*ir.Global
 	var globalAddrs bin.Addresses
@@ -196,9 +196,9 @@ func main() {
 	}
 
 	// Create call graph.
-	//if err := genCallGraph(l.Funcs); err != nil {
-	//	log.Fatalf("%+v", err)
-	//}
+	if err := genCallGraph(l.Funcs); err != nil {
+		log.Fatalf("%+v", err)
+	}
 }
 
 // newLifter returns a new x86 to LLVM IR lifter for the given binary

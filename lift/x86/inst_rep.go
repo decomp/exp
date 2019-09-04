@@ -27,9 +27,9 @@ import (
 // liftREPInst lifs the given REP prefixed x86 instruction to LLVM IR, emitting
 // code to f.
 func (f *Func) liftREPInst(inst *x86.Inst) error {
-	loop := &ir.BasicBlock{}
-	body := &ir.BasicBlock{}
-	exit := &ir.BasicBlock{}
+	loop := &ir.Block{}
+	body := &ir.Block{}
+	exit := &ir.Block{}
 	f.Blocks = append(f.Blocks, loop)
 	f.Blocks = append(f.Blocks, body)
 	f.Blocks = append(f.Blocks, exit)

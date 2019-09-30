@@ -4,7 +4,10 @@ package bin
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 // A File is a binary exectuable.
@@ -25,8 +28,7 @@ type File struct {
 // executable.
 func (file *File) Code(addr Address) []byte {
 	if len(file.Sections) > 0 {
-		code, ok := locateCode(addr, file.Sections)
-		if ok {
+		if code, ok := locateCode(addr, file.Sections); ok {
 			return code
 		}
 	}
@@ -94,9 +96,10 @@ func locateData(addr Address, sects []*Section) ([]byte, bool) {
 }
 
 //go:generate stringer -linecomment -type Arch
+//go:generate string2enum -samepkg -linecomment -type Arch
 
 // Arch represents the set of machine architectures.
-type Arch uint
+type Arch uint16
 
 // Machine architectures.
 const (
@@ -110,42 +113,53 @@ const (
 	ArchMIPS_32 // MIPS_32
 	// ArchPowerPC_32 represents the 32-bit PowerPC machine architecture.
 	ArchPowerPC_32 // PowerPC_32
+
+	// First and last machine architectures.
+	archFirst = ArchX86_32
+	archLast  = ArchPowerPC_32
 )
+
+// bitSize maps from machine architecture to bit size.
+var bitSize = map[Arch]int{
+	// 32-bit architectures.
+	ArchX86_32:     32,
+	ArchMIPS_32:    32,
+	ArchPowerPC_32: 32,
+	// 64-bit architectures.
+	ArchX86_64: 64,
+}
 
 // BitSize returns the bit size of the machine architecture.
 func (arch Arch) BitSize() int {
-	m := map[Arch]int{
-		// 32-bit architectures.
-		ArchX86_32:     32,
-		ArchMIPS_32:    32,
-		ArchPowerPC_32: 32,
-		// 64-bit architectures.
-		ArchX86_64: 64,
-	}
-	if n, ok := m[arch]; ok {
+	if n, ok := bitSize[arch]; ok {
 		return n
 	}
-	panic(fmt.Errorf("support for machine architecture %v not yet implemented", uint(arch)))
+	panic(fmt.Errorf("support for machine architecture %v not yet implemented", uint16(arch)))
 }
 
 // Set sets arch to the machine architecture represented by s.
-func (arch *Arch) Set(s string) error {
-	m := map[string]Arch{
-		"x86_32":     ArchX86_32,
-		"x86_64":     ArchX86_64,
-		"MIPS_32":    ArchMIPS_32,
-		"PowerPC_32": ArchPowerPC_32,
-	}
-	if v, ok := m[s]; ok {
-		*arch = v
-		return nil
-	}
-	var ss []string
-	for s := range m {
-		ss = append(ss, s)
-	}
-	sort.Strings(ss)
-	return fmt.Errorf("support for machine architecture %q not yet implemented;\n\tsupported machine architectures: %v", s, strings.Join(ss, ", "))
+func (arch *Arch) Set(s string) (err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			var ss []string
+			for a := archFirst; a <= archLast; a++ {
+				ss = append(ss, strconv.Quote(a.String()))
+			}
+			err = errors.Wrapf(e.(error), "valid Arch enums are: %v", strings.Join(ss, ", "))
+		}
+	}()
+	*arch = ArchFromString(s)
+	return err
+}
+
+// UnmarshalText unmarshals the text into arch.
+func (arch *Arch) UnmarshalText(text []byte) error {
+	return arch.Set(string(text))
+}
+
+// MarshalText returns the textual representation of arch.
+func (arch Arch) MarshalText() ([]byte, error) {
+	return []byte(arch.String()), nil
 }
 
 // A Section represents a continuous section of memory.

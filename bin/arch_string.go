@@ -4,6 +4,16 @@ package bin
 
 import "strconv"
 
+func _() {
+	// An "invalid array index" compiler error signifies that the constant values have changed.
+	// Re-run the stringer command to generate them again.
+	var x [1]struct{}
+	_ = x[ArchX86_32-1]
+	_ = x[ArchX86_64-2]
+	_ = x[ArchMIPS_32-3]
+	_ = x[ArchPowerPC_32-4]
+}
+
 const _Arch_name = "x86_32x86_64MIPS_32PowerPC_32"
 
 var _Arch_index = [...]uint8{0, 6, 12, 19, 29}

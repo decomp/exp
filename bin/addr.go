@@ -8,8 +8,8 @@ import (
 )
 
 // Address represents a virtual address, which may be specified in hexadecimal
-// notation. It implements the flag.Value, encoding.TextUnmarshaler and
-// metadata.Unmarshaler interfaces.
+// notation. It implements the flag.Value and encoding.TextUnmarshaler
+// interfaces.
 type Address uint64
 
 // String returns the hexadecimal string representation of v.

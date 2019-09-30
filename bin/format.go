@@ -15,9 +15,12 @@ import (
 
 // Loggers.
 var (
-	// warn represents a logger with the "warning:" prefix, which logs warning
-	// messages to standard error.
-	warn = log.New(os.Stderr, term.RedBold("warning:")+" ", 0)
+	// dbg is a logger with the "bin:" prefix which logs debug messages to
+	// standard error.
+	dbg = log.New(os.Stderr, term.MagentaBold("bin:")+" ", 0)
+	// warn is a logger with the "bin:" prefix which logs warning messages to
+	// standard error.
+	warn = log.New(os.Stderr, term.RedBold("bin:")+" ", 0)
 )
 
 // RegisterFormat registers a binary executable format for use by Parse. Name is
@@ -61,7 +64,7 @@ func Parse(r io.ReaderAt) (*File, error) {
 		buf := make([]byte, len(format.magic))
 		if n, err := r.ReadAt(buf, 0); err != nil {
 			if errors.Cause(err) == io.EOF && n < len(format.magic) {
-				warn.Printf("skipping %q format (read %d of %d bytes required for magic identification)\n", format.name, n, len(format.magic))
+				warn.Printf("skip %q format (read %d of %d bytes required for magic identification)", format.name, n, len(format.magic))
 				continue
 			}
 			return nil, errors.WithStack(err)

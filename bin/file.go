@@ -111,6 +111,10 @@ const (
 	ArchX86_64 // x86_64
 	// ArchMIPS_32 represents the 32-bit MIPS machine architecture.
 	ArchMIPS_32 // MIPS_32
+	// ArchARM_32 represents the 32-bit ARM machine architecture.
+	ArchARM_32 // ARM_32
+	// ArchARM_64 represents the 64-bit ARM machine architecture.
+	ArchARM_64 // ARM_64
 	// ArchPowerPC_32 represents the 32-bit PowerPC machine architecture.
 	ArchPowerPC_32 // PowerPC_32
 
@@ -125,7 +129,9 @@ var bitSize = map[Arch]int{
 	ArchX86_32:     32,
 	ArchMIPS_32:    32,
 	ArchPowerPC_32: 32,
+	ArchARM_32:     32,
 	// 64-bit architectures.
+	ArchARM_64: 64,
 	ArchX86_64: 64,
 }
 

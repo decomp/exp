@@ -14,11 +14,13 @@ func _() {
 	_ = x[ArchARM_32-4]
 	_ = x[ArchARM_64-5]
 	_ = x[ArchPowerPC_32-6]
+	_ = x[ArchPowerPC_64BE-7]
+	_ = x[ArchPowerPC_64LE-8]
 }
 
-const _Arch_name = "x86_32x86_64MIPS_32ARM_32ARM_64PowerPC_32"
+const _Arch_name = "x86_32x86_64MIPS_32ARM_32ARM_64PowerPC_32PowerPC_64 big endianPowerPC_64 little endian"
 
-var _Arch_index = [...]uint8{0, 6, 12, 19, 25, 31, 41}
+var _Arch_index = [...]uint8{0, 6, 12, 19, 25, 31, 41, 62, 86}
 
 func (i Arch) String() string {
 	i -= 1

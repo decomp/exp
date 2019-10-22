@@ -117,10 +117,16 @@ const (
 	ArchARM_64 // ARM_64
 	// ArchPowerPC_32 represents the 32-bit PowerPC machine architecture.
 	ArchPowerPC_32 // PowerPC_32
+	// ArchPowerPC_64BE represents the 64-bit PowerPC machine architecture
+	// encoded as big endian.
+	ArchPowerPC_64BE // PowerPC_64 big endian
+	// ArchPowerPC_64LE represents the 64-bit PowerPC machine architecture
+	// encoded as little endian.
+	ArchPowerPC_64LE // PowerPC_64 little endian
 
 	// First and last machine architectures.
 	archFirst = ArchX86_32
-	archLast  = ArchPowerPC_32
+	archLast  = ArchPowerPC_64LE
 )
 
 // bitSize maps from machine architecture to bit size.
@@ -131,8 +137,10 @@ var bitSize = map[Arch]int{
 	ArchPowerPC_32: 32,
 	ArchARM_32:     32,
 	// 64-bit architectures.
-	ArchARM_64: 64,
-	ArchX86_64: 64,
+	ArchARM_64:       64,
+	ArchX86_64:       64,
+	ArchPowerPC_64BE: 64,
+	ArchPowerPC_64LE: 64,
 }
 
 // BitSize returns the bit size of the machine architecture.

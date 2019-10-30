@@ -17,4 +17,5 @@ require (
 	golang.org/x/exp v0.0.0-20190121172915-509febef88a4 // indirect
 	golang.org/x/tools v0.0.0-20191018212557-ed542cd5b28a // indirect
 	gonum.org/v1/gonum v0.0.0-20181210083604-572d9101fe4f
+	rsc.io/pdf v0.1.1
 )

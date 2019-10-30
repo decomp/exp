@@ -1,4 +1,3 @@
-// Package bin provides a uniform representation of binary executables.
 package bin
 
 import (

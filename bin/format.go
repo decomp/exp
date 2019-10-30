@@ -6,21 +6,9 @@ package bin
 
 import (
 	"io"
-	"log"
 	"os"
 
-	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
-)
-
-// Loggers.
-var (
-	// dbg is a logger with the "bin:" prefix which logs debug messages to
-	// standard error.
-	dbg = log.New(os.Stderr, term.MagentaBold("bin:")+" ", 0)
-	// warn is a logger with the "bin:" prefix which logs warning messages to
-	// standard error.
-	warn = log.New(os.Stderr, term.RedBold("bin:")+" ", 0)
 )
 
 // RegisterFormat registers a binary executable format for use by Parse. Name is
@@ -73,7 +61,7 @@ func Parse(r io.ReaderAt) (*File, error) {
 			return format.parse(r)
 		}
 	}
-	return nil, errors.New("unknown binary executable format;\n\ttip: try loading as raw binary executable")
+	return nil, errors.New("unknown binary executable format;\ntip: remember to register a file format (e.g. import _ \".../bin/pe\")\n\ttip: try loading as raw binary executable")
 }
 
 // match reports whether magic matches b. The magic string can contain "?"

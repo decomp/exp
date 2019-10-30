@@ -13,16 +13,19 @@ import (
 	"sort"
 
 	"github.com/decomp/exp/bin"
-	"github.com/kr/pretty"
+	//"github.com/kr/pretty"
 	"github.com/mewkiz/pkg/pathutil"
 	"github.com/mewkiz/pkg/term"
 	"github.com/pkg/errors"
 )
 
 var (
-	// dbg is a logger which logs debug messages with "pe:" prefix to standard
-	// error.
+	// dbg is a logger with the "pe:" prefix which logs debug messages to
+	// standard error.
 	dbg = log.New(os.Stderr, term.MagentaBold("pe:")+" ", 0)
+	// warn is a logger with the "pe:" prefix which logs warning messages to
+	// standard error.
+	warn = log.New(os.Stderr, term.RedBold("pe:")+" ", 0)
 )
 
 // Register PE format.
@@ -179,7 +182,7 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 		impDescs = append(impDescs, impDesc)
 	}
 	for _, impDesc := range impDescs {
-		dbg.Printf("impDesc: %#v\n", pretty.Formatter(impDesc))
+		//dbg.Printf("impDesc: %#v\n", pretty.Formatter(impDesc))
 		dllNameAddr := bin.Address(imageBase) + bin.Address(impDesc.DLLNameRVA)
 		data := file.Data(dllNameAddr)
 		dllName := parseString(data)

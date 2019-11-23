@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"sort"
@@ -22,7 +23,7 @@ import (
 var (
 	// dbg is a logger with the "pe:" prefix which logs debug messages to
 	// standard error.
-	dbg = log.New(os.Stderr, term.MagentaBold("pe:")+" ", 0)
+	dbg = log.New(ioutil.Discard, term.MagentaBold("pe:")+" ", 0)
 	// warn is a logger with the "pe:" prefix which logs warning messages to
 	// standard error.
 	warn = log.New(os.Stderr, term.RedBold("pe:")+" ", 0)

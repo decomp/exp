@@ -67,6 +67,9 @@ func extract(lstPath string) error {
 		// Basic blocks.
 		regFallthrough = `[ \t]+(loop|loope|loopne|ja|jb|jbe|jecxz|jg|jge|jl|jle|jnb|jns|jnz|jp|js|jz)[ \t]+[^\n]*\n[.]text[:]00([0-9a-fA-F]+)`
 		regTarget      = `[.]text[:]00([0-9a-fA-F]+)[ \t][$@_a-zA-Z][$@_a-zA-Z0-9]+:`
+		// Instructions.
+		regInst     = `[.]text[:]00([0-9a-fA-F]+)[\t]{2}[ ]{7}[a-z]`
+		regTextData = `[.]text[:]00([0-9a-fA-F]+)[\t]{2}[ ]{7}(?:db|dw|dd|dq|align|assume|include|public)[ ]`
 		// Data.
 		regJumpTable     = `[a-zA-Z]+[:]00([0-9a-fA-F]+)[^\n]*;[ \t]jump[ \t]table`
 		regIndirectTable = `[a-zA-Z]+[:]00([0-9a-fA-F]+)[^\n]*;[ \t]indirect[ \t]table`
@@ -74,10 +77,11 @@ func extract(lstPath string) error {
 		regAlign         = `; ---------------------------------------------------------------------------[\n][.][a-zA-Z]+[:]00([0-9a-fA-F]+)[ \t]+align[ \t]+`
 	)
 
-	// Function, basic block and data addresses.
+	// Function, basic block, instruction and data addresses.
 	var (
 		funcAddrs  []bin.Address
 		blockAddrs []bin.Address
+		instAddrs  []bin.Address
 		dataAddrs  []bin.Address
 	)
 
@@ -105,6 +109,24 @@ func extract(lstPath string) error {
 		blockAddrs = append(blockAddrs, blockAddr)
 	}
 	sort.Sort(bin.Addresses(blockAddrs))
+
+	// Locate instruction addresses.
+	instAddrSet := make(map[bin.Address]bool)
+	if err := locateAddrs(input, instAddrSet, regInst); err != nil {
+		return errors.WithStack(err)
+	}
+	textDataAddrSet := make(map[bin.Address]bool)
+	if err := locateAddrs(input, textDataAddrSet, regTextData); err != nil {
+		return errors.WithStack(err)
+	}
+	// Remove data directives from instructions (e.g. "dd 0x00").
+	for dataAddr := range textDataAddrSet {
+		delete(instAddrSet, dataAddr)
+	}
+	for instAddr := range instAddrSet {
+		instAddrs = append(instAddrs, instAddr)
+	}
+	sort.Sort(bin.Addresses(instAddrs))
 
 	// Locate data addresses.
 	tableAddrs := make(map[bin.Address]bool)
@@ -164,6 +186,9 @@ func extract(lstPath string) error {
 		return errors.WithStack(err)
 	}
 	if err := storeJSON("blocks.json", blockAddrs); err != nil {
+		return errors.WithStack(err)
+	}
+	if err := storeJSON("insts.json", instAddrs); err != nil {
 		return errors.WithStack(err)
 	}
 	if err := storeJSON("data.json", dataAddrs); err != nil {

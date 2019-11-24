@@ -111,6 +111,9 @@ func extract(lstPath string) error {
 	sort.Sort(bin.Addresses(blockAddrs))
 
 	// Locate instruction addresses.
+	//
+	// Don't reset m, since the address of each function and basic block is used
+	// to remove false negatives in instruction address tagging.
 	instAddrSet := make(map[bin.Address]bool)
 	if err := locateAddrs(input, instAddrSet, regInst); err != nil {
 		return errors.WithStack(err)
@@ -119,9 +122,18 @@ func extract(lstPath string) error {
 	if err := locateAddrs(input, textDataAddrSet, regTextData); err != nil {
 		return errors.WithStack(err)
 	}
-	// Remove data directives from instructions (e.g. "dd 0x00").
+	// Remove data directives from instruction addresses (e.g. "dd 0x00"), except
+	// if the address is that of a function or basic block, since a given
+	// instruction may appear at the same address as a data declaration at the
+	// start of some functions; e.g.
+	//
+	//    .text:00401000		       assume cs:_text ; <== data declaration
+	//    .text:00401000 j__crt_cpp_init proc near
+	//    .text:00401000		       jmp     $+5     ; <== instruction
 	for dataAddr := range textDataAddrSet {
-		delete(instAddrSet, dataAddr)
+		if !m[dataAddr] {
+			delete(instAddrSet, dataAddr)
+		}
 	}
 	for instAddr := range instAddrSet {
 		instAddrs = append(instAddrs, instAddr)

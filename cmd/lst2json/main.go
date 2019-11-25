@@ -63,13 +63,13 @@ func extract(lstPath string) error {
 	// Regular expressions for locating addresses.
 	const (
 		// Functions (and basic blocks).
-		regFunc = `[.]text[:]00([0-9a-fA-F]+)[^\n]+proc[ \t]near`
+		regFunc = `[\n](:?[.]text|ROM)[:]([0-9a-fA-F]+)[\t ;#]+=============== S U B R O U T I N E =======================================`
 		// Basic blocks.
 		regFallthrough = `[ \t]+(loop|loope|loopne|ja|jb|jbe|jecxz|jg|jge|jl|jle|jnb|jns|jnz|jp|js|jz)[ \t]+[^\n]*\n[.]text[:]00([0-9a-fA-F]+)`
 		regTarget      = `[.]text[:]00([0-9a-fA-F]+)[ \t][$@_a-zA-Z][$@_a-zA-Z0-9]+:`
 		// Instructions.
-		regInst     = `[.]text[:]00([0-9a-fA-F]+)[\t]{2}[ ]{7}[a-z]`
-		regTextData = `[.]text[:]00([0-9a-fA-F]+)[\t]{2}[ ]{7}(?:db|dw|dd|dq|align|assume|include|public)[ ]`
+		regInst     = `[\n](:?[.]text|ROM)[:]([0-9a-fA-F]+)[ \t]*[ ]{7}[a-z]`
+		regTextData = `[\n](:?[.]text|ROM)[:]([0-9a-fA-F]+)[ \t]*[ ]{7}(?:db|dw|dd|dq|align|assume|include|public)[ ]`
 		// Data.
 		regJumpTable     = `[a-zA-Z]+[:]00([0-9a-fA-F]+)[^\n]*;[ \t]jump[ \t]table`
 		regIndirectTable = `[a-zA-Z]+[:]00([0-9a-fA-F]+)[^\n]*;[ \t]indirect[ \t]table`

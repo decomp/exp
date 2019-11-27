@@ -2,20 +2,21 @@ package bin
 
 import (
 	"fmt"
-	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
 )
 
-// A File is a binary exectuable.
+// A File is a binary executable.
 type File struct {
 	// Machine architecture specifying the assembly instruction set.
 	Arch Arch
 	// Entry point of the executable.
 	Entry Address
-	// Sections (and segments) of the exectuable.
+	// Sections (and segments) of the executable. Sections are sorted by address
+	// in ascending order, prioritizing longer sections; and disambiguating
+	// sections at same address and length by ascending section name.
 	Sections []*Section
 	// Function imports.
 	Imports map[Address]string
@@ -26,10 +27,8 @@ type File struct {
 // Code returns the code starting at the specified address of the binary
 // executable.
 func (file *File) Code(addr Address) []byte {
-	if len(file.Sections) > 0 {
-		if code, ok := locateCode(addr, file.Sections); ok {
-			return code
-		}
+	if code, ok := locateCode(addr, file.Sections); ok {
+		return code
 	}
 	panic(fmt.Errorf("unable to locate code at address %v", addr))
 }
@@ -38,16 +37,10 @@ func (file *File) Code(addr Address) []byte {
 // searching through the given sections. The boolean return value indicates
 // success.
 //
-// pre-condition: sects must be sorted in ascending order.
+// pre-condition: sects must be sorted by address in ascending order,
+// prioritizing longer sections with identical addresses.
 func locateCode(addr Address, sects []*Section) ([]byte, bool) {
-	// Find the first section who's end address is greater than addr.
-	less := func(i int) bool {
-		sect := sects[i]
-		return addr < sect.Addr+Address(len(sect.Data))
-	}
-	index := sort.Search(len(sects), less)
-	for i := index; index < len(sects); i++ {
-		sect := sects[i]
+	for _, sect := range sects {
 		if sect.Perm&PermX == 0 {
 			// skip non-executable section.
 			continue
@@ -63,11 +56,9 @@ func locateCode(addr Address, sects []*Section) ([]byte, bool) {
 // Data returns the data starting at the specified address of the binary
 // executable.
 func (file *File) Data(addr Address) []byte {
-	if len(file.Sections) > 0 {
-		data, ok := locateData(addr, file.Sections)
-		if ok {
-			return data
-		}
+	data, ok := locateData(addr, file.Sections)
+	if ok {
+		return data
 	}
 	panic(fmt.Errorf("unable to locate data at address %v", addr))
 }
@@ -76,16 +67,10 @@ func (file *File) Data(addr Address) []byte {
 // searching through the given sections. The boolean return value indicates
 // success.
 //
-// pre-condition: sects must be sorted in ascending order.
+// pre-condition: sects must be sorted by address in ascending order,
+// prioritizing longer sections with identical addresses.
 func locateData(addr Address, sects []*Section) ([]byte, bool) {
-	// Find the first section who's end address is greater than addr.
-	less := func(i int) bool {
-		sect := sects[i]
-		return addr < sect.Addr+Address(len(sect.Data))
-	}
-	index := sort.Search(len(sects), less)
-	if 0 <= index && index < len(sects) {
-		sect := sects[index]
+	for _, sect := range sects {
 		if sect.Addr <= addr && addr < sect.Addr+Address(len(sect.Data)) {
 			offset := addr - sect.Addr
 			return sect.Data[offset:], true

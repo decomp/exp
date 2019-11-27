@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/decomp/exp/bin"
-	"github.com/kr/pretty"
 	"github.com/pkg/errors"
 )
 
@@ -188,7 +187,6 @@ func parseContainer(r io.ReaderAt) (*Container, int64, error) {
 
 	// Parse Loader section.
 	for _, sect := range container.Sections {
-		fmt.Println("kind:", sect.SectionKind)
 		if sect.SectionKind == kindLoader {
 			if err := parseLoaderSection(sect); err != nil {
 				return nil, 0, errors.WithStack(err)
@@ -424,7 +422,6 @@ func parseLoaderSection(sect *Section) error {
 	//    Export hash table
 	//    Export key table
 	//    Exported symbol table
-
 	const loaderHeaderSize = 56
 	type LoaderHeader struct {
 		MainSection              int32
@@ -450,8 +447,5 @@ func parseLoaderSection(sect *Section) error {
 	if err := binary.Read(bytes.NewReader(buf), binary.BigEndian, hdr); err != nil {
 		return errors.WithStack(err)
 	}
-
-	pretty.Println(hdr)
-
 	return nil
 }

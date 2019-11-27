@@ -8,6 +8,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/decomp/exp/bin"
@@ -80,6 +81,18 @@ func Parse(r io.ReaderAt) (*bin.File, error) {
 			file.Sections = append(file.Sections, sect)
 		}
 	}
+	// Sort sections.
+	less := func(i, j int) bool {
+		if file.Sections[i].Addr == file.Sections[j].Addr {
+			if len(file.Sections[i].Data) > len(file.Sections[j].Data) {
+				// prioritize longer sections with identical addresses.
+				return true
+			}
+			return file.Sections[i].Name < file.Sections[j].Name
+		}
+		return file.Sections[i].Addr < file.Sections[j].Addr
+	}
+	sort.Slice(file.Sections, less)
 
 	return file, nil
 }
